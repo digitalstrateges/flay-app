@@ -1,0 +1,29 @@
+{
+  "name": "flay-app",
+  "version": "3.0.0",
+  "description": "Flay - Plateforme de cartes de visite digitales professionnelles | DIGITALSTRATEGES",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DIGITALSTRATEGES/flay-app.git"
+  },
+  "keywords": [
+    "carte-de-visite-digitale",
+    "site-vitrine",
+    "professionnel",
+    "cote-divoire",
+    "wave",
+    "crm",
+    "reservation"
+  ],
+  "author": "DIGITALSTRATEGES <contact@digitalstrateges.com>",
+  "license": "UNLICENSED",
+  "private": true
+}

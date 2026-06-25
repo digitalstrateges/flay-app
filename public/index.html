@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flay - Votre Carte de Visite Digitale Pro</title>
+    <meta name="description" content="Creez votre carte de visite digitale professionnelle en 2 minutes. Reservations, paiements Wave, analytics integres.">
+    <meta name="theme-color" content="#667eea">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0a0a1a; --bg2: #111128; --text: #ffffff; --text2: #a0a0c0; --accent: #667eea; --accent2: #764ba2; --card: #15152a; --border: #252545; --gold: #ffd700; --gradient: linear-gradient(135deg, #667eea, #764ba2); }
+        @media (prefers-color-scheme: light) { :root.auto-theme { --bg: #f8fafc; --bg2: #f1f5f9; --text: #0f172a; --text2: #64748b; --card: #ffffff; --border: #e2e8f0; } }
+    </style>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
+        .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; padding: 60px 24px; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 50% 50%, rgba(102,126,234,0.15) 0%, transparent 70%); }
+        .hero-content { position: relative; z-index: 1; max-width: 800px; }
+        .badge-top { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; background: rgba(102,126,234,0.15); border: 1px solid rgba(102,126,234,0.3); border-radius: 30px; font-size: 13px; color: var(--accent); margin-bottom: 32px; animation: fadeInUp 0.8s ease; }
+        .badge-dot { width: 8px; height: 8px; background: #4ade80; border-radius: 50%; animation: pulse 2s infinite; }
+        h1 { font-size: clamp(36px, 7vw, 72px); font-weight: 900; line-height: 1.1; margin-bottom: 24px; animation: fadeInUp 0.8s ease 0.1s both; }
+        h1 .gradient { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .subtitle { font-size: clamp(16px, 2.5vw, 20px); color: var(--text2); line-height: 1.7; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; animation: fadeInUp 0.8s ease 0.2s both; }
+        .cta-group { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; animation: fadeInUp 0.8s ease 0.3s both; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 600; text-decoration: none; transition: all 0.3s; border: none; cursor: pointer; }
+        .btn-primary { background: var(--gradient); color: white; box-shadow: 0 4px 20px rgba(102,126,234,0.4); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(102,126,234,0.5); }
+        .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
+        .btn-secondary:hover { border-color: var(--accent); transform: translateY(-3px); }
+        .features { padding: 100px 24px; max-width: 1200px; margin: 0 auto; }
+        .section-title { text-align: center; font-size: 40px; font-weight: 800; margin-bottom: 16px; }
+        .section-sub { text-align: center; color: var(--text2); font-size: 18px; margin-bottom: 60px; max-width: 600px; margin-left: auto; margin-right: auto; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; transition: all 0.3s; }
+        .feature-card:hover { transform: translateY(-8px); border-color: var(--accent); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .feature-icon { width: 48px; height: 48px; margin-bottom: 16px; color: var(--accent); }
+        .feature-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .feature-desc { color: var(--text2); font-size: 15px; line-height: 1.7; }
+        .pricing { padding: 100px 24px; background: var(--bg2); }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; max-width: 1100px; margin: 0 auto; }
+        .price-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px; position: relative; transition: all 0.3s; }
+        .price-card:hover { transform: translateY(-8px); }
+        .price-card.popular { border-color: var(--accent); box-shadow: 0 0 40px rgba(102,126,234,0.2); }
+        .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); padding: 4px 16px; background: var(--gradient); color: white; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .plan-name { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .plan-price { font-size: 36px; font-weight: 900; margin-bottom: 24px; }
+        .plan-price span { font-size: 16px; font-weight: 400; color: var(--text2); }
+        .plan-features { list-style: none; margin-bottom: 32px; }
+        .plan-features li { padding: 8px 0; color: var(--text2); font-size: 14px; display: flex; align-items: flex-start; gap: 10px; }
+        .plan-features li svg { flex-shrink: 0; margin-top: 2px; }
+        .btn-plan { width: 100%; justify-content: center; }
+        .wave-section { padding: 100px 24px; text-align: center; }
+        .wave-card { max-width: 600px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 48px; }
+        .wave-logo { font-size: 48px; margin-bottom: 16px; }
+        .wave-merchant { font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
+        .wave-info { color: var(--text2); margin-bottom: 24px; }
+        .footer { padding: 60px 24px; text-align: center; border-top: 1px solid var(--border); }
+        .footer-brand { font-size: 40px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 16px; }
+        .footer-text { color: var(--text2); font-size: 14px; }
+        .footer-text a { color: var(--accent); text-decoration: none; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @media (max-width: 768px) { .features-grid, .pricing-grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <div class="hero-content">
+            <div class="badge-top"><span class="badge-dot"></span> Plateforme N°1 en Côte d'Ivoire</div>
+            <h1>Votre <span class="gradient">Carte de Visite</span> Digitale Pro</h1>
+            <p class="subtitle">Creez votre profil professionnel en 2 minutes. Reservations, services, paiements Wave integres. Partagez votre lien unique.</p>
+            <div class="cta-group">
+                <a href="/register.html" class="btn btn-primary">Creer mon profil gratuit</a>
+                <a href="#pricing" class="btn btn-secondary">Voir les tarifs</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="features" id="features">
+        <h2 class="section-title">Tout ce dont vous avez besoin</h2>
+        <p class="section-sub">Une solution complete pour votre presence digitale professionnelle</p>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+                <div class="feature-title">Profil Professionnel</div>
+                <div class="feature-desc">Page personnalisee avec vos services, tarifs, photos et coordonnees. Design moderne et responsive.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                <div class="feature-title">Reservations en Ligne</div>
+                <div class="feature-desc">Vos clients peuvent reserver vos services directement depuis votre profil. Gestion automatique.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+                <div class="feature-title">Paiement Wave</div>
+                <div class="feature-desc">Integation directe avec Wave pour les paiements. Lien de paiement automatique.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg></div>
+                <div class="feature-title">Agent IA</div>
+                <div class="feature-desc">Generation automatique de bio, suggestions de services, insights analytics intelligents.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg></div>
+                <div class="feature-title">Carte de Visite PDF</div>
+                <div class="feature-desc">Generez et imprimez votre carte de visite physique en PDF intelligent recto/verso.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
+                <div class="feature-title">Site Vitrine</div>
+                <div class="feature-desc">Site web complet avec galerie, map, reservation et contact. Personnalisation avancee.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+                <div class="feature-title">Géolocalisation</div>
+                <div class="feature-desc">Affichez votre position sur une carte Google Maps. Vos clients vous trouvent facilement.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
+                <div class="feature-title">Analytics Avances</div>
+                <div class="feature-desc">Suivez vos vues, clics, reservations. Graphiques, referrers, devices. Insights IA.</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+                <div class="feature-title">Chat Temps Reel</div>
+                <div class="feature-desc">Chattez directement avec vos visiteurs. Notifications en temps reel.</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <h2 class="section-title">Tarifs transparents</h2>
+        <p class="section-sub">Choisissez le plan qui correspond a vos besoins</p>
+        <div class="pricing-grid">
+            <div class="price-card">
+                <div class="plan-name">Gratuit</div>
+                <div class="plan-price">0 FCFA <span>/mois</span></div>
+                <ul class="plan-features">
+                    <li>Carte de visite digitale</li>
+                    <li>Lien unique flay.app/username</li>
+                    <li>3 services maximum</li>
+                    <li>2 themes</li>
+                    <li>Stats de base</li>
+                </ul>
+                <a href="/register.html" class="btn btn-secondary btn-plan">Commencer gratuitement</a>
+            </div>
+            <div class="price-card popular">
+                <div class="popular-badge">Le plus populaire</div>
+                <div class="plan-name">Pro</div>
+                <div class="plan-price" style="color: var(--accent);">5 000 FCFA <span>/mois</span></div>
+                <ul class="plan-features">
+                    <li>Tout du plan Gratuit</li>
+                    <li>Reservations illimitees</li>
+                    <li>Services illimites</li>
+                    <li>7 themes premium</li>
+                    <li>QR Code personnalise</li>
+                    <li>Badge Verifie Pro</li>
+                    <li>Chat en temps reel</li>
+                    <li>Analytics detailles</li>
+                </ul>
+                <a href="/payment.html?plan=pro" class="btn btn-primary btn-plan">Choisir Pro</a>
+            </div>
+            <div class="price-card">
+                <div class="plan-name">Premium</div>
+                <div class="plan-price" style="color: var(--gold);">15 000 FCFA <span>/mois</span></div>
+                <ul class="plan-features">
+                    <li>Tout du plan Pro</li>
+                    <li>Agent IA integre</li>
+                    <li>Carte de visite PDF</li>
+                    <li>Site vitrine complet</li>
+                    <li>Geolocalisation</li>
+                    <li>Domaine personnalise</li>
+                    <li>Export PDF</li>
+                    <li>API publique</li>
+                    <li>Webhooks</li>
+                    <li>Support prioritaire 24/7</li>
+                </ul>
+                <a href="/payment.html?plan=premium" class="btn btn-secondary btn-plan" style="border-color: var(--gold); color: var(--gold);">Choisir Premium</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="wave-section">
+        <div class="wave-card">
+            <div class="wave-logo">&#128177;</div>
+            <div class="wave-merchant">DIGITALSTRATEGE BUSINESS</div>
+            <div class="wave-info">Paiement securise via Wave - Activation automatique</div>
+            <a href="https://pay.wave.com/m/M_uv5jVAEPkSWs/c/ci/" target="_blank" class="btn btn-primary">Tester le lien Wave</a>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-brand">Flay</div>
+        <p class="footer-text">Fait avec &#10084; par <a href="https://digitalstrateges.ci">DIGITALSTRATEGES</a> | Contact: <a href="https://wa.me/2250759731990">+225 07 59 73 19 90</a></p>
+        <p class="footer-text" style="margin-top: 8px;">&copy; 2026 Flay. Tous droits reserves.</p>
+    </footer>
+
+    <script>
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(a => {
+            a.addEventListener('click', e => {
+                e.preventDefault();
+                const t = document.querySelector(a.getAttribute('href'));
+                if (t) t.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+        // Animate on scroll
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; });
+        }, { threshold: 0.1 });
+        document.querySelectorAll('.feature-card, .price-card').forEach(el => {
+            el.style.opacity = '0'; el.style.transform = 'translateY(30px)'; el.style.transition = 'all 0.6s ease';
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>

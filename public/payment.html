@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flay - Paiement</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0a0a1a; --card: #15152a; --border: #252545; --accent: #667eea; --text: #fff; --text2: #a0a0c0; --gradient: linear-gradient(135deg, #667eea, #764ba2); --gold: #ffd700; --success: #4ade80; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+        .main { max-width: 900px; margin: 0 auto; padding: 48px 24px; }
+        .brand { text-align: center; margin-bottom: 40px; }
+        .brand-name { font-size: 32px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        h1 { font-size: 32px; font-weight: 800; text-align: center; margin-bottom: 8px; }
+        .subtitle { text-align: center; color: var(--text2); margin-bottom: 40px; }
+        .steps { display: flex; justify-content: center; gap: 8px; margin-bottom: 48px; }
+        .step { display: flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: 30px; font-size: 14px; font-weight: 600; background: var(--card); color: var(--text2); border: 1px solid var(--border); }
+        .step.active { background: var(--gradient); color: white; border-color: transparent; }
+        .step.done { background: rgba(74,222,128,0.15); color: var(--success); border-color: rgba(74,222,128,0.3); }
+        .step-num { width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 40px; }
+        .plan-card { background: var(--card); border: 2px solid var(--border); border-radius: 16px; padding: 32px; cursor: pointer; transition: all 0.3s; position: relative; }
+        .plan-card:hover { transform: translateY(-4px); }
+        .plan-card.selected { border-color: var(--accent); box-shadow: 0 0 30px rgba(102,126,234,0.2); }
+        .plan-card.popular::after { content: 'Populaire'; position: absolute; top: -12px; right: -12px; padding: 4px 12px; background: var(--gradient); color: white; border-radius: 20px; font-size: 11px; font-weight: 700; }
+        .plan-name { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+        .plan-price { font-size: 28px; font-weight: 900; margin-bottom: 16px; }
+        .plan-price span { font-size: 14px; font-weight: 400; color: var(--text2); }
+        .plan-features { list-style: none; }
+        .plan-features li { padding: 6px 0; font-size: 13px; color: var(--text2); }
+        .plan-features li::before { content: ''; display: inline-block; width: 16px; height: 16px; margin-right: 8px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234ade80' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6L9 17l-5-5'/%3E%3C/svg%3E") center/contain no-repeat; vertical-align: middle; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .wave-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px; text-align: center; margin-bottom: 32px; }
+        .wave-logo { font-size: 64px; margin-bottom: 16px; }
+        .wave-merchant { font-size: 24px; font-weight: 800; color: var(--accent); margin-bottom: 8px; }
+        .wave-amount { font-size: 36px; font-weight: 900; color: var(--gold); margin-bottom: 8px; }
+        .wave-ref { font-size: 13px; color: var(--text2); margin-bottom: 24px; font-family: monospace; background: var(--bg); padding: 8px 16px; border-radius: 8px; display: inline-block; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 600; text-decoration: none; transition: all 0.3s; border: none; cursor: pointer; }
+        .btn-primary { background: var(--gradient); color: white; box-shadow: 0 4px 20px rgba(102,126,234,0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(102,126,234,0.4); }
+        .btn-whatsapp { background: #25d366; color: white; }
+        .btn-whatsapp:hover { background: #20bd5a; }
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+        .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .confirmation-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 48px; text-align: center; }
+        .check-icon { font-size: 80px; margin-bottom: 24px; }
+        .success-title { font-size: 24px; font-weight: 800; margin-bottom: 8px; color: var(--success); }
+        .success-text { color: var(--text2); margin-bottom: 32px; }
+        .whatsapp-msg { background: var(--bg); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: left; font-size: 14px; color: var(--text2); margin-bottom: 24px; white-space: pre-wrap; }
+        .link-box { display: flex; gap: 8px; margin-top: 16px; }
+        .link-box input { flex: 1; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--accent); font-family: monospace; font-size: 14px; }
+        .copy-btn { padding: 12px 20px; background: rgba(102,126,234,0.15); color: var(--accent); border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <div class="main">
+        <div class="brand"><div class="brand-name">Flay</div></div>
+        <h1>Debloquez tout le potentiel</h1>
+        <p class="subtitle">Choisissez votre plan et payez en toute securite</p>
+
+        <div class="steps">
+            <div class="step active" id="step1"><span class="step-num">1</span> Choisir le plan</div>
+            <div class="step" id="step2"><span class="step-num">2</span> Payer avec Wave</div>
+            <div class="step" id="step3"><span class="step-num">3</span> Confirmer</div>
+        </div>
+
+        <div class="section active" id="section1">
+            <div class="plans-grid">
+                <div class="plan-card" data-plan="pro" onclick="selectPlan('pro')">
+                    <div class="plan-name">Pro</div>
+                    <div class="plan-price" style="color:var(--accent);">5 000 FCFA <span>/mois</span></div>
+                    <ul class="plan-features">
+                        <li>Reservations illimitees</li>
+                        <li>Services illimites</li>
+                        <li>7 themes premium</li>
+                        <li>QR Code personnalise</li>
+                        <li>Badge Verifie Pro</li>
+                        <li>Chat temps reel</li>
+                        <li>Analytics detailles</li>
+                    </ul>
+                </div>
+                <div class="plan-card popular" data-plan="premium" onclick="selectPlan('premium')">
+                    <div class="plan-name">Premium</div>
+                    <div class="plan-price" style="color:var(--gold);">15 000 FCFA <span>/mois</span></div>
+                    <ul class="plan-features">
+                        <li>Tout Pro inclus</li>
+                        <li>Agent IA integre</li>
+                        <li>Carte de visite PDF</li>
+                        <li>Site vitrine complet</li>
+                        <li>Geolocalisation</li>
+                        <li>Domaine personnalise</li>
+                        <li>Export PDF</li>
+                        <li>API + Webhooks</li>
+                        <li>Support 24/7</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-outline" onclick="window.location.href='/dashboard.html'">Retour</button>
+                <button class="btn btn-primary" onclick="goToPayment()">Continuer <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></button>
+            </div>
+        </div>
+
+        <div class="section" id="section2">
+            <div class="wave-card">
+                <div class="wave-logo"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
+                <div class="wave-merchant">DIGITALSTRATEGE BUSINESS</div>
+                <div class="wave-amount" id="payAmount">5 000 FCFA</div>
+                <div class="wave-ref" id="payRef">Reference: En attente...</div>
+                <p style="color:var(--text2);margin-bottom:24px;">Scannez le QR code ou cliquez le bouton ci-dessous pour payer via Wave</p>
+                <div class="actions" style="margin-bottom:24px;">
+                    <a id="waveLink" href="https://pay.wave.com/m/M_uv5jVAEPkSWs/c/ci/" target="_blank" class="btn btn-primary"><svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Ouvrir Wave</a>
+                </div>
+                <p style="color:var(--text2);font-size:14px;">Montant a payer: <strong id="payAmountText" style="color:var(--gold);">5 000 FCFA</strong></p>
+            </div>
+            <div class="actions">
+                <button class="btn btn-outline" onclick="goBack()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg> Retour</button>
+                <button class="btn btn-whatsapp" id="whatsappBtn" onclick="sendWhatsAppProof()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Envoyer la preuve</button>
+                <button class="btn btn-primary" onclick="confirmPayment()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                    J'ai paye
+                </button>
+            </div>
+        </div>
+
+        <div class="section" id="section3">
+            <div class="confirmation-card">
+                <div class="check-icon">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12l3 3 5-5"/></svg>
+                </div>
+                <div class="success-title">Paiement envoye !</div>
+                <div class="success-text">Envoyez la preuve de paiement sur WhatsApp pour confirmation rapide.</div>
+                <div class="whatsapp-msg" id="whatsappMsg"></div>
+                <div class="actions">
+                    <a id="whatsappLink" href="#" target="_blank" class="btn btn-whatsapp"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg> Envoyer sur WhatsApp</a>
+                    <a href="/dashboard.html" class="btn btn-primary">Retour au dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const user = JSON.parse(localStorage.getItem('flay_user') || '{}');
+        const token = localStorage.getItem('flay_token');
+        let selectedPlan = null;
+        let paymentId = null;
+        const urlParams = new URLSearchParams(window.location.search);
+        const preselected = urlParams.get('plan');
+        if (preselected) { selectPlan(preselected); setTimeout(goToPayment, 500); }
+
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+            document.querySelector(`[data-plan="${plan}"]`).classList.add('selected');
+        }
+
+        function goToPayment() {
+            if (!selectedPlan) { alert('Choisissez un plan'); return; }
+            document.getElementById('section1').classList.remove('active');
+            document.getElementById('section2').classList.add('active');
+            document.getElementById('step1').classList.remove('active');
+            document.getElementById('step1').classList.add('done');
+            document.getElementById('step2').classList.add('active');
+            const amount = selectedPlan === 'premium' ? '15 000' : '5 000';
+            document.getElementById('payAmount').textContent = amount + ' FCFA';
+            document.getElementById('payAmountText').textContent = amount + ' FCFA';
+            initiatePayment();
+        }
+
+        function goBack() {
+            document.getElementById('section2').classList.remove('active');
+            document.getElementById('section1').classList.add('active');
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step1').classList.remove('done');
+            document.getElementById('step1').classList.add('active');
+        }
+
+        async function initiatePayment() {
+            try {
+                const res = await fetch('/api/payments/initiate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ plan: selectedPlan, phone: user.phone || '' })
+                });
+                const data = await res.json();
+                if (data.payment) {
+                    paymentId = data.payment.id;
+                    document.getElementById('payRef').textContent = 'Reference: ' + paymentId;
+                    document.getElementById('waveLink').href = data.waveUrl;
+                    const msg = `Bonjour, j'ai effectue le paiement pour le plan ${selectedPlan === 'premium' ? 'Premium' : 'Pro'}. Reference: ${paymentId}`;
+                    document.getElementById('whatsappMsg').textContent = msg;
+                    document.getElementById('whatsappLink').href = `https://wa.me/2250759731990?text=${encodeURIComponent(msg)}`;
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function sendWhatsAppProof() {
+            document.getElementById('step2').classList.remove('active');
+            document.getElementById('step2').classList.add('done');
+            document.getElementById('step3').classList.add('active');
+            document.getElementById('section2').classList.remove('active');
+            document.getElementById('section3').classList.add('active');
+        }
+
+        async function confirmPayment() {
+            if (!paymentId) return;
+            try {
+                const res = await fetch(`/api/payments/${paymentId}/confirm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                    document.getElementById('step2').classList.remove('active');
+                    document.getElementById('step2').classList.add('done');
+                    document.getElementById('step3').classList.add('active');
+                    document.getElementById('section2').classList.remove('active');
+                    document.getElementById('section3').classList.add('active');
+                    user.plan = selectedPlan;
+                    localStorage.setItem('flay_user', JSON.stringify(user));
+                }
+            } catch(e) { alert('Erreur'); }
+        }
+    </script>
+</body>
+</html>

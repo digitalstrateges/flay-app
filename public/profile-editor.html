@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flay - Editeur de Profil</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Segoe UI',sans-serif;background:#0a0a0f;color:#e0e0e0;min-height:100vh}
+        a{text-decoration:none;color:inherit}
+        .nav{display:flex;justify-content:space-between;align-items:center;padding:16px 32px;border-bottom:1px solid #1a1a2e;background:rgba(10,10,15,0.95);position:sticky;top:0;z-index:100}
+        .logo{font-size:1.3rem;font-weight:900;background:linear-gradient(135deg,#6c63ff,#e94560);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .btn-back{padding:8px 16px;border-radius:8px;border:1px solid #333;background:transparent;color:#aaa;cursor:pointer;font-size:0.85rem}
+        .main{max-width:700px;margin:0 auto;padding:32px}
+        .page-title{font-size:1.5rem;margin-bottom:24px}
+        .form-section{background:#1a1a2e;border-radius:12px;padding:24px;border:1px solid #16213e;margin-bottom:20px}
+        .form-section h3{font-size:1rem;margin-bottom:16px;color:#6c63ff}
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block;font-size:0.85rem;color:#aaa;margin-bottom:6px}
+        .form-group input,.form-group textarea,.form-group select{width:100%;padding:12px 16px;border-radius:10px;border:1px solid #333;background:#0a0a0f;color:#e0e0e0;font-size:0.95rem;outline:none;font-family:inherit}
+        .form-group input:focus,.form-group textarea:focus{border-color:#6c63ff}
+        .form-group textarea{resize:vertical;min-height:80px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+        .socials-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .social-input{display:flex;align-items:center;gap:10px}
+        .social-input .icon{font-size:1.2rem;width:30px;text-align:center}
+        .social-input input{flex:1}
+        .services-list{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}
+        .service-item{display:flex;gap:10px;align-items:center}
+        .service-item input{flex:1}
+        .service-item input:first-child{flex:2}
+        .btn-remove{width:36px;height:36px;border-radius:8px;border:1px solid #e94560;background:transparent;color:#e94560;cursor:pointer;font-size:1.1rem}
+        .btn-add-service{padding:10px;border-radius:8px;border:1px dashed #333;background:transparent;color:#888;cursor:pointer;width:100%;font-size:0.9rem}
+        .btn-add-service:hover{border-color:#6c63ff;color:#6c63ff}
+        .themes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px;margin-bottom:12px}
+        .theme-btn{padding:12px;border-radius:10px;border:2px solid #333;cursor:pointer;text-align:center;font-size:0.8rem;transition:all 0.2s}
+        .theme-btn.active{border-color:#6c63ff}
+        .theme-btn .preview{width:30px;height:30px;border-radius:50%;margin:0 auto 6px}
+        .btn{padding:14px 28px;border-radius:10px;border:none;font-size:1rem;cursor:pointer;font-weight:600}
+        .btn-primary{background:linear-gradient(135deg,#6c63ff,#e94560);color:white}
+        .actions{display:flex;gap:12px;justify-content:flex-end;margin-top:8px}
+        .preview-link{display:inline-block;margin-top:8px;padding:8px 16px;background:#16213e;border-radius:8px;color:#6c63ff;font-size:0.85rem}
+        .toast{position:fixed;bottom:20px;right:20px;padding:14px 24px;border-radius:8px;background:#16213e;color:#4ecdc4;border:1px solid #0f3460;font-size:0.9rem;z-index:200;opacity:0;transform:translateY(20px);transition:all 0.3s}
+        .toast.show{opacity:1;transform:translateY(0)}
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="logo">Flay</div>
+        <a href="/dashboard" class="btn-back">Retour</a>
+    </nav>
+    <div class="main">
+        <h1 class="page-title">Editer mon profil</h1>
+        <form id="profileForm">
+            <div class="form-section">
+                <h3>Identite</h3>
+                <div class="form-group">
+                    <label>Lien unique (slug)</label>
+                    <input type="text" id="slug" placeholder="mon-nom">
+                    <div class="preview-link" id="slugPreview">flay.app/mon-nom</div>
+                </div>
+                <div class="form-group"><label>Titre / Slogan</label><input type="text" id="title" placeholder="Photographe Pro | Abidjan"></div>
+                <div class="form-group"><label>Description / Bio</label><textarea id="bio" placeholder="Decrivez votre activite..."></textarea></div>
+            </div>
+
+            <div class="form-section">
+                <h3>Contact</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Telephone</label><input type="text" id="phone" placeholder="+225 07 07 07 07"></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="email" placeholder="contact@monsite.com"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Localisation</label><input type="text" id="location" placeholder="Abidjan, CI"></div>
+                    <div class="form-group"><label>Site web</label><input type="url" id="website" placeholder="https://..."></div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Reseaux sociaux</h3>
+                <div class="socials-grid">
+                    <div class="social-input"><span class="icon">&#128100;</span><input type="url" id="facebook" placeholder="Facebook URL"></div>
+                    <div class="social-input"><span class="icon">&#128247;</span><input type="url" id="instagram" placeholder="Instagram URL"></div>
+                    <div class="social-input"><span class="icon">&#128188;</span><input type="url" id="linkedin" placeholder="LinkedIn URL"></div>
+                    <div class="social-input"><span class="icon">&#128172;</span><input type="url" id="whatsapp" placeholder="WhatsApp URL"></div>
+                    <div class="social-input"><span class="icon">&#127916;</span><input type="url" id="tiktok" placeholder="TikTok URL"></div>
+                    <div class="social-input"><span class="icon">&#128249;</span><input type="url" id="youtube" placeholder="YouTube URL"></div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <h3>Services / Tarifs</h3>
+                <div class="services-list" id="servicesList"></div>
+                <button type="button" class="btn-add-service" onclick="addService()">+ Ajouter un service</button>
+            </div>
+
+            <div class="form-section">
+                <h3>Theme</h3>
+                <div class="themes-grid" id="themesGrid"></div>
+            </div>
+
+            <div class="actions">
+                <a href="/dashboard" class="btn btn-back" style="padding:14px 28px">Annuler</a>
+                <button type="submit" class="btn btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+    <div class="toast" id="toast"></div>
+    <script>
+        const token=localStorage.getItem('token');if(!token)window.location.href='/login';
+        let themes={};
+        function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+        async function api(url,opts={}){const r=await fetch(url,{...opts,headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`,...opts.headers}});if(r.status===401){window.location.href='/login';return null}return r.json()}
+
+        function addService(name='',price=''){
+            const list=document.getElementById('servicesList');
+            const item=document.createElement('div');item.className='service-item';
+            item.innerHTML=`<input type="text" placeholder="Service" value="${name}" class="svc-name"><input type="text" placeholder="Prix" value="${price}" class="svc-price"><button type="button" class="btn-remove" onclick="this.parentElement.remove()">&times;</button>`;
+            list.appendChild(item);
+        }
+
+        document.getElementById('slug').addEventListener('input',e=>{document.getElementById('slugPreview').textContent=`flay.app/${e.target.value||'mon-nom'}`});
+
+        async function loadThemes(){
+            const d=await api('/api/profile/themes');
+            if(d&&d.themes){themes=d.themes;renderThemes()}
+        }
+
+        let selectedTheme='dark';
+        function renderThemes(){
+            const grid=document.getElementById('themesGrid');
+            grid.innerHTML=Object.entries(themes).map(([key,t])=>`
+                <div class="theme-btn ${selectedTheme===key?'active':''}" onclick="selectTheme('${key}')">
+                    <div class="preview" style="background:linear-gradient(135deg,${t.accent},${t.bg})"></div>
+                    ${t.name}
+                </div>
+            `).join('');
+        }
+        function selectTheme(key){selectedTheme=key;renderThemes()}
+
+        async function loadProfile(){
+            const d=await api('/api/profile/my');
+            if(!d||!d.profile){addService();loadThemes();return}
+            const p=d.profile;
+            document.getElementById('slug').value=p.slug||'';document.getElementById('slugPreview').textContent=`flay.app/${p.slug}`;
+            document.getElementById('title').value=p.title||'';document.getElementById('bio').value=p.bio||'';
+            document.getElementById('phone').value=p.phone||'';document.getElementById('email').value=p.email||'';
+            document.getElementById('location').value=p.location||'';document.getElementById('website').value=p.website||'';
+            document.getElementById('facebook').value=p.socials?.facebook||'';document.getElementById('instagram').value=p.socials?.instagram||'';
+            document.getElementById('linkedin').value=p.socials?.linkedin||'';document.getElementById('whatsapp').value=p.socials?.whatsapp||'';
+            document.getElementById('tiktok').value=p.socials?.tiktok||'';document.getElementById('youtube').value=p.socials?.youtube||'';
+            document.getElementById('servicesList').innerHTML='';
+            if(p.services&&p.services.length>0)p.services.forEach(s=>addService(s.name,s.price));else addService();
+            selectedTheme=p.theme||'dark';loadThemes();
+        }
+
+        document.getElementById('profileForm').addEventListener('submit',async e=>{
+            e.preventDefault();
+            const services=[];document.querySelectorAll('.service-item').forEach(i=>{const n=i.querySelector('.svc-name').value.trim();const p=i.querySelector('.svc-price').value.trim();if(n)services.push({name:n,price:p})});
+            const body={slug:document.getElementById('slug').value.trim(),title:document.getElementById('title').value.trim(),bio:document.getElementById('bio').value.trim(),phone:document.getElementById('phone').value.trim(),email:document.getElementById('email').value.trim(),location:document.getElementById('location').value.trim(),website:document.getElementById('website').value.trim(),theme:selectedTheme,socials:{facebook:document.getElementById('facebook').value.trim(),instagram:document.getElementById('instagram').value.trim(),linkedin:document.getElementById('linkedin').value.trim(),whatsapp:document.getElementById('whatsapp').value.trim(),tiktok:document.getElementById('tiktok').value.trim(),youtube:document.getElementById('youtube').value.trim()},services};
+            const d=await api('/api/profile/my',{method:'PUT',body:JSON.stringify(body)});
+            if(d&&d.profile)showToast('Profil enregistre !');else showToast('Erreur');
+        });
+
+        loadProfile();
+    </script>
+</body>
+</html>

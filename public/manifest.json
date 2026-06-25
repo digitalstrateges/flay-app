@@ -1,0 +1,17 @@
+{
+    "name": "Flay - Carte de Visite Digitale Pro",
+    "short_name": "Flay",
+    "description": "Votre carte de visite digitale professionnelle avec reservations, paiements et analytics",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a0a1a",
+    "theme_color": "#667eea",
+    "orientation": "portrait-primary",
+    "icons": [
+        { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+        { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    ],
+    "categories": ["business", "productivity"],
+    "lang": "fr",
+    "dir": "ltr"
+}

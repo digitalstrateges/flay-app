@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flay - Visiteurs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0a0a1a;--card:#15152a;--border:#252545;--accent:#667eea;--text:#fff;--text2:#a0a0c0;--gradient:linear-gradient(135deg,#667eea,#764ba2);--success:#4ade80;--danger:#ef4444;--gold:#ffd700}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text)}
+        .topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 32px;background:var(--card);border-bottom:1px solid var(--border)}
+        .topbar-brand{font-size:24px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .topbar-nav{display:flex;gap:8px}
+        .topbar-nav a{padding:8px 16px;border-radius:8px;color:var(--text2);text-decoration:none;font-size:14px;font-weight:500}
+        .topbar-nav a:hover,.topbar-nav a.active{color:var(--text);background:rgba(102,126,234,0.15)}
+        .main{max-width:1400px;margin:0 auto;padding:32px}
+        h1{font-size:28px;font-weight:800;margin-bottom:8px}
+        .subtitle{color:var(--text2);margin-bottom:32px}
+        .realtime-bar{display:flex;align-items:center;gap:12px;padding:16px 24px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:24px}
+        .pulse-dot{width:12px;height:12px;background:var(--success);border-radius:50%;animation:pulse 1.5s infinite}
+        @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(74,222,128,0.4)}50%{box-shadow:0 0 0 8px rgba(74,222,128,0)}}
+        .realtime-count{font-size:32px;font-weight:800;color:var(--success)}
+        .realtime-label{font-size:14px;color:var(--text2)}
+        .stats-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:24px}
+        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+        .stat-value{font-size:28px;font-weight:800}
+        .stat-label{font-size:12px;color:var(--text2);margin-top:4px}
+        .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+        .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;margin-bottom:24px}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px}
+        .card-title{font-size:16px;font-weight:700;margin-bottom:16px}
+        .period-tabs{display:flex;gap:4px;margin-bottom:24px}
+        .period-tab{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;background:var(--card);color:var(--text2);border:1px solid var(--border)}
+        .period-tab.active{background:var(--gradient);color:white;border-color:transparent}
+        .chart-container{position:relative;height:200px;display:flex;align-items:flex-end;gap:3px}
+        .chart-bar{flex:1;background:var(--gradient);border-radius:3px 3px 0 0;min-height:3px;transition:height 0.5s;position:relative}
+        .chart-bar:hover{opacity:0.8}
+        .chart-bar .tip{display:none;position:absolute;bottom:100%;left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);padding:4px 8px;border-radius:6px;font-size:11px;white-space:nowrap;z-index:10}
+        .chart-bar:hover .tip{display:block}
+        .visitor-list{max-height:400px;overflow-y:auto}
+        .visitor-item{display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid var(--border)}
+        .visitor-item:last-child{border:none}
+        .visitor-avatar{width:36px;height:36px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0}
+        .visitor-info{flex:1}
+        .visitor-page{font-weight:600;font-size:14px}
+        .visitor-meta{font-size:12px;color:var(--text2)}
+        .visitor-duration{font-size:12px;color:var(--accent);font-weight:600}
+        .device-bar{display:flex;gap:12px;margin-top:12px}
+        .device-item{flex:1;text-align:center;padding:16px;background:var(--bg);border-radius:8px}
+        .device-value{font-size:24px;font-weight:800}
+        .device-label{font-size:11px;color:var(--text2)}
+        .ref-item{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px}
+        .heat-cell{width:100%;aspect-ratio:1;border-radius:4px;background:var(--bg)}
+        .goal-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:var(--bg);border-radius:8px;margin-bottom:8px}
+        .goal-name{font-weight:600;font-size:14px}
+        .goal-count{font-size:20px;font-weight:800;color:var(--accent)}
+        .embed-code{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:16px;font-family:monospace;font-size:12px;color:var(--accent);word-break:break-all;cursor:pointer;position:relative}
+        .embed-code:hover{border-color:var(--accent)}
+        .copy-hint{position:absolute;top:8px;right:8px;font-size:11px;color:var(--text2);background:var(--card);padding:2px 8px;border-radius:4px}
+        .live-indicator{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:rgba(74,222,128,0.15);border-radius:20px;font-size:12px;font-weight:600;color:var(--success)}
+        @media(max-width:900px){.stats-grid{grid-template-columns:repeat(2,1fr)}.grid-2,.grid-3{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-brand">Flay</div>
+        <div class="topbar-nav">
+            <a href="/dashboard.html">Dashboard</a>
+            <a href="/editor.html">Editeur</a>
+            <a href="/studio.html">Studio</a>
+            <a href="/analytics.html">Analytics</a>
+            <a href="/visitors.html" class="active">Visiteurs</a>
+            <a href="/crm.html">CRM</a>
+        </div>
+    </div>
+    <div class="main">
+        <h1>Visiteurs en temps reel</h1>
+        <p class="subtitle">Suivez vos visiteurs et analysez leur comportement</p>
+
+        <div class="realtime-bar">
+            <div class="pulse-dot"></div>
+            <div class="realtime-count" id="rtCount">0</div>
+            <div>
+                <div style="font-weight:600;"> visiteurs en ligne</div>
+                <div class="realtime-label">Actualisation auto toutes les 5s</div>
+            </div>
+            <div style="margin-left:auto;">
+                <span class="live-indicator"><span class="pulse-dot" style="width:8px;height:8px;"></span> LIVE</span>
+            </div>
+        </div>
+
+        <div class="period-tabs">
+            <div class="period-tab active" onclick="loadStats('7d')">7 jours</div>
+            <div class="period-tab" onclick="loadStats('30d')">30 jours</div>
+            <div class="period-tab" onclick="loadStats('90d')">90 jours</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-value" id="sVisitors" style="color:var(--accent)">0</div><div class="stat-label">Visiteurs uniques</div></div>
+            <div class="stat-card"><div class="stat-value" id="sSessions">0</div><div class="stat-label">Sessions</div></div>
+            <div class="stat-card"><div class="stat-value" id="sPageviews">0</div><div class="stat-label">Pages vues</div></div>
+            <div class="stat-card"><div class="stat-value" id="sDuration">0s</div><div class="stat-label">Duree moyenne</div></div>
+            <div class="stat-card"><div class="stat-value" id="sBounce">0%</div><div class="stat-label">Taux rebond</div></div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-title">Visiteurs en direct</div>
+                <div class="visitor-list" id="liveVisitors"><div style="text-align:center;color:var(--text2);padding:20px;">Aucun visiteur en ligne</div></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Pages les plus vues</div>
+                <div id="topPages"></div>
+            </div>
+        </div>
+
+        <div class="grid-3">
+            <div class="card">
+                <div class="card-title">Appareils</div>
+                <div class="device-bar" id="devicesBar"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Navigateurs</div>
+                <div id="browsersList"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Sources / Referrers</div>
+                <div id="referrersList"></div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-title">Vues des 30 derniers jours</div>
+                <div class="chart-container" id="dailyChart"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Heures de pointe</div>
+                <div class="chart-container" id="hourlyChart"></div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-bottom:24px;">
+            <div class="card-title">Script de tracking</div>
+            <p style="color:var(--text2);font-size:14px;margin-bottom:16px;">Collez ce script dans votre site pour tracker les visiteurs automatiquement.</p>
+            <div class="embed-code" id="embedCode" onclick="copyEmbed()"><span class="copy-hint">Cliquer pour copier</span>Chargement...</div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('flay_token');
+        const user = JSON.parse(localStorage.getItem('flay_user') || '{}');
+        if (!token) window.location.href = '/login.html';
+
+        let currentPeriod = '7d';
+
+        async function loadStats(period) {
+            currentPeriod = period;
+            document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+            event?.target?.classList?.add('active');
+            try {
+                const res = await fetch('/api/tracking/stats/' + user.id + '?period=' + period, { headers: { 'Authorization': 'Bearer ' + token } });
+                if (!res.ok) return;
+                const { stats } = await res.json();
+                document.getElementById('sVisitors').textContent = stats.uniqueVisitors || 0;
+                document.getElementById('sSessions').textContent = stats.totalSessions || 0;
+                document.getElementById('sPageviews').textContent = stats.totalPageviews || 0;
+                document.getElementById('sDuration').textContent = (stats.avgDuration || 0) + 's';
+                document.getElementById('sBounce').textContent = (stats.bounceRate || 0) + '%';
+
+                // Top pages
+                const topEl = document.getElementById('topPages');
+                if (stats.topPages?.length) {
+                    topEl.innerHTML = stats.topPages.map(p => `<div class="ref-item"><span>${p.page}</span><strong>${p.views}</strong></div>`).join('');
+                } else {
+                    topEl.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;">Aucune donnee</div>';
+                }
+
+                // Devices
+                const devEl = document.getElementById('devicesBar');
+                const d = stats.devices || {};
+                const totalDev = (d.mobile||0)+(d.desktop||0)+(d.tablet||0)||1;
+                devEl.innerHTML = `
+                    <div class="device-item"><div class="device-value" style="color:var(--accent)">${d.mobile||0}</div><div class="device-label">Mobile ${Math.round(((d.mobile||0)/totalDev)*100)}%</div></div>
+                    <div class="device-item"><div class="device-value">${d.desktop||0}</div><div class="device-label">Desktop ${Math.round(((d.desktop||0)/totalDev)*100)}%</div></div>
+                    <div class="device-item"><div class="device-value" style="color:var(--gold)">${d.tablet||0}</div><div class="device-label">Tablette ${Math.round(((d.tablet||0)/totalDev)*100)}%</div></div>
+                `;
+
+                // Browsers
+                const brEl = document.getElementById('browsersList');
+                if (stats.browsers?.length) {
+                    brEl.innerHTML = stats.browsers.map(b => `<div class="ref-item"><span>${b.name}</span><strong>${b.count}</strong></div>`).join('');
+                } else {
+                    brEl.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;">Aucune donnee</div>';
+                }
+
+                // Referrers
+                const refEl = document.getElementById('referrersList');
+                if (stats.referrers?.length) {
+                    refEl.innerHTML = stats.referrers.map(r => `<div class="ref-item"><span>${r.name}</span><strong>${r.count}</strong></div>`).join('');
+                } else {
+                    refEl.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;">Aucune donnee</div>';
+                }
+
+                // Daily chart
+                const dailyEl = document.getElementById('dailyChart');
+                if (stats.daily?.length) {
+                    const maxPV = Math.max(...stats.daily.map(d => d.pageviews), 1);
+                    dailyEl.innerHTML = stats.daily.map(d => `<div class="chart-bar" style="height:${(d.pageviews/maxPV)*100}%"><div class="tip">${d.date}: ${d.pageviews} vues</div></div>`).join('');
+                }
+
+                // Hourly chart
+                const hourlyEl = document.getElementById('hourlyChart');
+                const maxH = Math.max(...(stats.hourly || []), 1);
+                hourlyEl.innerHTML = (stats.hourly || []).map((v, i) => `<div class="chart-bar" style="height:${(v/maxH)*100}%"><div class="tip">${i}h: ${v} vues</div></div>`).join('');
+
+            } catch(e) { console.error(e); }
+        }
+
+        async function loadRealtime() {
+            try {
+                const res = await fetch('/api/tracking/realtime', { headers: { 'Authorization': 'Bearer ' + token } });
+                if (!res.ok) return;
+                const { count, visitors } = await res.json();
+                document.getElementById('rtCount').textContent = count;
+                const list = document.getElementById('liveVisitors');
+                if (!visitors.length) {
+                    list.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;">Aucun visiteur en ligne</div>';
+                } else {
+                    list.innerHTML = visitors.map(v => `
+                        <div class="visitor-item">
+                            <div class="visitor-avatar">${(v.visitorId||'?')[6]?.toUpperCase()||'V'}</div>
+                            <div class="visitor-info">
+                                <div class="visitor-page">${v.page || '/'}</div>
+                                <div class="visitor-meta">${v.device} - ${v.browser} ${v.country ? '- ' + v.country : ''}</div>
+                            </div>
+                            <div class="visitor-duration">${v.duration}s</div>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) {}
+        }
+
+        function copyEmbed() {
+            const el = document.getElementById('embedCode');
+            navigator.clipboard.writeText(el.textContent);
+            el.querySelector('.copy-hint').textContent = 'Copie !';
+            setTimeout(() => { el.querySelector('.copy-hint').textContent = 'Cliquer pour copier'; }, 2000);
+        }
+
+        // Load embed code
+        document.getElementById('embedCode').innerHTML = `<span class="copy-hint">Cliquer pour copier</span>&lt;script src="${window.location.origin}/api/tracking/embed/${user.id}"&gt;&lt;/script&gt;`;
+
+        loadStats('30d');
+        loadRealtime();
+        setInterval(loadRealtime, 5000);
+    </script>
+</body>
+</html>

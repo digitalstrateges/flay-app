@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flay - Analytics</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0a0a1a; --card: #15152a; --border: #252545; --accent: #667eea; --text: #fff; --text2: #a0a0c0; --gradient: linear-gradient(135deg, #667eea, #764ba2); --gold: #ffd700; --success: #4ade80; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: var(--card); border-bottom: 1px solid var(--border); }
+        .topbar-brand { font-size: 24px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .topbar-nav { display: flex; gap: 8px; }
+        .topbar-nav a { padding: 8px 16px; border-radius: 8px; color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500; }
+        .topbar-nav a:hover, .topbar-nav a.active { color: var(--text); background: rgba(102,126,234,0.15); }
+        .main { max-width: 1200px; margin: 0 auto; padding: 32px; }
+        h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+        .subtitle { color: var(--text2); margin-bottom: 32px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 32px; }
+        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; text-align: center; }
+        .stat-icon { font-size: 28px; margin-bottom: 8px; }
+        .stat-value { font-size: 28px; font-weight: 800; }
+        .stat-label { font-size: 12px; color: var(--text2); margin-top: 4px; }
+        .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 24px; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+        .card-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+        .chart-container { position: relative; height: 200px; display: flex; align-items: flex-end; gap: 4px; padding-top: 20px; }
+        .chart-bar { flex: 1; background: var(--gradient); border-radius: 4px 4px 0 0; min-height: 4px; position: relative; transition: height 0.5s ease; }
+        .chart-bar:hover { opacity: 0.8; }
+        .chart-bar .tooltip { display: none; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); background: var(--card); border: 1px solid var(--border); padding: 6px 10px; border-radius: 6px; font-size: 11px; white-space: nowrap; z-index: 10; }
+        .chart-bar:hover .tooltip { display: block; }
+        .chart-labels { display: flex; gap: 4px; margin-top: 8px; }
+        .chart-labels span { flex: 1; text-align: center; font-size: 10px; color: var(--text2); }
+        .insight-item { display: flex; gap: 12px; padding: 12px; border-radius: 8px; margin-bottom: 8px; }
+        .insight-item.success { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.2); }
+        .insight-item.info { background: rgba(102,126,234,0.1); border: 1px solid rgba(102,126,234,0.2); }
+        .insight-item.suggestion { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2); }
+        .insight-icon { font-size: 24px; }
+        .insight-title { font-weight: 700; font-size: 14px; }
+        .insight-msg { font-size: 13px; color: var(--text2); }
+        .referrers-list { list-style: none; }
+        .referrers-list li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+        .devices-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .device-card { background: var(--bg); border-radius: 8px; padding: 16px; text-align: center; }
+        .device-icon { font-size: 28px; margin-bottom: 4px; }
+        .device-value { font-size: 20px; font-weight: 700; }
+        .device-label { font-size: 11px; color: var(--text2); }
+        .period-tabs { display: flex; gap: 4px; margin-bottom: 24px; }
+        .period-tab { padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; background: var(--card); color: var(--text2); border: 1px solid var(--border); }
+        .period-tab.active { background: var(--gradient); color: white; border-color: transparent; }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .grid-2 { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-brand">Flay</div>
+        <div class="topbar-nav">
+            <a href="/dashboard.html">Dashboard</a>
+            <a href="/editor.html">Editeur</a>
+            <a href="/studio.html">Studio</a>
+            <a href="/analytics.html" class="active">Analytics</a>
+        </div>
+    </div>
+    <div class="main">
+        <h1>Analytics</h1>
+        <p class="subtitle">Suivez les performances de votre profil en temps reel</p>
+
+        <div class="period-tabs">
+            <div class="period-tab active" onclick="loadData('7d')">7 jours</div>
+            <div class="period-tab" onclick="loadData('30d')">30 jours</div>
+            <div class="period-tab" onclick="loadData('90d')">90 jours</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div><div class="stat-value" id="sViews">0</div><div class="stat-label">Vues totales</div></div>
+            <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div><div class="stat-value" id="sClicks">0</div><div class="stat-label">Clics</div></div>
+            <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div class="stat-value" id="sRes">0</div><div class="stat-label">Reservations</div></div>
+            <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div><div class="stat-value" id="sShare">0</div><div class="stat-label">Partages</div></div>
+            <div class="stat-card"><div class="stat-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg></div><div class="stat-value" id="sCTR">0%</div><div class="stat-label">Taux de clic</div></div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg> Vues des 30 derniers jours</div>
+                <div class="chart-container" id="chart"></div>
+                <div class="chart-labels" id="chartLabels"></div>
+            </div>
+            <div class="card">
+                <div class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg> Insights IA</div>
+                <div id="insightsList"></div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Referrers</div>
+                <ul class="referrers-list" id="referrersList"><li style="color:var(--text2)">Aucune donnee</li></ul>
+            </div>
+            <div class="card">
+                <div class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> Appareils</div>
+                <div class="devices-grid" id="devicesGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('flay_token');
+        if (!token) window.location.href = '/login.html';
+
+        async function loadData(period = '30d') {
+            document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+            event?.target?.classList?.add('active');
+            try {
+                const res = await fetch(`/api/analytics?period=${period}`, { headers: { 'Authorization': 'Bearer ' + token } });
+                if (!res.ok) return;
+                const data = await res.json();
+                document.getElementById('sViews').textContent = data.stats.totalViews || 0;
+                document.getElementById('sClicks').textContent = data.stats.totalClicks || 0;
+                document.getElementById('sRes').textContent = data.stats.totalReservations || 0;
+                document.getElementById('sShare').textContent = data.stats.totalShares || 0;
+                document.getElementById('sCTR').textContent = (data.stats.ctr || 0) + '%';
+
+                // Chart
+                const daily = data.stats.daily || [];
+                const maxVal = Math.max(...daily.map(d => d.views), 1);
+                const chart = document.getElementById('chart');
+                const labels = document.getElementById('chartLabels');
+                chart.innerHTML = daily.map(d => `<div class="chart-bar" style="height:${(d.views / maxVal) * 100}%"><div class="tooltip">${d.date}: ${d.views} vues</div></div>`).join('');
+                labels.innerHTML = daily.filter((_, i) => i % Math.ceil(daily.length / 7) === 0).map(d => `<span>${d.date.split('-').slice(1).join('/')}</span>`).join('');
+
+                // Insights
+                const insightsList = document.getElementById('insightsList');
+                if (data.insights?.length) {
+                    insightsList.innerHTML = data.insights.map(i => `<div class="insight-item ${i.type}"><div class="insight-icon">${i.icon}</div><div><div class="insight-title">${i.title}</div><div class="insight-msg">${i.message}</div></div></div>`).join('');
+                }
+
+                // Referrers
+                const refList = document.getElementById('referrersList');
+                if (data.referrers?.length) {
+                    refList.innerHTML = data.referrers.map(r => `<li><span>${r.name}</span><strong>${r.count}</strong></li>`).join('');
+                }
+
+                // Devices
+                const devGrid = document.getElementById('devicesGrid');
+                const devices = data.devices || {};
+                devGrid.innerHTML = `
+                    <div class="device-card"><div class="device-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div><div class="device-value">${devices.mobile || 0}</div><div class="device-label">Mobile</div></div>
+                    <div class="device-card"><div class="device-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div class="device-value">${devices.desktop || 0}</div><div class="device-label">Desktop</div></div>
+                    <div class="device-card"><div class="device-icon">&#128218;</div><div class="device-value">${devices.tablet || 0}</div><div class="device-label">Tablette</div></div>
+                    <div class="device-card"><div class="device-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="1"/></svg></div><div class="device-value">${devices.other || 0}</div><div class="device-label">Autre</div></div>
+                `;
+            } catch(e) { console.error(e); }
+        }
+        loadData('30d');
+    </script>
+</body>
+</html>

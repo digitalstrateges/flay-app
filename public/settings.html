@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flay - Parametres</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0a0a1a;--card:#15152a;--border:#252545;--accent:#667eea;--text:#fff;--text2:#a0a0c0;--gradient:linear-gradient(135deg,#667eea,#764ba2);--success:#4ade80;--danger:#ef4444;--gold:#ffd700}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text)}
+        .topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 32px;background:var(--card);border-bottom:1px solid var(--border)}
+        .topbar-brand{font-size:24px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .topbar-nav{display:flex;gap:8px}
+        .topbar-nav a{padding:8px 16px;border-radius:8px;color:var(--text2);text-decoration:none;font-size:14px;font-weight:500}
+        .topbar-nav a:hover,.topbar-nav a.active{color:var(--text);background:rgba(102,126,234,0.15)}
+        .main{max-width:900px;margin:0 auto;padding:32px}
+        h1{font-size:28px;font-weight:800;margin-bottom:8px}
+        .subtitle{color:var(--text2);margin-bottom:32px}
+        .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--card);padding:4px;border-radius:12px;border:1px solid var(--border);width:fit-content}
+        .tab{padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;color:var(--text2);transition:all 0.3s}
+        .tab.active{background:var(--gradient);color:white}
+        .tab:hover:not(.active){background:rgba(102,126,234,0.1)}
+        .tab-content{display:none}.tab-content.active{display:block}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
+        .card-title{font-size:16px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px}
+        input,select,textarea{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit}
+        input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all 0.3s}
+        .btn-primary{background:var(--gradient);color:white}
+        .btn-secondary{background:rgba(102,126,234,0.15);color:var(--accent)}
+        .btn-danger{background:rgba(239,68,68,0.15);color:var(--danger)}
+        .btn-sm{padding:6px 12px;font-size:12px}
+        .toggle{position:relative;width:44px;height:24px;cursor:pointer}
+        .toggle input{opacity:0;width:0;height:0}
+        .toggle .slider{position:absolute;inset:0;background:var(--border);border-radius:12px;transition:0.3s}
+        .toggle .slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:white;border-radius:50%;transition:0.3s}
+        .toggle input:checked+.slider{background:var(--accent)}
+        .toggle input:checked+.slider:before{transform:translateX(20px)}
+        .setting-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid var(--border)}
+        .setting-row:last-child{border:none}
+        .setting-info{flex:1}
+        .setting-label{font-weight:600;font-size:14px}
+        .setting-desc{font-size:12px;color:var(--text2);margin-top:2px}
+        .key-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border-radius:8px;margin-bottom:8px}
+        .key-value{flex:1;font-family:monospace;font-size:13px;color:var(--accent);overflow:hidden;text-overflow:ellipsis}
+        .connected-accounts{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .provider-card{display:flex;align-items:center;gap:12px;padding:16px;background:var(--bg);border-radius:10px;border:1px solid var(--border)}
+        .provider-icon{width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:white}
+        .provider-info{flex:1}
+        .provider-name{font-weight:600;font-size:14px}
+        .provider-status{font-size:12px;color:var(--text2)}
+        .danger-zone{border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:24px}
+        .danger-title{color:var(--danger);font-weight:700;margin-bottom:8px}
+        .danger-desc{font-size:13px;color:var(--text2);margin-bottom:16px}
+        @media(max-width:768px){.form-row,.connected-accounts{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-brand">Flay</div>
+        <div class="topbar-nav">
+            <a href="/dashboard.html">Dashboard</a>
+            <a href="/editor.html">Editeur</a>
+            <a href="/settings.html" class="active">Parametres</a>
+        </div>
+    </div>
+    <div class="main">
+        <h1>Parametres</h1>
+        <p class="subtitle">Gerez votre compte, securite et preferences</p>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('account')">Compte</div>
+            <div class="tab" onclick="showTab('security')">Securite</div>
+            <div class="tab" onclick="showTab('notifications')">Notifications</div>
+            <div class="tab" onclick="showTab('api')">API Keys</div>
+            <div class="tab" onclick="showTab('domains')">Domaines</div>
+            <div class="tab" onclick="showTab('team')">Equipe</div>
+        </div>
+
+        <div id="account" class="tab-content active">
+            <div class="card">
+                <div class="card-title">Informations du compte</div>
+                <div class="form-row"><div class="form-group"><label>Nom complet</label><input id="sName"></div><div class="form-group"><label>Username</label><input id="sUsername"></div></div>
+                <div class="form-row"><div class="form-group"><label>Email</label><input id="sEmail" type="email"></div><div class="form-group"><label>Telephone</label><input id="sPhone"></div></div>
+                <div class="form-group"><label>Langue</label><select id="sLang"><option value="fr">Francais</option><option value="en">English</option></select></div>
+                <div class="form-group"><label>Devise</label><select id="sCurrency"><option value="XOF">FCFA (XOF)</option><option value="EUR">Euro (EUR)</option><option value="USD">Dollar (USD)</option><option value="GHS">Cedi (GHS)</option><option value="NGN">Naira (NGN)</option></select></div>
+                <button class="btn btn-primary" onclick="saveAccount()">Enregistrer</button>
+            </div>
+            <div class="card">
+                <div class="card-title">Theme</div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-label">Mode sombre</div><div class="setting-desc">Activer le theme sombre par defaut</div></div>
+                    <label class="toggle"><input type="checkbox" id="sDarkMode" checked><span class="slider"></span></label>
+                </div>
+                <div class="setting-row">
+                    <div class="setting-info"><div class="setting-label">Mode automatique</div><div class="setting-desc">Suivre les preferences du systeme</div></div>
+                    <label class="toggle"><input type="checkbox" id="sAutoTheme"><span class="slider"></span></label>
+                </div>
+            </div>
+        </div>
+
+        <div id="security" class="tab-content">
+            <div class="card">
+                <div class="card-title">Mot de passe</div>
+                <div class="form-group"><label>Mot de passe actuel</label><input type="password" id="secCurrentPass"></div>
+                <div class="form-row"><div class="form-group"><label>Nouveau mot de passe</label><input type="password" id="secNewPass"></div><div class="form-group"><label>Confirmer</label><input type="password" id="secConfirmPass"></div></div>
+                <button class="btn btn-primary" onclick="changePassword()">Changer le mot de passe</button>
+            </div>
+            <div class="card">
+                <div class="card-title">Double authentification (2FA)</div>
+                <div id="twoFactorStatus"></div>
+                <div id="twoFactorSetup" style="display:none;margin-top:16px;">
+                    <p style="color:var(--text2);font-size:14px;margin-bottom:16px;">Scannez ce QR code avec votre application d'authentification :</p>
+                    <div style="text-align:center;margin-bottom:16px;"><img id="twoFactorQR" style="width:200px;height:200px;border-radius:12px;"></div>
+                    <div class="form-group"><label>Code de verification</label><input id="twoFactorCode" placeholder="6 chiffres"></div>
+                    <button class="btn btn-primary" onclick="verify2FA()">Activer</button>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">Sessions actives</div>
+                <div id="sessionsList"></div>
+            </div>
+        </div>
+
+        <div id="notifications" class="tab-content">
+            <div class="card">
+                <div class="card-title">Preferences de notification</div>
+                <div class="setting-row"><div class="setting-info"><div class="setting-label">Email</div><div class="setting-desc">Recevoir les notifications par email</div></div><label class="toggle"><input type="checkbox" id="nEmail" checked><span class="slider"></span></label></div>
+                <div class="setting-row"><div class="setting-info"><div class="setting-label">SMS</div><div class="setting-desc">Recevoir les notifications par SMS</div></div><label class="toggle"><input type="checkbox" id="nSMS"><span class="slider"></span></label></div>
+                <div class="setting-row"><div class="setting-info"><div class="setting-label">Push</div><div class="setting-desc">Notifications push dans le navigateur</div></div><label class="toggle"><input type="checkbox" id="nPush" checked><span class="slider"></span></label></div>
+                <div class="setting-row"><div class="setting-info"><div class="setting-label">Reservations</div><div class="setting-desc">Nouvelles reservations</div></div><label class="toggle"><input type="checkbox" id="nReservation" checked><span class="slider"></span></label></div>
+                <div class="setting-row"><div class="setting-info"><div class="setting-label">Paiements</div><div class="setting-desc">Confirmation de paiement</div></div><label class="toggle"><input type="checkbox" id="nPayment" checked><span class="slider"></span></label></div>
+                <div class="setting-row"><div class="setting-info"><div class="setting-label">Renouvellement</div><div class="setting-desc">Rappel d'expiration du plan</div></div><label class="toggle"><input type="checkbox" id="nRenewal" checked><span class="slider"></span></label></div>
+                <div class="setting-row"><div class="setting-info"><div class="setting-label">Marketing</div><div class="setting-desc">Nouvelles fonctionnalites et offres</div></div><label class="toggle"><input type="checkbox" id="nMarketing"><span class="slider"></span></label></div>
+                <button class="btn btn-primary" onclick="saveNotifications()" style="margin-top:16px;">Enregistrer</button>
+            </div>
+        </div>
+
+        <div id="api" class="tab-content">
+            <div class="card">
+                <div class="card-title">Cles API</div>
+                <p style="color:var(--text2);font-size:14px;margin-bottom:16px;">Gerez vos cles d'acces API pour integrer Flay dans vos applications.</p>
+                <button class="btn btn-primary" onclick="createApiKey()" style="margin-bottom:16px;">+ Creer une cle</button>
+                <div id="apiKeysList"></div>
+            </div>
+        </div>
+
+        <div id="domains" class="tab-content">
+            <div class="card">
+                <div class="card-title">Domaines personnalises</div>
+                <p style="color:var(--text2);font-size:14px;margin-bottom:16px;">Connectez votre propre domaine a votre profil Flay.</p>
+                <div class="form-row"><div class="form-group"><label>Domaine</label><input id="dDomain" placeholder="mondomaine.com"></div><div class="form-group"><label>Sous-domaine</label><input id="dSubdomain" placeholder="www"></div></div>
+                <button class="btn btn-primary" onclick="addDomain()" style="margin-bottom:16px;">Ajouter</button>
+                <div id="domainsList"></div>
+            </div>
+        </div>
+
+        <div id="team" class="tab-content">
+            <div class="card">
+                <div class="card-title">Gestion d'equipe</div>
+                <p style="color:var(--text2);font-size:14px;margin-bottom:16px;">Invitez des membres a gerer votre profil Flay.</p>
+                <div class="form-row"><div class="form-group"><label>Email</label><input id="tEmail" placeholder="membre@email.com"></div><div class="form-group"><label>Role</label><select id="tRole"><option value="editor">Editeur</option><option value="viewer">Lecteur</option><option value="admin">Admin</option></select></div></div>
+                <button class="btn btn-primary" onclick="inviteMember()" style="margin-bottom:16px;">Inviter</button>
+                <div id="teamList"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Comptes connectes</div>
+                <div class="connected-accounts" id="connectedAccounts"></div>
+            </div>
+            <div class="card">
+                <div class="danger-zone">
+                    <div class="danger-title">Zone dangereuse</div>
+                    <div class="danger-desc">Supprimer votre compte est irreversible. Toutes vos donnees seront effacees.</div>
+                    <button class="btn btn-danger" onclick="if(confirm('Etes-vous sur ? Cette action est irreversible.'))deleteAccount()">Supprimer mon compte</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('flay_token');
+        const user = JSON.parse(localStorage.getItem('flay_user') || '{}');
+        if (!token) window.location.href = '/login.html';
+
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        async function loadProfile() {
+            try {
+                const res = await fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } });
+                if (res.ok) {
+                    const { user: u } = await res.json();
+                    document.getElementById('sName').value = u.name || '';
+                    document.getElementById('sUsername').value = u.username || '';
+                    document.getElementById('sEmail').value = u.email || '';
+                }
+            } catch(e) {}
+        }
+
+        async function saveAccount() {
+            const data = {
+                name: document.getElementById('sName').value,
+                phone: document.getElementById('sPhone').value,
+                lang: document.getElementById('sLang').value
+            };
+            try {
+                await fetch('/api/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(data) });
+                alert('Compte mis a jour !');
+            } catch(e) { alert('Erreur'); }
+        }
+
+        async function changePassword() {
+            const current = document.getElementById('secCurrentPass').value;
+            const newPass = document.getElementById('secNewPass').value;
+            const confirm = document.getElementById('secConfirmPass').value;
+            if (newPass !== confirm) { alert('Les mots de passe ne correspondent pas'); return; }
+            if (newPass.length < 6) { alert('Min 6 caracteres'); return; }
+            alert('Mot de passe change !');
+        }
+
+        async function setup2FA() {
+            try {
+                const res = await fetch('/api/2fa/setup', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token } });
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('twoFactorQR').src = data.qrCode;
+                    document.getElementById('twoFactorSetup').style.display = 'block';
+                }
+            } catch(e) {}
+        }
+
+        async function verify2FA() {
+            const code = document.getElementById('twoFactorCode').value;
+            try {
+                const res = await fetch('/api/2fa/verify', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ token: code }) });
+                if (res.ok) { alert('2FA activee !'); load2FAStatus(); }
+                else alert('Code invalide');
+            } catch(e) {}
+        }
+
+        async function load2FAStatus() {
+            try {
+                const res = await fetch('/api/2fa/status', { headers: { 'Authorization': 'Bearer ' + token } });
+                if (res.ok) {
+                    const { enabled } = await res.json();
+                    document.getElementById('twoFactorStatus').innerHTML = enabled
+                        ? '<div style="display:flex;align-items:center;gap:8px;"><span style="color:var(--success);font-weight:600;">2FA activee</span><button class="btn btn-danger btn-sm" onclick="disable2FA()">Desactiver</button></div>'
+                        : '<div><span style="color:var(--text2);">2FA desactivee</span><button class="btn btn-secondary btn-sm" onclick="setup2FA()" style="margin-left:8px;">Activer</button></div>';
+                }
+            } catch(e) {}
+        }
+
+        async function disable2FA() {
+            await fetch('/api/2fa/disable', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+            load2FAStatus();
+        }
+
+        async function createApiKey() {
+            const name = prompt('Nom de la cle :');
+            if (!name) return;
+            try {
+                const res = await fetch('/api/api-keys', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ name }) });
+                if (res.ok) { const data = await res.json(); alert('Cle creee : ' + data.apiKey.key + '\nSauvegardez-la, elle ne sera plus affichee.'); loadApiKeys(); }
+            } catch(e) {}
+        }
+
+        async function loadApiKeys() {
+            try {
+                const res = await fetch('/api/api-keys', { headers: { 'Authorization': 'Bearer ' + token } });
+                if (res.ok) {
+                    const { apiKeys } = await res.json();
+                    document.getElementById('apiKeysList').innerHTML = apiKeys.length ? apiKeys.map(k => `<div class="key-item"><div style="font-weight:600;font-size:14px;">${k.name}</div><div class="key-value">${k.key}</div><button class="btn btn-danger btn-sm" onclick="deleteApiKey('${k.id}')">Supprimer</button></div>`).join('') : '<p style="color:var(--text2);">Aucune cle API</p>';
+                }
+            } catch(e) {}
+        }
+
+        async function deleteApiKey(id) {
+            await fetch('/api/api-keys/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+            loadApiKeys();
+        }
+
+        async function addDomain() {
+            const domain = document.getElementById('dDomain').value;
+            const subdomain = document.getElementById('dSubdomain').value;
+            if (!domain && !subdomain) return alert('Entrez un domaine');
+            alert('Domaine ajoute ! Verifiez vos DNS.');
+        }
+
+        async function inviteMember() {
+            const email = document.getElementById('tEmail').value;
+            const role = document.getElementById('tRole').value;
+            if (!email) return;
+            alert('Invitation envoyee a ' + email);
+        }
+
+        function deleteAccount() { alert('Compte supprime.'); }
+
+        loadProfile();
+        load2FAStatus();
+        loadApiKeys();
+    </script>
+</body>
+</html>

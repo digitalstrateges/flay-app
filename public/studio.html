@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flay - Studio Design</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0a0a1a; --card: #15152a; --border: #252545; --accent: #667eea; --text: #fff; --text2: #a0a0c0; --gradient: linear-gradient(135deg, #667eea, #764ba2); --gold: #ffd700; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: var(--card); border-bottom: 1px solid var(--border); }
+        .topbar-brand { font-size: 24px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .topbar-nav { display: flex; gap: 8px; }
+        .topbar-nav a { padding: 8px 16px; border-radius: 8px; color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.3s; }
+        .topbar-nav a:hover, .topbar-nav a.active { color: var(--text); background: rgba(102,126,234,0.15); }
+        .main { max-width: 1200px; margin: 0 auto; padding: 32px; }
+        h1 { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+        .subtitle { color: var(--text2); margin-bottom: 32px; }
+        .tabs { display: flex; gap: 4px; margin-bottom: 32px; background: var(--card); padding: 4px; border-radius: 12px; border: 1px solid var(--border); }
+        .tab { flex: 1; padding: 12px; text-align: center; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.3s; }
+        .tab.active { background: var(--gradient); color: white; }
+        .tab:hover:not(.active) { background: rgba(102,126,234,0.1); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin-bottom: 24px; }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+        .upload-zone { border: 2px dashed var(--border); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .upload-zone:hover { border-color: var(--accent); background: rgba(102,126,234,0.05); }
+        .upload-icon { font-size: 48px; margin-bottom: 12px; }
+        .upload-text { color: var(--text2); font-size: 14px; }
+        .preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 20px; }
+        .preview-item { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 1; border: 2px solid var(--border); }
+        .preview-item img { width: 100%; height: 100%; object-fit: cover; }
+        .preview-remove { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; background: rgba(239,68,68,0.9); color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 14px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; font-family: inherit; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--accent); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: var(--gradient); color: white; }
+        .btn-secondary { background: rgba(102,126,234,0.15); color: var(--accent); }
+        .btn-gold { background: rgba(255,215,0,0.15); color: var(--gold); }
+        .card-preview { background: #1a1a2e; border-radius: 16px; padding: 32px; text-align: center; margin-bottom: 24px; border: 1px solid var(--border); }
+        .card-preview h3 { margin-bottom: 16px; }
+        .theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+        .theme-card { padding: 16px; border-radius: 10px; text-align: center; cursor: pointer; border: 2px solid var(--border); transition: all 0.3s; }
+        .theme-card.selected { border-color: var(--accent); }
+        .theme-card:hover { transform: translateY(-2px); }
+        .theme-name { font-size: 13px; font-weight: 600; margin-top: 8px; }
+        .location-map { width: 100%; height: 300px; border-radius: 12px; border: 1px solid var(--border); margin-top: 12px; }
+        .actions { display: flex; gap: 12px; margin-top: 24px; }
+        @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .topbar { flex-direction: column; gap: 12px; } }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-brand">Flay</div>
+        <div class="topbar-nav">
+            <a href="/dashboard.html">Dashboard</a>
+            <a href="/editor.html">Editeur</a>
+            <a href="/studio.html" class="active">Studio</a>
+            <a href="/analytics.html">Analytics</a>
+        </div>
+    </div>
+    <div class="main">
+        <h1>Studio Design</h1>
+        <p class="subtitle">Gerez vos images, logo, signature, geolocalisation et site vitrine</p>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('images')">Images</div>
+            <div class="tab" onclick="showTab('logo')">Logo</div>
+            <div class="tab" onclick="showTab('signature')">Signature</div>
+            <div class="tab" onclick="showTab('geo')">Geoloc</div>
+            <div class="tab" onclick="showTab('vitrine')">Site Vitrine</div>
+            <div class="tab" onclick="showTab('card')">Carte PDF</div>
+        </div>
+
+        <div id="images" class="tab-content active">
+            <div class="card">
+                <div class="card-title">Photo de profil & Banniere</div>
+                <div class="upload-zone" onclick="document.getElementById('avatarInput').click()">
+                    <div class="upload-icon">&#128247;</div>
+                    <div class="upload-text">Cliquez pour uploader votre photo de profil<br><small>JPG, PNG, WebP - Max 5MB</small></div>
+                    <input type="file" id="avatarInput" accept="image/*" style="display:none" onchange="handleUpload(this, 'avatar')">
+                </div>
+                <div class="preview-grid" id="avatarPreview"></div>
+            </div>
+            <div class="card">
+                <div class="card-title">Galerie photos</div>
+                <div class="upload-zone" onclick="document.getElementById('galleryInput').click()">
+                    <div class="upload-icon">&#127912;</div>
+                    <div class="upload-text">Ajoutez des photos a votre galerie<br><small>Jusqu'a 10 images</small></div>
+                    <input type="file" id="galleryInput" accept="image/*" multiple style="display:none" onchange="handleUpload(this, 'gallery')">
+                </div>
+                <div class="preview-grid" id="galleryPreview"></div>
+            </div>
+        </div>
+
+        <div id="logo" class="tab-content">
+            <div class="card">
+                <div class="card-title">Logo de l'entreprise</div>
+                <div class="upload-zone" onclick="document.getElementById('logoInput').click()">
+                    <div class="upload-icon">&#128194;</div>
+                    <div class="upload-text">Upload votre logo<br><small>PNG, SVG - Fond transparent recommande</small></div>
+                    <input type="file" id="logoInput" accept="image/*" style="display:none" onchange="handleUpload(this, 'logo')">
+                </div>
+                <div class="preview-grid" id="logoPreview"></div>
+            </div>
+        </div>
+
+        <div id="signature" class="tab-content">
+            <div class="card">
+                <div class="card-title">Signature manuscrite</div>
+                <div class="upload-zone" onclick="document.getElementById('signatureInput').click()">
+                    <div class="upload-icon">&#9997;</div>
+                    <div class="upload-text">Upload votre signature<br><small>Fond blanc, JPG/PNG</small></div>
+                    <input type="file" id="signatureInput" accept="image/*" style="display:none" onchange="handleUpload(this, 'signature')">
+                </div>
+                <div class="preview-grid" id="signaturePreview"></div>
+            </div>
+        </div>
+
+        <div id="geo" class="tab-content">
+            <div class="card">
+                <div class="card-title">Géolocalisation</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Latitude</label>
+                        <input type="number" id="geoLat" step="any" placeholder="5.3600" value="5.3600">
+                    </div>
+                    <div class="form-group">
+                        <label>Longitude</label>
+                        <input type="number" id="geoLng" step="any" placeholder="-4.0083" value="-4.0083">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="geoAddress" placeholder="123 Rue de la Paix, Plateau">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Ville</label>
+                        <input type="text" id="geoCity" placeholder="Abidjan">
+                    </div>
+                    <div class="form-group">
+                        <label>Pays</label>
+                        <input type="text" id="geoCountry" placeholder="Cote d'Ivoire" value="Cote d'Ivoire">
+                    </div>
+                </div>
+                <div id="geoMap" class="location-map"></div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="saveGeo()">Enregistrer la position</button>
+                    <button class="btn btn-secondary" onclick="getMyLocation()">Ma position actuelle</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="vitrine" class="tab-content">
+            <div class="card">
+                <div class="card-title">Site Vitrine Personnalise</div>
+                <p style="color:var(--text2);margin-bottom:20px;">Votre site vitrine est genere automatiquement a partir de votre profil. Personnalisez-le ici.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Theme</label>
+                        <select id="vitrineTheme">
+                            <option value="dark">Dark</option>
+                            <option value="light">Light</option>
+                            <option value="midnight">Midnight</option>
+                            <option value="emerald">Emerald</option>
+                            <option value="ocean">Ocean</option>
+                            <option value="sunset">Sunset</option>
+                            <option value="electric">Electric</option>
+                            <option value="rose">Rose</option>
+                            <option value="forest">Forest</option>
+                            <option value="gold">Gold</option>
+                            <option value="aurora">Aurora</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Langue</label>
+                        <select id="vitrineLang">
+                            <option value="fr">Francais</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>CSS Personnalise (Premium)</label>
+                    <textarea id="customCss" rows="4" placeholder=".hero { background: #000; }" style="font-family: monospace;"></textarea>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="previewVitrine()">Apercu du site</button>
+                    <button class="btn btn-gold" onclick="saveVitrine()">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="card" class="tab-content">
+            <div class="card">
+                <div class="card-title">Carte de visite PDF</div>
+                <p style="color:var(--text2);margin-bottom:20px;">Generez votre carte de visite physique en PDF intelligente (recto/verso). Format 85x55mm.</p>
+                <div class="card-preview" id="cardPreview">
+                    <h3>Apercu de la carte</h3>
+                    <p style="color:var(--text2);font-size:14px;">La carte sera generee a partir de vos donnees de profil</p>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Theme de la carte</label>
+                        <select id="cardTheme">
+                            <option value="dark">Dark</option>
+                            <option value="light">Light</option>
+                            <option value="midnight">Midnight</option>
+                            <option value="emerald">Emerald</option>
+                            <option value="ocean">Ocean</option>
+                            <option value="sunset">Sunset</option>
+                            <option value="electric">Electric</option>
+                            <option value="rose">Rose</option>
+                            <option value="forest">Forest</option>
+                            <option value="gold">Gold</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre d'exemplaires</label>
+                        <input type="number" id="cardCopies" value="10" min="1" max="100">
+                    </div>
+                </div>
+                <div class="actions">
+                    <button class="btn btn-primary" onclick="generateCard()">Generer la carte PDF</button>
+                    <button class="btn btn-secondary" onclick="window.open('/api/card/print-preview', '_blank')">Imprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('flay_token');
+        if (!token) window.location.href = '/login.html';
+
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        function handleUpload(input, type) {
+            const files = input.files;
+            if (!files.length) return;
+            const container = document.getElementById(type === 'avatar' ? 'avatarPreview' : type === 'gallery' ? 'galleryPreview' : type === 'logo' ? 'logoPreview' : 'signaturePreview');
+            Array.from(files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const div = document.createElement('div');
+                    div.className = 'preview-item';
+                    div.innerHTML = `<img src="${e.target.result}"><button class="preview-remove" onclick="this.parentElement.remove()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`;
+                    container.appendChild(div);
+                    const field = type === 'avatar' ? 'avatar' : type === 'logo' ? 'logo' : 'signature';
+                    if (type !== 'gallery') saveImage(e.target.result, field);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function saveImage(dataUrl, field) {
+            try {
+                await fetch('/api/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ [field]: dataUrl })
+                });
+            } catch(e) { console.error(e); }
+        }
+
+        async function saveGeo() {
+            const data = {
+                latitude: document.getElementById('geoLat').value,
+                longitude: document.getElementById('geoLng').value,
+                address: document.getElementById('geoAddress').value,
+                city: document.getElementById('geoCity').value,
+                country: document.getElementById('geoCountry').value
+            };
+            try {
+                const res = await fetch('/api/profile/geo', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) alert('Position enregistree !');
+            } catch(e) { alert('Erreur'); }
+        }
+
+        function getMyLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    document.getElementById('geoLat').value = pos.coords.latitude.toFixed(4);
+                    document.getElementById('geoLng').value = pos.coords.longitude.toFixed(4);
+                });
+            }
+        }
+
+        function previewVitrine() {
+            const user = JSON.parse(localStorage.getItem('flay_user') || '{}');
+            window.open('/p/' + user.username, '_blank');
+        }
+
+        async function saveVitrine() {
+            const data = {
+                theme: document.getElementById('vitrineTheme').value,
+                customCss: document.getElementById('customCss').value
+            };
+            try {
+                const res = await fetch('/api/profile', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) alert('Site vitrine mis a jour !');
+            } catch(e) { alert('Erreur'); }
+        }
+
+        async function generateCard() {
+            const data = {
+                theme: document.getElementById('cardTheme').value,
+                copies: parseInt(document.getElementById('cardCopies').value)
+            };
+            try {
+                const res = await fetch('/api/card/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    const result = await res.json();
+                    alert(`Carte generee ! ${result.copies} exemplaires.`);
+                }
+            } catch(e) { alert('Erreur'); }
+        }
+
+        // Load profile data
+        (async () => {
+            const user = JSON.parse(localStorage.getItem('flay_user') || '{}');
+            if (user.username) {
+                try {
+                    const res = await fetch('/api/profile/' + user.username, { headers: { 'Authorization': 'Bearer ' + token } });
+                    if (res.ok) {
+                        const { profile } = await res.json();
+                        if (profile?.avatar) document.getElementById('avatarPreview').innerHTML = `<div class="preview-item"><img src="${profile.avatar}"></div>`;
+                        if (profile?.logo) document.getElementById('logoPreview').innerHTML = `<div class="preview-item"><img src="${profile.logo}"></div>`;
+                        if (profile?.signature) document.getElementById('signaturePreview').innerHTML = `<div class="preview-item"><img src="${profile.signature}"></div>`;
+                        if (profile?.geoLocation) {
+                            document.getElementById('geoLat').value = profile.geoLocation.latitude;
+                            document.getElementById('geoLng').value = profile.geoLocation.longitude;
+                            document.getElementById('geoAddress').value = profile.geoLocation.address || '';
+                            document.getElementById('geoCity').value = profile.geoLocation.city || '';
+                        }
+                        if (profile?.customCss) document.getElementById('customCss').value = profile.customCss;
+                    }
+                } catch(e) {}
+            }
+        })();
+    </script>
+</body>
+</html>

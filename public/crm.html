@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flay - CRM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root{--bg:#0a0a1a;--card:#15152a;--border:#252545;--accent:#667eea;--text:#fff;--text2:#a0a0c0;--gradient:linear-gradient(135deg,#667eea,#764ba2);--success:#4ade80;--danger:#ef4444;--gold:#ffd700}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text)}
+        .topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 32px;background:var(--card);border-bottom:1px solid var(--border)}
+        .topbar-brand{font-size:24px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .topbar-nav{display:flex;gap:8px}
+        .topbar-nav a{padding:8px 16px;border-radius:8px;color:var(--text2);text-decoration:none;font-size:14px;font-weight:500}
+        .topbar-nav a:hover,.topbar-nav a.active{color:var(--text);background:rgba(102,126,234,0.15)}
+        .main{max-width:1400px;margin:0 auto;padding:32px}
+        h1{font-size:28px;font-weight:800;margin-bottom:8px}
+        .subtitle{color:var(--text2);margin-bottom:32px}
+        .tabs{display:flex;gap:4px;margin-bottom:24px;background:var(--card);padding:4px;border-radius:12px;border:1px solid var(--border);width:fit-content}
+        .tab{padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;font-size:14px;color:var(--text2);transition:all 0.3s}
+        .tab.active{background:var(--gradient);color:white}
+        .tab:hover:not(.active){background:rgba(102,126,234,0.1)}
+        .tab-content{display:none}.tab-content.active{display:block}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:24px}
+        .card-title{font-size:16px;font-weight:700;margin-bottom:16px}
+        .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+        .stat-value{font-size:28px;font-weight:800}
+        .stat-label{font-size:12px;color:var(--text2);margin-top:4px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+        .form-group{margin-bottom:12px}
+        .form-group label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px}
+        input,select,textarea{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-family:inherit}
+        input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:600;border:none;cursor:pointer;transition:all 0.3s}
+        .btn-primary{background:var(--gradient);color:white}
+        .btn-secondary{background:rgba(102,126,234,0.15);color:var(--accent)}
+        .btn-danger{background:rgba(239,68,68,0.15);color:var(--danger)}
+        .btn-sm{padding:6px 12px;font-size:12px}
+        .contact-list{max-height:500px;overflow-y:auto}
+        .contact-item{display:flex;align-items:center;gap:12px;padding:14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.2s}
+        .contact-item:hover{background:rgba(102,126,234,0.05)}
+        .contact-avatar{width:40px;height:40px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0}
+        .contact-info{flex:1}
+        .contact-name{font-weight:600;font-size:14px}
+        .contact-email{font-size:12px;color:var(--text2)}
+        .contact-status{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+        .status-lead{background:rgba(102,126,234,0.2);color:var(--accent)}
+        .status-prospect{background:rgba(251,191,36,0.2);color:var(--gold)}
+        .status-client{background:rgba(74,222,128,0.2);color:var(--success)}
+        .status-churned{background:rgba(239,68,68,0.2);color:var(--danger)}
+        .deal-item{display:flex;align-items:center;gap:16px;padding:14px;background:var(--bg);border-radius:8px;margin-bottom:8px}
+        .deal-name{flex:1;font-weight:600;font-size:14px}
+        .deal-value{font-weight:700;color:var(--gold)}
+        .deal-stage{padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;background:rgba(102,126,234,0.15);color:var(--accent)}
+        .pipeline-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+        .pipeline-col{background:var(--bg);border-radius:8px;padding:12px;min-height:200px}
+        .pipeline-header{font-size:12px;font-weight:700;text-transform:uppercase;color:var(--text2);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+        .pipeline-count{font-size:20px;font-weight:800;color:var(--accent)}
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:none;align-items:center;justify-content:center}
+        .modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto}
+        .modal-title{font-size:20px;font-weight:700;margin-bottom:20px}
+        .actions{display:flex;gap:12px;justify-content:flex-end;margin-top:20px}
+        .search-bar{display:flex;gap:8px;margin-bottom:24px}
+        .search-bar input{flex:1}
+        @media(max-width:900px){.stats-row{grid-template-columns:repeat(2,1fr)}.pipeline-grid{grid-template-columns:1fr 1fr}.form-row{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-brand">Flay</div>
+        <div class="topbar-nav">
+            <a href="/dashboard.html">Dashboard</a>
+            <a href="/editor.html">Editeur</a>
+            <a href="/studio.html">Studio</a>
+            <a href="/visitors.html">Visiteurs</a>
+            <a href="/crm.html" class="active">CRM</a>
+        </div>
+    </div>
+    <div class="main">
+        <h1>CRM - Gestion clients</h1>
+        <p class="subtitle">Gerez vos contacts, deals et pipeline de vente</p>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('contacts')">Contacts</div>
+            <div class="tab" onclick="showTab('deals')">Deals</div>
+            <div class="tab" onclick="showTab('pipeline')">Pipeline</div>
+            <div class="tab" onclick="showTab('invoices')">Factures</div>
+        </div>
+
+        <div id="contacts" class="tab-content active">
+            <div class="stats-row">
+                <div class="stat-card"><div class="stat-value" style="color:var(--accent)" id="crmTotal">0</div><div class="stat-label">Total contacts</div></div>
+                <div class="stat-card"><div class="stat-value" id="crmLeads">0</div><div class="stat-label">Leads</div></div>
+                <div class="stat-card"><div class="stat-value" style="color:var(--success)" id="crmClients">0</div><div class="stat-label">Clients</div></div>
+                <div class="stat-card"><div class="stat-value" style="color:var(--gold)" id="crmValue">0 FCFA</div><div class="stat-label">Valeur deals</div></div>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="searchContact" placeholder="Rechercher un contact..." oninput="filterContacts()">
+                <button class="btn btn-primary" onclick="openModal('addContact')">+ Ajouter</button>
+                <button class="btn btn-secondary" onclick="exportContacts()">Exporter CSV</button>
+            </div>
+            <div class="card">
+                <div class="contact-list" id="contactList"><div style="text-align:center;color:var(--text2);padding:40px;">Aucun contact</div></div>
+            </div>
+        </div>
+
+        <div id="deals" class="tab-content">
+            <div style="display:flex;gap:12px;margin-bottom:24px;">
+                <button class="btn btn-primary" onclick="openModal('addDeal')">+ Nouveau deal</button>
+            </div>
+            <div id="dealList"></div>
+        </div>
+
+        <div id="pipeline" class="tab-content">
+            <div class="pipeline-grid" id="pipelineGrid"></div>
+        </div>
+
+        <div id="invoices" class="tab-content">
+            <div style="display:flex;gap:12px;margin-bottom:24px;">
+                <button class="btn btn-primary" onclick="openModal('addInvoice')">+ Nouvelle facture</button>
+            </div>
+            <div class="stats-row">
+                <div class="stat-card"><div class="stat-value" id="invTotal">0</div><div class="stat-label">Factures</div></div>
+                <div class="stat-card"><div class="stat-value" style="color:var(--success)" id="invPaid">0</div><div class="stat-label">Payees</div></div>
+                <div class="stat-card"><div class="stat-value" style="color:var(--gold)" id="invPending">0</div><div class="stat-label">En attente</div></div>
+                <div class="stat-card"><div class="stat-value" id="invAmount">0 FCFA</div><div class="stat-label">Montant total</div></div>
+            </div>
+            <div id="invoiceList"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal" id="modalContent"></div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('flay_token');
+        if (!token) window.location.href = '/login.html';
+
+        function showTab(id) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            event.target.classList.add('active');
+            if (id === 'contacts') loadContacts();
+            if (id === 'deals') loadDeals();
+            if (id === 'pipeline') loadPipeline();
+            if (id === 'invoices') loadInvoices();
+        }
+
+        function openModal(type, data) {
+            const overlay = document.getElementById('modalOverlay');
+            const content = document.getElementById('modalContent');
+            if (type === 'addContact') {
+                content.innerHTML = `
+                    <div class="modal-title">Ajouter un contact</div>
+                    <div class="form-row"><div class="form-group"><label>Nom</label><input id="cName" placeholder="Jean Koffi"></div><div class="form-group"><label>Email</label><input id="cEmail" placeholder="jean@email.com"></div></div>
+                    <div class="form-row"><div class="form-group"><label>Telephone</label><input id="cPhone" placeholder="+225..."></div><div class="form-group"><label>Entreprise</label><input id="cCompany" placeholder="Entreprise"></div></div>
+                    <div class="form-group"><label>Source</label><select id="cSource"><option value="manual">Manuel</option><option value="website">Site web</option><option value="whatsapp">WhatsApp</option><option value="referral">Recommandation</option><option value="social">Reseau social</option></select></div>
+                    <div class="form-group"><label>Notes</label><textarea id="cNotes" rows="3" placeholder="Notes..."></textarea></div>
+                    <div class="actions"><button class="btn btn-secondary" onclick="closeModal()">Annuler</button><button class="btn btn-primary" onclick="saveContact()">Enregistrer</button></div>
+                `;
+            } else if (type === 'addDeal') {
+                content.innerHTML = `
+                    <div class="modal-title">Nouveau deal</div>
+                    <div class="form-group"><label>Nom du deal</label><input id="dName" placeholder="Ex: Site web corporate"></div>
+                    <div class="form-row"><div class="form-group"><label>Valeur (FCFA)</label><input id="dValue" type="number" placeholder="50000"></div><div class="form-group"><label>Stage</label><select id="dStage"><option value="lead">Lead</option><option value="qualified">Qualifie</option><option value="proposal">Proposition</option><option value="negotiation">Negociation</option><option value="closed_won">Gagne</option><option value="closed_lost">Perdu</option></select></div></div>
+                    <div class="form-group"><label>Date de cloture prevue</label><input id="dClose" type="date"></div>
+                    <div class="actions"><button class="btn btn-secondary" onclick="closeModal()">Annuler</button><button class="btn btn-primary" onclick="saveDeal()">Enregistrer</button></div>
+                `;
+            } else if (type === 'addInvoice') {
+                content.innerHTML = `
+                    <div class="modal-title">Nouvelle facture</div>
+                    <div class="form-row"><div class="form-group"><label>Nom client</label><input id="iClient" placeholder="Client"></div><div class="form-group"><label>Email client</label><input id="iEmail" placeholder="client@email.com"></div></div>
+                    <div class="form-group"><label>Description</label><input id="iDesc" placeholder="Service fourni"></div>
+                    <div class="form-row"><div class="form-group"><label>Quantite</label><input id="iQty" type="number" value="1"></div><div class="form-group"><label>Prix unitaire (FCFA)</label><input id="iPrice" type="number" placeholder="50000"></div></div>
+                    <div class="form-group"><label>Notes</label><textarea id="iNotes" rows="2" placeholder="Notes..."></textarea></div>
+                    <div class="actions"><button class="btn btn-secondary" onclick="closeModal()">Annuler</button><button class="btn btn-primary" onclick="saveInvoice()">Creer</button></div>
+                `;
+            }
+            overlay.style.display = 'flex';
+        }
+
+        function closeModal() { document.getElementById('modalOverlay').style.display = 'none'; }
+
+        async function saveContact() {
+            const data = { name: document.getElementById('cName').value, email: document.getElementById('cEmail').value, phone: document.getElementById('cPhone').value, company: document.getElementById('cCompany').value, source: document.getElementById('cSource').value, notes: document.getElementById('cNotes').value };
+            await fetch('/api/crm/contacts', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(data) });
+            closeModal(); loadContacts();
+        }
+
+        async function saveDeal() {
+            const data = { name: document.getElementById('dName').value, value: parseInt(document.getElementById('dValue').value) || 0, stage: document.getElementById('dStage').value, expectedClose: document.getElementById('dClose').value };
+            await fetch('/api/crm/deals', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(data) });
+            closeModal(); loadDeals();
+        }
+
+        async function saveInvoice() {
+            const data = { clientName: document.getElementById('iClient').value, clientEmail: document.getElementById('iEmail').value, items: [{ description: document.getElementById('iDesc').value, quantity: parseInt(document.getElementById('iQty').value) || 1, price: parseInt(document.getElementById('iPrice').value) || 0 }], notes: document.getElementById('iNotes').value };
+            await fetch('/api/invoices', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(data) });
+            closeModal(); loadInvoices();
+        }
+
+        async function loadContacts() {
+            const res = await fetch('/api/crm/contacts', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) return;
+            const { contacts } = await res.json();
+            const statsRes = await fetch('/api/crm/stats', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (statsRes.ok) { const { stats } = await statsRes.json(); document.getElementById('crmTotal').textContent = stats.totalContacts; document.getElementById('crmLeads').textContent = stats.leads; document.getElementById('crmClients').textContent = stats.clients; document.getElementById('crmValue').textContent = stats.totalDealValue.toLocaleString() + ' FCFA'; }
+            const list = document.getElementById('contactList');
+            if (!contacts.length) { list.innerHTML = '<div style="text-align:center;color:var(--text2);padding:40px;">Aucun contact</div>'; return; }
+            list.innerHTML = contacts.map(c => `<div class="contact-item"><div class="contact-avatar">${(c.name||'?')[0].toUpperCase()}</div><div class="contact-info"><div class="contact-name">${c.name}</div><div class="contact-email">${c.email || c.phone || ''}</div></div><span class="contact-status status-${c.status}">${c.status}</span><button class="btn btn-danger btn-sm" onclick="deleteContact('${c.id}')">X</button></div>`).join('');
+        }
+
+        async function deleteContact(id) { await fetch('/api/crm/contacts/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); loadContacts(); }
+
+        function filterContacts() {
+            const q = document.getElementById('searchContact').value.toLowerCase();
+            document.querySelectorAll('.contact-item').forEach(el => { el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none'; });
+        }
+
+        async function loadDeals() {
+            const res = await fetch('/api/crm/deals', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) return;
+            const { deals } = await res.json();
+            const list = document.getElementById('dealList');
+            if (!deals.length) { list.innerHTML = '<div style="text-align:center;color:var(--text2);padding:40px;">Aucun deal</div>'; return; }
+            list.innerHTML = deals.map(d => `<div class="deal-item"><div class="deal-name">${d.name}</div><div class="deal-value">${d.value.toLocaleString()} FCFA</div><span class="deal-stage">${d.stage}</span></div>`).join('');
+        }
+
+        async function loadPipeline() {
+            const res = await fetch('/api/crm/pipeline', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) return;
+            const { pipeline } = await res.json();
+            const stages = ['lead', 'qualified', 'proposal', 'negotiation', 'closed_won', 'closed_lost'];
+            const labels = { lead: 'Lead', qualified: 'Qualifie', proposal: 'Proposition', negotiation: 'Negociation', closed_won: 'Gagne', closed_lost: 'Perdu' };
+            document.getElementById('pipelineGrid').innerHTML = stages.map(s => `<div class="pipeline-col"><div class="pipeline-header">${labels[s]}</div><div class="pipeline-count">${pipeline[s]?.deals?.length || 0}</div>${(pipeline[s]?.deals || []).map(d => `<div style="margin-top:8px;padding:8px;background:var(--card);border-radius:6px;font-size:13px;"><div style="font-weight:600;">${d.name}</div><div style="color:var(--gold);font-size:12px;">${d.value.toLocaleString()} FCFA</div></div>`).join('')}</div>`).join('');
+        }
+
+        async function loadInvoices() {
+            const res = await fetch('/api/invoices', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!res.ok) return;
+            const { invoices } = await res.json();
+            const statsRes = await fetch('/api/invoices/stats', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (statsRes.ok) { const { stats } = await statsRes.json(); document.getElementById('invTotal').textContent = stats.total; document.getElementById('invPaid').textContent = stats.paid; document.getElementById('invPending').textContent = stats.pending; document.getElementById('invAmount').textContent = stats.totalAmount.toLocaleString() + ' FCFA'; }
+            const list = document.getElementById('invoiceList');
+            if (!invoices.length) { list.innerHTML = '<div style="text-align:center;color:var(--text2);padding:40px;">Aucune facture</div>'; return; }
+            list.innerHTML = invoices.map(inv => `<div class="deal-item"><div class="deal-name">${inv.number} - ${inv.client?.name || ''}</div><div class="deal-value">${inv.total?.toLocaleString()} ${inv.currency}</div><span class="deal-stage">${inv.status}</span><button class="btn btn-secondary btn-sm" onclick="window.open('/api/invoices/${inv.id}/html','_blank')">Voir</button></div>`).join('');
+        }
+
+        function exportContacts() { window.open('/api/crm/export?format=csv', '_blank'); }
+
+        loadContacts();
+    </script>
+</body>
+</html>

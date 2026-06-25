@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flay - Editeur de Profil</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #0a0a1a; --card: #15152a; --border: #252545; --accent: #667eea; --text: #fff; --text2: #a0a0c0; --gradient: linear-gradient(135deg, #667eea, #764ba2); --gold: #ffd700; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
+        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: var(--card); border-bottom: 1px solid var(--border); }
+        .topbar-brand { font-size: 24px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .topbar-nav { display: flex; gap: 8px; }
+        .topbar-nav a { padding: 8px 16px; border-radius: 8px; color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.3s; }
+        .topbar-nav a:hover, .topbar-nav a.active { color: var(--text); background: rgba(102,126,234,0.15); }
+        .main { display: grid; grid-template-columns: 1fr 400px; gap: 24px; max-width: 1400px; margin: 0 auto; padding: 32px; }
+        .editor-panel { display: flex; flex-direction: column; gap: 20px; }
+        .preview-panel { position: sticky; top: 32px; height: fit-content; }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+        .card-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+        input, select, textarea { width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; font-family: inherit; transition: border-color 0.3s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; transition: all 0.3s; }
+        .btn-primary { background: var(--gradient); color: white; }
+        .btn-secondary { background: rgba(102,126,234,0.15); color: var(--accent); }
+        .btn-ai { background: rgba(168,85,247,0.15); color: #a855f7; border: 1px solid rgba(168,85,247,0.3); }
+        .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+        .service-item { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px; margin-bottom: 8px; display: grid; grid-template-columns: 1fr 1fr 100px 40px; gap: 8px; align-items: center; }
+        .service-item input { font-size: 13px; padding: 8px; }
+        .service-remove { width: 32px; height: 32px; background: rgba(239,68,68,0.15); color: #ef4444; border: none; border-radius: 6px; cursor: pointer; }
+        .theme-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .theme-btn { padding: 12px 8px; border-radius: 8px; text-align: center; cursor: pointer; border: 2px solid var(--border); transition: all 0.3s; font-size: 12px; }
+        .theme-btn.selected { border-color: var(--accent); }
+        .theme-btn:hover { transform: translateY(-2px); }
+        .preview-frame { width: 100%; height: 700px; border: 1px solid var(--border); border-radius: 12px; background: #fff; }
+        .social-inputs { display: grid; gap: 8px; }
+        .social-row { display: flex; align-items: center; gap: 8px; }
+        .social-row span { font-size: 20px; width: 32px; text-align: center; }
+        .social-row input { flex: 1; }
+        .ai-suggestion { background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.2); border-radius: 8px; padding: 12px; margin-top: 8px; font-size: 13px; color: #c084fc; cursor: pointer; }
+        .ai-suggestion:hover { background: rgba(168,85,247,0.2); }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+        .badge-pro { background: rgba(102,126,234,0.2); color: var(--accent); }
+        .badge-premium { background: rgba(255,215,0,0.2); color: var(--gold); }
+        .toast { position: fixed; bottom: 24px; right: 24px; padding: 16px 24px; background: #4ade80; color: #000; border-radius: 10px; font-weight: 600; transform: translateY(100px); transition: transform 0.3s; z-index: 1000; }
+        .toast.show { transform: translateY(0); }
+        @media (max-width: 900px) { .main { grid-template-columns: 1fr; } .preview-panel { position: static; } }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-brand">Flay</div>
+        <div class="topbar-nav">
+            <a href="/dashboard.html">Dashboard</a>
+            <a href="/editor.html" class="active">Editeur</a>
+            <a href="/studio.html">Studio</a>
+            <a href="/analytics.html">Analytics</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="editor-panel">
+            <div class="card">
+                <div class="card-title">&#128100; Informations personnelles</div>
+                <div class="form-group"><label>Nom complet</label><input type="text" id="edName" placeholder="Jean Koffi"></div>
+                <div class="form-group"><label>Titre / Slogan</label><input type="text" id="edTitle" placeholder="Photographe Professionnel"></div>
+                <div class="form-group"><label>Bio / Description</label><textarea id="edBio" rows="3" placeholder="Decrivez votre activite..."></textarea>
+                    <div class="ai-suggestion" onclick="generateBio()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg> Generer avec l'Agent IA</div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Localisation</label><input type="text" id="edLocation" placeholder="Abidjan, Cote d'Ivoire"></div>
+                    <div class="form-group"><label>Site web</label><input type="url" id="edWebsite" placeholder="https://monsite.com"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Telephone</label><input type="tel" id="edPhone" placeholder="+225 07 59 73 19 90"></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="edEmail" placeholder="contact@monsite.com"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">&#128736; Services</div>
+                <div id="servicesList"></div>
+                <button class="btn btn-secondary" onclick="addService()">+ Ajouter un service</button>
+                <div class="ai-suggestion" onclick="suggestServices()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg> Suggestion IA de services</div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg> Reseaux sociaux</div>
+                <div class="social-inputs">
+                    <div class="social-row"><span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></span><input type="url" id="edFb" placeholder="Facebook URL"></div>
+                    <div class="social-row"><span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span><input type="url" id="edIg" placeholder="Instagram URL"></div>
+                    <div class="social-row"><span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></span><input type="url" id="edTw" placeholder="Twitter URL"></div>
+                    <div class="social-row"><span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><input type="url" id="edLi" placeholder="LinkedIn URL"></div>
+                    <div class="social-row"><span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span><input type="url" id="edTt" placeholder="TikTok URL"></div>
+                    <div class="social-row"><span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span><input type="url" id="edYt" placeholder="YouTube URL"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg> Apparence</div>
+                <div class="form-group"><label>Theme</label>
+                    <div class="theme-grid" id="themeGrid"></div>
+                </div>
+                <div class="form-group"><label>Mise en page</label>
+                    <select id="edTemplate">
+                        <option value="minimal">Minimal</option>
+                        <option value="creatif">Creatif</option>
+                        <option value="business">Business</option>
+                        <option value="portfolio">Portfolio</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="saveProfile()">&#128190; Enregistrer</button>
+                <a href="/p/" target="_blank" class="btn btn-secondary" id="previewLink"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Voir mon profil</a>
+            </div>
+        </div>
+
+        <div class="preview-panel">
+            <div class="card">
+                <div class="card-title">Apercu en direct</div>
+                <iframe class="preview-frame" id="previewFrame"></iframe>
+            </div>
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const token = localStorage.getItem('flay_token');
+        const user = JSON.parse(localStorage.getItem('flay_user') || '{}');
+        if (!token) window.location.href = '/login.html';
+        document.getElementById('previewLink').href = '/p/' + user.username;
+
+        const themes = ['dark','light','midnight','emerald','ocean','sunset','electric','rose','forest','gold','aurora'];
+        let selectedTheme = 'dark';
+        let services = [];
+
+        function initThemes() {
+            const grid = document.getElementById('themeGrid');
+            themes.forEach(t => {
+                const div = document.createElement('div');
+                div.className = `theme-btn ${t === selectedTheme ? 'selected' : ''}`;
+                div.style.background = { dark:'#1a1a2e', light:'#ffffff', midnight:'#0a0a23', emerald:'#0d2818', ocean:'#0a192f', sunset:'#1a0a0a', electric:'#0a0a1a', rose:'#1a0a15', forest:'#0a1a0a', gold:'#1a150a', aurora:'#0a0a2a' }[t];
+                div.style.color = { dark:'#fff', light:'#000', midnight:'#fff', emerald:'#fff', ocean:'#fff', sunset:'#fff', electric:'#fff', rose:'#fff', forest:'#fff', gold:'#fff', aurora:'#fff' }[t];
+                div.textContent = t;
+                div.onclick = () => { selectedTheme = t; document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected')); div.classList.add('selected'); };
+                grid.appendChild(div);
+            });
+        }
+
+        function renderServices() {
+            document.getElementById('servicesList').innerHTML = services.map((s, i) => `
+                <div class="service-item">
+                    <input value="${s.name || ''}" placeholder="Nom" onchange="services[${i}].name=this.value">
+                    <input value="${s.description || ''}" placeholder="Description" onchange="services[${i}].description=this.value">
+                    <input value="${s.price || ''}" placeholder="Prix" onchange="services[${i}].price=this.value">
+                    <button class="service-remove" onclick="services.splice(${i},1);renderServices()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+                </div>
+            `).join('');
+        }
+
+        function addService() { services.push({ name: '', description: '', price: '' }); renderServices(); }
+
+        async function generateBio() {
+            try {
+                const res = await fetch('/api/ai/generate-bio', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ location: document.getElementById('edLocation').value }) });
+                const data = await res.json();
+                if (data.bio) document.getElementById('edBio').value = data.bio;
+            } catch(e) {}
+        }
+
+        async function suggestServices() {
+            try {
+                const res = await fetch('/api/ai/suggest-services', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ industry: 'default' }) });
+                const data = await res.json();
+                if (data.suggestions) { services = data.suggestions; renderServices(); }
+            } catch(e) {}
+        }
+
+        async function saveProfile() {
+            const data = {
+                name: document.getElementById('edName').value,
+                title: document.getElementById('edTitle').value,
+                bio: document.getElementById('edBio').value,
+                location: document.getElementById('edLocation').value,
+                website: document.getElementById('edWebsite').value,
+                phone: document.getElementById('edPhone').value,
+                email: document.getElementById('edEmail').value,
+                services,
+                theme: selectedTheme,
+                template: document.getElementById('edTemplate').value,
+                socials: {
+                    facebook: document.getElementById('edFb').value,
+                    instagram: document.getElementById('edIg').value,
+                    twitter: document.getElementById('edTw').value,
+                    linkedin: document.getElementById('edLi').value,
+                    tiktok: document.getElementById('edTt').value,
+                    youtube: document.getElementById('edYt').value
+                }
+            };
+            try {
+                const res = await fetch('/api/profile', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify(data) });
+                if (res.ok) { showToast('Profil sauvegarde !'); updatePreview(); }
+            } catch(e) { showToast('Erreur'); }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function updatePreview() {
+            document.getElementById('previewFrame').src = '/p/' + user.username + '?t=' + Date.now();
+        }
+
+        (async () => {
+            initThemes();
+            try {
+                const res = await fetch('/api/profile/' + user.username, { headers: { 'Authorization': 'Bearer ' + token } });
+                if (res.ok) {
+                    const { profile, user: u } = await res.json();
+                    document.getElementById('edName').value = u?.name || '';
+                    document.getElementById('edTitle').value = profile?.title || '';
+                    document.getElementById('edBio').value = profile?.bio || '';
+                    document.getElementById('edLocation').value = profile?.location || '';
+                    document.getElementById('edWebsite').value = profile?.website || '';
+                    document.getElementById('edPhone').value = profile?.phone || '';
+                    document.getElementById('edEmail').value = profile?.email || '';
+                    if (profile?.services?.length) { services = profile.services; renderServices(); }
+                    if (profile?.theme) { selectedTheme = profile.theme; document.querySelectorAll('.theme-btn').forEach(b => { b.classList.toggle('selected', b.textContent === profile.theme); }); }
+                    if (profile?.template) document.getElementById('edTemplate').value = profile.template;
+                    if (profile?.socials) {
+                        document.getElementById('edFb').value = profile.socials.facebook || '';
+                        document.getElementById('edIg').value = profile.socials.instagram || '';
+                        document.getElementById('edTw').value = profile.socials.twitter || '';
+                        document.getElementById('edLi').value = profile.socials.linkedin || '';
+                        document.getElementById('edTt').value = profile.socials.tiktok || '';
+                        document.getElementById('edYt').value = profile.socials.youtube || '';
+                    }
+                    updatePreview();
+                }
+            } catch(e) {}
+        })();
+    </script>
+</body>
+</html>
