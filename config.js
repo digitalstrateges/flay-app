@@ -4,19 +4,24 @@ module.exports = {
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'flay_refresh_ultimate_2024',
     BASE_URL: process.env.BASE_URL || 'http://localhost:4000',
 
-    // === WAVE PAYMENT ===
-    // Ton Wave Business (pour recevoir les abonnements Flay)
+    // === PAYMENT GATEWAYS ===
+    // Wave Business (pour recevoir les abonnements Flay)
     WAVE_MERCHANT_NAME: 'DIGITALSTRATEGE BUSINESS',
     WAVE_MERCHANT_PHONE: '+2250759731990',
     WAVE_MERCHANT_EMAIL: 'contact@digitalstrateges.ci',
     WAVE_PAYMENT_URL: 'https://pay.wave.com/m/M_uv5jVAEPkSWs/c/ci/',
     
-    // Wave API (pour que les utilisateurs connectent leurs comptes)
+    // Wave Checkout API (optionnel - si tu as un API key Wave Business)
     WAVE_API_BASE: 'https://api.wave.com/v1',
     WAVE_API_KEY: process.env.WAVE_API_KEY || '',
-    WAVE_SECRET_KEY: process.env.WAVE_SECRET_KEY || '',
     WAVE_WEBHOOK_SECRET: process.env.WAVE_WEBHOOK_SECRET || '',
-    WAVE_APP_ID: process.env.WAVE_APP_ID || '',
+    WAVE_SIGNING_SECRET: process.env.WAVE_SIGNING_SECRET || '',
+
+    // CinetPay (alternative: supporte Wave + OM + Moov + MTN + CB)
+    CINETPAY_API_KEY: process.env.CINETPAY_API_KEY || '',
+    CINETPAY_SITE_ID: process.env.CINETPAY_SITE_ID || '',
+    CINETPAY_API_PASSWORD: process.env.CINETPAY_API_PASSWORD || '',
+    CINETPAY_SECRET_KEY: process.env.CINETPAY_SECRET_KEY || '',
 
     // === WHATSAPP ===
     WHATSAPP_NUMBER: '2250759731990',
@@ -216,7 +221,7 @@ module.exports = {
         freeShippingThreshold: 50000, // Livraison gratuite > 50 000 FCFA
         maxProductsPerOrder: 50,
         orderStatuses: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded'],
-        paymentMethods: ['wave', 'momo', 'cod', 'bank_transfer']
+        paymentMethods: ['wave', 'cinetpay', 'momo', 'om', 'cb', 'cod', 'bank_transfer']
     },
 
     // === AI AGENT ===

@@ -1376,40 +1376,118 @@ route('GET', '/api/security/status', (req, res) => {
     });
 });
 
-// --- Wave Webhook ---
-route('POST', '/api/webhooks/wave', async (req, res) => {
+// === PAYMENT GATEWAY UNIFIE ===
+const paymentGateway = require('./payment-gateway');
+const waveConnect = require('./wave-connect');
+
+// --- Payment Gateway Status ---
+route('GET', '/api/payments/gateway/status', (req, res) => {
+    sendJSON(res, paymentGateway.getStatus());
+});
+
+// --- Creer un paiement (unifie) ---
+route('POST', '/api/payments/create', async (req, res) => {
     const body = await parseBody(req);
-    const signature = req.headers['x-wave-signature'] || '';
+    const { amount, description, customerName, customerPhone, customerEmail, gateway, type, metadata } = body;
     
-    // Verify webhook signature (if configured)
-    const wavePayment = require('./wave-payment');
-    if (wavePayment.config.webhookSecret && !wavePayment.verifyWebhookSignature(JSON.stringify(body), signature)) {
-        console.error('[WAVE] Invalid webhook signature');
+    if (!amount || amount < 100) return send400(res, 'Montant minimum: 100 FCFA');
+    
+    const result = await paymentGateway.createPayment({
+        amount: parseInt(amount),
+        description: description || 'Paiement Flay',
+        customerName: customerName || '',
+        customerPhone: customerPhone || '',
+        customerEmail: customerEmail || '',
+        gateway: gateway || undefined,
+        type: type || 'one_time',
+        metadata: metadata || {}
+    });
+    
+    if (result.success) {
+        sendJSON(res, {
+            success: true,
+            payment: result.payment,
+            paymentUrl: result.payment?.paymentUrl,
+            isFallback: result.isFallback || false
+        });
+    } else {
+        sendJSON(res, { success: false, error: result.error }, 400);
+    }
+});
+
+// --- Verifier statut paiement ---
+route('GET', '/api/payments/:ref/status', async (req, res, params) => {
+    const payment = paymentGateway.getPayment(params[0]);
+    if (!payment) return send404(res);
+    
+    // Si API Wave, verifier en temps reel
+    if (payment.gateway === 'wave' && payment.id !== payment.ref) {
+        const status = await paymentGateway.checkStatus(payment.id);
+        return sendJSON(res, { payment, liveStatus: status });
+    }
+    
+    sendJSON(res, { payment });
+});
+
+// --- Webhooks (Wave + CinetPay) ---
+route('POST', '/api/webhooks/wave', async (req, res) => {
+    const rawBody = req._rawBody || JSON.stringify(await parseBody(req));
+    const signature = req.headers['wave-signature'] || req.headers['x-wave-signature'] || '';
+    
+    if (!paymentGateway.verifyWebhook(rawBody, signature, 'wave')) {
+        console.error('[WEBHOOK] Wave signature invalide');
         return send403(res, 'Signature invalide');
     }
     
-    const event = wavePayment.handleWebhook(body);
-    console.log(`[WAVE] Webhook: ${event.status} - ${event.ref}`);
+    const event = JSON.parse(rawBody);
+    const result = paymentGateway.handleWebhook(event, 'wave');
+    console.log(`[WEBHOOK Wave] ${result.status} - ${result.externalId || result.sessionId || 'unknown'}`);
     
-    if (event.status === 'confirmed') {
-        // Find and confirm the payment
-        for (const [id, payment] of data.payments) {
-            if (payment.waveRef === event.ref || payment.ref === event.ref) {
+    if (result.status === 'confirmed') {
+        _processConfirmedPayment(result.externalId, result);
+    }
+    
+    sendJSON(res, { received: true });
+});
+
+route('POST', '/api/webhooks/cinetpay', async (req, res) => {
+    const rawBody = req._rawBody || JSON.stringify(await parseBody(req));
+    const signature = req.headers['x-cinetpay-signature'] || '';
+    
+    if (!paymentGateway.verifyWebhook(rawBody, signature, 'cinetpay')) {
+        console.error('[WEBHOOK] CinetPay signature invalide');
+        return send403(res, 'Signature invalide');
+    }
+    
+    const event = JSON.parse(rawBody);
+    const result = paymentGateway.handleWebhook(event, 'cinetpay');
+    console.log(`[WEBHOOK CinetPay] ${result.status} - ${result.transactionId || 'unknown'}`);
+    
+    if (result.status === 'confirmed') {
+        _processConfirmedPayment(result.transactionId, result);
+    }
+    
+    sendJSON(res, { received: true });
+});
+
+// Helper: traiter un paiement confirme (abonnement ou commande)
+function _processConfirmedPayment(externalId, eventData) {
+    // Check subscriptions
+    for (const [id, payment] of data.payments) {
+        if (payment.ref === externalId || payment.externalId === externalId) {
+            if (payment.status !== 'confirmed') {
                 payment.status = 'confirmed';
-                payment.confirmedAt = event.confirmedAt;
-                payment.customerName = event.customerName;
+                payment.confirmedAt = eventData.confirmedAt;
+                payment.gatewayRef = eventData.sessionId || eventData.transactionId;
                 
-                // Upgrade user plan
                 const user = data.users.get(payment.userId);
                 if (user) {
                     user.plan = payment.plan;
                     user.planExpiry = new Date(Date.now() + 30*24*60*60*1000).toISOString();
                 }
-                
                 const profile = data.profiles.get(payment.userId);
                 if (profile) profile.plan = payment.plan;
                 
-                // Create notification
                 const notifId = `notif_${Date.now()}`;
                 data.notifications.set(notifId, {
                     id: notifId, userId: payment.userId, type: 'payment',
@@ -1417,43 +1495,47 @@ route('POST', '/api/webhooks/wave', async (req, res) => {
                     message: `Votre plan ${payment.plan} a ete active pour 30 jours.`,
                     read: false, createdAt: new Date().toISOString()
                 });
-                
-                console.log(`[WAVE] Payment ${id} confirmed for user ${payment.userId}`);
-                break;
+                console.log(`[PAY] Subscription ${id} confirmed for user ${payment.userId}`);
             }
+            return;
         }
     }
     
-    sendJSON(res, { received: true });
-});
-
-// === E-COMMERCE ===
-const ecommerce = require('./ecommerce');
-const waveConnect = require('./wave-connect');
-
-// --- Wave Connect (utilisateurs) ---
-route('GET', '/api/wave/connect', (req, res) => {
-    const user = auth(req);
-    if (!user) return send401(res);
-    const { url } = waveConnect.getAuthorizationUrl(user.id);
-    res.writeHead(302, { Location: url });
-    res.end();
-});
-
-route('GET', '/api/wave/callback', async (req, res) => {
-    const url = new URL(req.url, 'http://localhost');
-    const code = url.searchParams.get('code');
-    const state = url.searchParams.get('state');
-    
-    if (!code || !state) return send400(res, 'Parametres manquants');
-    
-    const result = await waveConnect.handleCallback(code, state);
-    if (result.success) {
-        res.writeHead(302, { Location: '/settings.html?wave=connected' });
-    } else {
-        res.writeHead(302, { Location: '/settings.html?wave=error' });
+    // Check ecommerce orders
+    if (typeof ecommerce !== 'undefined' && ecommerce.orders) {
+        for (const [id, order] of ecommerce.orders) {
+            if (order.payment?.transactionId === externalId || order.id === externalId?.replace('flay_', '')) {
+                if (order.status !== 'confirmed') {
+                    order.status = 'confirmed';
+                    order.payment.status = 'confirmed';
+                    order.payment.gatewayRef = eventData.sessionId || eventData.transactionId;
+                    order.confirmedAt = eventData.confirmedAt;
+                    
+                    const notifId = `notif_${Date.now()}`;
+                    data.notifications.set(notifId, {
+                        id: notifId, userId: order.userId, type: 'order',
+                        title: 'Commande confirmee',
+                        message: `Commande ${order.id} confirmee - ${order.total} XOF`,
+                        read: false, createdAt: new Date().toISOString()
+                    });
+                    console.log(`[PAY] Order ${id} confirmed`);
+                }
+                return;
+            }
+        }
     }
-    res.end();
+}
+
+// --- Wave Connect (API Key model) ---
+route('POST', '/api/wave/connect', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const body = await parseBody(req);
+    const { apiKey } = body;
+    if (!apiKey) return send400(res, 'API key requise');
+    
+    const result = await waveConnect.connect(user.id, apiKey);
+    sendJSON(res, result, result.success ? 200 : 400);
 });
 
 route('GET', '/api/wave/status', (req, res) => {
@@ -1486,35 +1568,8 @@ route('POST', '/api/wave/pay', async (req, res) => {
     }
 });
 
-route('POST', '/api/wave/webhook', async (req, res) => {
-    const body = await parseBody(req);
-    const event = waveConnect.handleWebhook(body);
-    
-    if (event.status === 'confirmed') {
-        // Find order by external_id
-        for (const [id, order] of ecommerce.orders) {
-            if (order.payment?.transactionId === event.externalId || 
-                order.id === event.externalId?.replace('flay_', '')) {
-                order.status = 'confirmed';
-                order.payment.status = 'confirmed';
-                order.payment.waveRef = event.sessionId;
-                order.confirmedAt = event.confirmedAt;
-                
-                // Create notification
-                const notifId = `notif_${Date.now()}`;
-                data.notifications.set(notifId, {
-                    id: notifId, userId: order.userId, type: 'order',
-                    title: 'Commande confirmee',
-                    message: `Commande ${order.id} confirmee - ${event.amount} ${event.currency}`,
-                    read: false, createdAt: new Date().toISOString()
-                });
-                break;
-            }
-        }
-    }
-    
-    sendJSON(res, { received: true });
-});
+// === E-COMMERCE ===
+const ecommerce = require('./ecommerce');
 
 // --- Products ---
 route('GET', '/api/products/:userId', (req, res, params) => {
@@ -1752,7 +1807,9 @@ const server = http.createServer(async (req, res) => {
     if (['POST', 'PUT', 'DELETE'].includes(req.method) && req.url?.startsWith('/api/')) {
         // Skip CSRF for login/register (no session yet) and webhook endpoints
         const skipCSRF = ['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password',
-                          '/api/auth/reset-password', '/api/webhooks/trigger'];
+                          '/api/auth/reset-password', '/api/webhooks/trigger',
+                          '/api/payments/create', '/api/webhooks/wave', '/api/webhooks/cinetpay',
+                          '/api/wave/pay'];
         if (!skipCSRF.some(p => req.url.startsWith(p))) {
             const csrfHeader = req.headers['x-csrf-token'];
             const csrfCookie = (req.headers.cookie || '').match(/_flay_csrf=([^;]+)/)?.[1];
