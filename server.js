@@ -1427,6 +1427,242 @@ route('POST', '/api/webhooks/wave', async (req, res) => {
     sendJSON(res, { received: true });
 });
 
+// === E-COMMERCE ===
+const ecommerce = require('./ecommerce');
+const waveConnect = require('./wave-connect');
+
+// --- Wave Connect (utilisateurs) ---
+route('GET', '/api/wave/connect', (req, res) => {
+    const user = auth(req);
+    if (!user) return send401(res);
+    const { url } = waveConnect.getAuthorizationUrl(user.id);
+    res.writeHead(302, { Location: url });
+    res.end();
+});
+
+route('GET', '/api/wave/callback', async (req, res) => {
+    const url = new URL(req.url, 'http://localhost');
+    const code = url.searchParams.get('code');
+    const state = url.searchParams.get('state');
+    
+    if (!code || !state) return send400(res, 'Parametres manquants');
+    
+    const result = await waveConnect.handleCallback(code, state);
+    if (result.success) {
+        res.writeHead(302, { Location: '/settings.html?wave=connected' });
+    } else {
+        res.writeHead(302, { Location: '/settings.html?wave=error' });
+    }
+    res.end();
+});
+
+route('GET', '/api/wave/status', (req, res) => {
+    const user = auth(req);
+    if (!user) return send401(res);
+    sendJSON(res, waveConnect.getConnectionStatus(user.id));
+});
+
+route('POST', '/api/wave/disconnect', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    sendJSON(res, waveConnect.disconnect(user.id));
+});
+
+route('POST', '/api/wave/pay', async (req, res) => {
+    const body = await parseBody(req);
+    const { userId, amount, description } = body;
+    if (!userId || !amount) return send400(res, 'userId et amount requis');
+    
+    const result = await waveConnect.createPayment(userId, {
+        amount: parseInt(amount),
+        description: description || 'Paiement Flay'
+    });
+    
+    if (result.success && result.paymentUrl) {
+        res.writeHead(302, { Location: result.paymentUrl });
+        res.end();
+    } else {
+        sendJSON(res, { error: result.error || 'Erreur de paiement' }, 400);
+    }
+});
+
+route('POST', '/api/wave/webhook', async (req, res) => {
+    const body = await parseBody(req);
+    const event = waveConnect.handleWebhook(body);
+    
+    if (event.status === 'confirmed') {
+        // Find order by external_id
+        for (const [id, order] of ecommerce.orders) {
+            if (order.payment?.transactionId === event.externalId || 
+                order.id === event.externalId?.replace('flay_', '')) {
+                order.status = 'confirmed';
+                order.payment.status = 'confirmed';
+                order.payment.waveRef = event.sessionId;
+                order.confirmedAt = event.confirmedAt;
+                
+                // Create notification
+                const notifId = `notif_${Date.now()}`;
+                data.notifications.set(notifId, {
+                    id: notifId, userId: order.userId, type: 'order',
+                    title: 'Commande confirmee',
+                    message: `Commande ${order.id} confirmee - ${event.amount} ${event.currency}`,
+                    read: false, createdAt: new Date().toISOString()
+                });
+                break;
+            }
+        }
+    }
+    
+    sendJSON(res, { received: true });
+});
+
+// --- Products ---
+route('GET', '/api/products/:userId', (req, res, params) => {
+    const userId = params[0];
+    const page = parseInt(new URL(req.url, 'http://localhost').searchParams.get('page')) || 1;
+    sendJSON(res, ecommerce.getPublicProducts(userId, page));
+});
+
+route('GET', '/api/products/:userId/:productId', (req, res, params) => {
+    const product = ecommerce.getProduct(params[1]);
+    if (!product || product.userId !== params[0]) return send404(res);
+    product.stats.views++;
+    sendJSON(res, { product });
+});
+
+route('POST', '/api/products', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const body = await parseBody(req);
+    const product = ecommerce.createProduct(user.id, body);
+    if (product.error) return send400(res, product.error);
+    sendJSON(res, { product }, 201);
+});
+
+route('PUT', '/api/products/:id', async (req, res, params) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const body = await parseBody(req);
+    const product = ecommerce.updateProduct(params[0], user.id, body);
+    if (!product) return send404(res);
+    sendJSON(res, { product });
+});
+
+route('DELETE', '/api/products/:id', async (req, res, params) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    if (!ecommerce.deleteProduct(params[0], user.id)) return send404(res);
+    sendJSON(res, { message: 'Produit supprime' });
+});
+
+route('GET', '/api/my-products', (req, res) => {
+    const user = auth(req);
+    if (!user) return send401(res);
+    sendJSON(res, { products: ecommerce.getUserProducts(user.id) });
+});
+
+// --- Cart ---
+route('GET', '/api/cart', (req, res) => {
+    const user = auth(req);
+    if (!user) return send401(res);
+    sendJSON(res, ecommerce.getCart(user.id));
+});
+
+route('POST', '/api/cart/add', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const body = await parseBody(req);
+    const cart = ecommerce.addToCart(user.id, body.productId, body.quantity || 1, body.variant);
+    if (cart.error) return send400(res, cart.error);
+    sendJSON(res, { cart });
+});
+
+route('PUT', '/api/cart/item', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const body = await parseBody(req);
+    const cart = ecommerce.updateCartItem(user.id, body.productId, body.quantity, body.variant);
+    if (cart.error) return send400(res, cart.error);
+    sendJSON(res, { cart });
+});
+
+route('DELETE', '/api/cart/:productId', async (req, res, params) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const cart = ecommerce.removeFromCart(user.id, params[0]);
+    sendJSON(res, { cart });
+});
+
+route('DELETE', '/api/cart', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    sendJSON(res, { cart: ecommerce.clearCart(user.id) });
+});
+
+// --- Orders ---
+route('POST', '/api/orders', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const body = await parseBody(req);
+    const order = ecommerce.createOrder(user.id, body);
+    if (order.error) return send400(res, order.error);
+    sendJSON(res, { order }, 201);
+});
+
+route('GET', '/api/orders', (req, res) => {
+    const user = auth(req);
+    if (!user) return send401(res);
+    const page = parseInt(new URL(req.url, 'http://localhost').searchParams.get('page')) || 1;
+    sendJSON(res, ecommerce.getUserOrders(user.id, page));
+});
+
+route('GET', '/api/orders/:id', (req, res, params) => {
+    const user = auth(req);
+    if (!user) return send401(res);
+    const order = ecommerce.getOrder(params[0]);
+    if (!order || order.userId !== user.id) return send404(res);
+    sendJSON(res, { order });
+});
+
+route('PUT', '/api/orders/:id/status', async (req, res, params) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const body = await parseBody(req);
+    const order = ecommerce.updateOrderStatus(params[0], user.id, body.status);
+    if (!order) return send404(res);
+    if (order.error) return send400(res, order.error);
+    sendJSON(res, { order });
+});
+
+// --- Coupons ---
+route('POST', '/api/coupons', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const body = await parseBody(req);
+    const coupon = ecommerce.createCoupon(user.id, body);
+    sendJSON(res, { coupon }, 201);
+});
+
+// --- Reviews ---
+route('POST', '/api/products/:id/reviews', async (req, res, params) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const body = await parseBody(req);
+    const review = ecommerce.addReview(params[0], user.id, body);
+    sendJSON(res, { review }, 201);
+});
+
+route('GET', '/api/products/:id/reviews', (req, res, params) => {
+    sendJSON(res, { reviews: ecommerce.getProductReviews(params[0]) });
+});
+
+// --- Store Stats ---
+route('GET', '/api/store/stats', (req, res) => {
+    const user = auth(req);
+    if (!user) return send401(res);
+    sendJSON(res, ecommerce.getStoreStats(user.id));
+});
+
 // --- Cookie Consent Info ---
 route('GET', '/api/cookie-consent/config', (req, res) => {
     sendJSON(res, { config: cookieConsent.config });
