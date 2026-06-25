@@ -1526,28 +1526,36 @@ function _processConfirmedPayment(externalId, eventData) {
     }
 }
 
-// --- Wave Connect (API Key model) ---
+// --- Wave Connect (Lien de paiement - sans NINEA) ---
 route('POST', '/api/wave/connect', async (req, res) => {
     const user = requireAuth(req);
     if (!user) return;
     const body = await parseBody(req);
-    const { apiKey } = body;
-    if (!apiKey) return send400(res, 'API key requise');
+    const { paymentLink } = body;
+    if (!paymentLink) return send400(res, 'Lien Wave requis');
     
-    const result = await waveConnect.connect(user.id, apiKey);
+    const result = waveConnect.setPaymentLink(user.id, paymentLink);
+    if (result.success) {
+        // Sauvegarder aussi dans le profil
+        const profile = data.profiles.get(user.id);
+        if (profile) profile.wavePaymentLink = paymentLink;
+    }
     sendJSON(res, result, result.success ? 200 : 400);
 });
 
 route('GET', '/api/wave/status', (req, res) => {
     const user = auth(req);
     if (!user) return send401(res);
-    sendJSON(res, waveConnect.getConnectionStatus(user.id));
+    sendJSON(res, waveConnect.getStatus(user.id));
 });
 
 route('POST', '/api/wave/disconnect', async (req, res) => {
     const user = requireAuth(req);
     if (!user) return;
-    sendJSON(res, waveConnect.disconnect(user.id));
+    const result = waveConnect.removePaymentLink(user.id);
+    const profile = data.profiles.get(user.id);
+    if (profile) profile.wavePaymentLink = '';
+    sendJSON(res, result);
 });
 
 route('POST', '/api/wave/pay', async (req, res) => {
@@ -1555,7 +1563,7 @@ route('POST', '/api/wave/pay', async (req, res) => {
     const { userId, amount, description } = body;
     if (!userId || !amount) return send400(res, 'userId et amount requis');
     
-    const result = await waveConnect.createPayment(userId, {
+    const result = waveConnect.createPayment(userId, {
         amount: parseInt(amount),
         description: description || 'Paiement Flay'
     });
@@ -1566,6 +1574,12 @@ route('POST', '/api/wave/pay', async (req, res) => {
     } else {
         sendJSON(res, { error: result.error || 'Erreur de paiement' }, 400);
     }
+});
+
+route('GET', '/api/wave/link/:userId', (req, res, params) => {
+    const conn = waveConnect.getPaymentLink(params[0]);
+    if (!conn) return send404(res);
+    sendJSON(res, { paymentLink: conn.paymentLink });
 });
 
 // === E-COMMERCE ===
@@ -1809,7 +1823,7 @@ const server = http.createServer(async (req, res) => {
         const skipCSRF = ['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password',
                           '/api/auth/reset-password', '/api/webhooks/trigger',
                           '/api/payments/create', '/api/webhooks/wave', '/api/webhooks/cinetpay',
-                          '/api/wave/pay'];
+                          '/api/wave/pay', '/api/wave/connect'];
         if (!skipCSRF.some(p => req.url.startsWith(p))) {
             const csrfHeader = req.headers['x-csrf-token'];
             const csrfCookie = (req.headers.cookie || '').match(/_flay_csrf=([^;]+)/)?.[1];

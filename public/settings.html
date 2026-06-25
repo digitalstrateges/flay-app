@@ -96,7 +96,31 @@
                 <div class="form-row"><div class="form-group"><label>Email</label><input id="sEmail" type="email"></div><div class="form-group"><label>Telephone</label><input id="sPhone"></div></div>
                 <div class="form-group"><label>Langue</label><select id="sLang"><option value="fr">Francais</option><option value="en">English</option></select></div>
                 <div class="form-group"><label>Devise</label><select id="sCurrency"><option value="XOF">FCFA (XOF)</option><option value="EUR">Euro (EUR)</option><option value="USD">Dollar (USD)</option><option value="GHS">Cedi (GHS)</option><option value="NGN">Naira (NGN)</option></select></div>
-                <button class="btn btn-primary" onclick="saveAccount()">Enregistrer</button>
+                <button class="btn btn-primary" onclick="saveAccount()" style="margin-top:12px;">Enregistrer</button>
+            </div>
+            <div class="card" style="border: 1px solid rgba(29,196,233,0.3); background: rgba(29,196,233,0.05);">
+                <div class="card-title" style="color: #1dc4e9;">Paiement Wave</div>
+                <p style="color:var(--text2);font-size:14px;margin-bottom:16px;">
+                    Recevez les paiements de vos clients directement sur votre compte Wave.<br>
+                    <strong>Aucun registre de commerce requis</strong> - fonctionne avec un compte Wave personnel.
+                </p>
+                <div id="waveStatus" style="margin-bottom: 16px;"></div>
+                <div class="form-group">
+                    <label>Votre lien de paiement Wave</label>
+                    <input id="sWaveLink" placeholder="https://pay.wave.com/m/XXXXXXXXX/c/ci/" style="font-family:monospace;font-size:13px;">
+                    <small style="color:var(--text2);font-size:12px;display:block;margin-top:6px;">
+                        Comment obtenir votre lien :<br>
+                        1. Ouvrez <strong>Wave Business</strong> (gratuit sur Play Store / App Store)<br>
+                        2. Appuyez sur <strong>"Recevoir de l'argent"</strong> ou <strong>"Creer un lien"</strong><br>
+                        3. Entrez le montant (ou laissez libre)<br>
+                        4. Copiez le lien genere et collez-le ici
+                    </small>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:12px;">
+                    <button class="btn btn-primary" onclick="saveWaveLink()" style="flex:1;">Enregistrer le lien</button>
+                    <button class="btn btn-danger" onclick="removeWaveLink()" id="btnRemoveWave" style="display:none;">Supprimer</button>
+                </div>
+                <div id="waveTest" style="margin-top:12px;"></div>
             </div>
             <div class="card">
                 <div class="card-title">Theme</div>
@@ -311,9 +335,63 @@
 
         function deleteAccount() { alert('Compte supprime.'); }
 
+        // --- Wave Payment Link ---
+        async function loadWaveStatus() {
+            try {
+                const res = await fetch('/api/wave/status', { headers: { 'Authorization': 'Bearer ' + token } });
+                if (res.ok) {
+                    const data = await res.json();
+                    const statusEl = document.getElementById('waveStatus');
+                    const btnRemove = document.getElementById('btnRemoveWave');
+                    
+                    if (data.configured) {
+                        statusEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:12px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;"><span style="color:#22c55e;font-size:20px;">✓</span><div><div style="color:#22c55e;font-weight:600;font-size:14px;">Wave configure</div><div style="color:var(--text2);font-size:12px;">Lien actif depuis ' + new Date(data.createdAt).toLocaleDateString('fr') + '</div></div></div>';
+                        document.getElementById('sWaveLink').value = data.paymentLink || '';
+                        btnRemove.style.display = 'inline-block';
+                        
+                        // Test link
+                        document.getElementById('waveTest').innerHTML = '<a href="' + data.paymentLink + '" target="_blank" style="color:#1dc4e9;font-size:13px;">Tester le lien de paiement →</a>';
+                    } else {
+                        statusEl.innerHTML = '<div style="padding:12px;background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.3);border-radius:8px;color:#eab308;font-size:14px;">Aucun lien Wave configure</div>';
+                        btnRemove.style.display = 'none';
+                        document.getElementById('waveTest').innerHTML = '';
+                    }
+                }
+            } catch(e) {}
+        }
+
+        async function saveWaveLink() {
+            const link = document.getElementById('sWaveLink').value.trim();
+            if (!link) { alert('Entrez votre lien Wave'); return; }
+            
+            try {
+                const res = await fetch('/api/wave/connect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ paymentLink: link })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    alert('Lien Wave enregistre ! Vos clients peuvent maintenant vous payer.');
+                    loadWaveStatus();
+                } else {
+                    alert('Erreur: ' + (data.error || 'Impossible d\'enregistrer le lien'));
+                }
+            } catch(e) { alert('Erreur reseau'); }
+        }
+
+        async function removeWaveLink() {
+            if (!confirm('Supprimer votre lien Wave ?')) return;
+            try {
+                await fetch('/api/wave/disconnect', { method: 'POST', headers: { 'Authorization': 'Bearer ' + token } });
+                loadWaveStatus();
+            } catch(e) {}
+        }
+
         loadProfile();
         load2FAStatus();
         loadApiKeys();
+        loadWaveStatus();
     </script>
 </body>
 </html>
