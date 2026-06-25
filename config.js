@@ -9,6 +9,10 @@ module.exports = {
     WAVE_MERCHANT: 'DIGITALSTRATEGE BUSINESS',
     WAVE_PHONE: '+2250759731990',
     WAVE_EMAIL: 'contact@digitalstrateges.ci',
+    WAVE_MERCHANT_ID: process.env.WAVE_MERCHANT_ID || '',
+    WAVE_API_KEY: process.env.WAVE_API_KEY || '',
+    WAVE_SECRET_KEY: process.env.WAVE_SECRET_KEY || '',
+    WAVE_WEBHOOK_SECRET: process.env.WAVE_WEBHOOK_SECRET || '',
 
     // === WHATSAPP ===
     WHATSAPP_NUMBER: '2250759731990',
@@ -31,7 +35,7 @@ module.exports = {
                 '2 themes (Dark/Light)',
                 'Partage WhatsApp'
             ],
-            limits: { services: 3, themes: 2, reservations: 0 }
+            limits: { services: 3, themes: 2, reservations: 0, contacts: 50, invoices: 10, storage: '50 MB' }
         },
         pro: {
             name: 'Pro',
@@ -49,9 +53,12 @@ module.exports = {
                 'Badge Verifie Pro',
                 'Chat en temps reel',
                 'Notifications SMS',
-                'Support email 48h'
+                'Support email 48h',
+                'Reception de paiements Wave',
+                'Facturation simple',
+                'Export contacts CSV'
             ],
-            limits: { services: -1, themes: 7, reservations: -1 }
+            limits: { services: -1, themes: 7, reservations: -1, contacts: 500, invoices: 100, storage: '500 MB' }
         },
         premium: {
             name: 'Premium',
@@ -72,9 +79,14 @@ module.exports = {
                 'Badge Premium Or',
                 'API publique',
                 'Webhooks',
-                'Support prioritaire 24/7'
+                'Support prioritaire 24/7',
+                'CRM complet illimite',
+                'Facturation avancee + PDF',
+                'Team management',
+                'Multi-utilisateurs',
+                'White label'
             ],
-            limits: { services: -1, themes: -1, reservations: -1 }
+            limits: { services: -1, themes: -1, reservations: -1, contacts: -1, invoices: -1, storage: '5 GB' }
         }
     },
 
@@ -87,43 +99,15 @@ module.exports = {
             smartSchedule: true,
             autoResponse: true,
             analyticsInsights: true,
-            contentGeneration: true
+            contentGeneration: true,
+            imageGeneration: false, // Premium only
+            voiceGeneration: false  // Future
         },
         prompts: {
             bio: (name, services) => `Genere une bio professionnelle pour ${name} qui offre: ${services.join(', ')}. Max 150 mots, ton professionnel.`,
             services: (industry) => `Suggere 5 services pour un professionnel du domaine: ${industry}. Format: nom + description courte + prix estime en FCFA.`,
             response: (context) => `Reponds de maniere professionnelle et amicale a ce client: ${context}`
         }
-    },
-
-    // === RMC (RESEAUX, MESSAGERIE, COMMUNICATIONS) ===
-    RMC: {
-        chatEnabled: true,
-        smsEnabled: false,
-        emailEnabled: false,
-        notifications: {
-            reservation: true,
-            payment: true,
-            renewal: true,
-            weekly: true
-        }
-    },
-
-    // === RATE LIMITS ===
-    RATE_LIMITS: {
-        auth: { window: 15 * 60 * 1000, max: 10 },
-        api: { window: 60 * 1000, max: 100 },
-        reservation: { window: 60 * 1000, max: 20 },
-        chat: { window: 60 * 1000, max: 30 },
-        ai: { window: 60 * 1000, max: 5 }
-    },
-
-    // === VALIDATION ===
-    VALIDATION: {
-        username: { min: 3, max: 30, pattern: /^[a-zA-Z0-9_-]+$/ },
-        password: { min: 6, max: 128 },
-        name: { min: 2, max: 100 },
-        slug: { min: 3, max: 50, pattern: /^[a-z0-9-]+$/ }
     },
 
     // === FEATURES FLAGS ===
@@ -137,6 +121,40 @@ module.exports = {
         pdfExport: true,
         customCss: true,
         multiLang: true,
-        darkMode: true
+        darkMode: true,
+        wavePayments: true,
+        reservations: true,
+        crm: true,
+        invoicing: true,
+        teamManagement: true,
+        customDomains: true,
+        whiteLabel: true,
+        smsNotifications: true,
+        emailNotifications: true,
+        pushNotifications: true,
+        fileUpload: true,
+        gallery: true,
+        geolocation: true,
+        socialAuth: true,
+        twoFactorAuth: true,
+        apiAccess: true
+    },
+
+    // === RATE LIMITS ===
+    RATE_LIMITS: {
+        auth: { window: 15 * 60 * 1000, max: 10 },
+        api: { window: 60 * 1000, max: 100 },
+        reservation: { window: 60 * 1000, max: 20 },
+        chat: { window: 60 * 1000, max: 30 },
+        ai: { window: 60 * 1000, max: 5 },
+        upload: { window: 60 * 1000, max: 10 }
+    },
+
+    // === VALIDATION ===
+    VALIDATION: {
+        username: { min: 3, max: 30, pattern: /^[a-zA-Z0-9_-]+$/ },
+        password: { min: 6, max: 128 },
+        name: { min: 2, max: 100 },
+        slug: { min: 3, max: 50, pattern: /^[a-z0-9-]+$/ }
     }
 };

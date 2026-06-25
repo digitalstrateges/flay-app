@@ -93,7 +93,15 @@ function parseBody(req) {
 }
 
 function sendJSON(res, data, status = 200) {
-    res.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*' });
+    res.writeHead(status, { 
+        'Content-Type': 'application/json; charset=utf-8',
+        'Access-Control-Allow-Origin': process.env.CORS_ORIGIN || '*',
+        'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,PATCH,OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-CSRF-Token',
+        'X-Content-Type-Options': 'nosniff',
+        'X-Frame-Options': 'DENY',
+        'X-XSS-Protection': '1; mode=block'
+    });
     res.end(JSON.stringify(data));
 }
 
@@ -245,9 +253,12 @@ route('POST', '/api/auth/forgot-password', async (req, res) => {
     if (!body.email) return send400(res, 'Email requis');
     let found = null;
     for (const [,u] of data.users) { if (u.email === body.email) { found = u; break; } }
+    // Always return success to prevent email enumeration
     if (!found) return sendJSON(res, { message: 'Si cet email existe, un lien a ete envoye' });
     const resetToken = authUtils.generateToken({ userId: found.id, type: 'reset' }, '1h');
-    sendJSON(res, { message: 'Lien de reinitialisation genere', resetToken, _dev: `Cliquez ce lien: /reset-password.html?token=${resetToken}` });
+    // In production, send email with reset link. Never expose token in response.
+    console.log(`[AUTH] Reset token for ${body.email}: /reset-password.html?token=${resetToken}`);
+    sendJSON(res, { message: 'Si cet email existe, un lien a ete envoye', resetUrl: `/reset-password.html?token=${resetToken}` });
 });
 
 route('POST', '/api/auth/reset-password', async (req, res) => {
@@ -269,7 +280,140 @@ route('GET', '/api/auth/me', (req, res) => {
     sendJSON(res, { user: { id: user.id, email: user.email, name: user.name, username: user.username, plan: user.plan, planExpiry: user.planExpiry } });
 });
 
+// --- Account Management ---
+route('PUT', '/api/auth/password', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const body = await parseBody(req);
+    const { currentPassword, newPassword } = body;
+    if (!currentPassword || !newPassword) return send400(res, 'Mot de passe actuel et nouveau requis');
+    if (newPassword.length < 6) return send400(res, 'Nouveau mot de passe trop court (min 6)');
+    if (!authUtils.verifyPassword(currentPassword, user.password, user.salt)) return send400(res, 'Mot de passe actuel incorrect');
+    const hashed = authUtils.hashPassword(newPassword);
+    user.password = hashed.hash.split(':')[1];
+    user.salt = hashed.salt;
+    sendJSON(res, { message: 'Mot de passe mis a jour' });
+});
+
+route('DELETE', '/api/account', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const body = await parseBody(req);
+    if (!body.password || !authUtils.verifyPassword(body.password, user.password, user.salt)) {
+        return send400(res, 'Mot de passe requis pour supprimer le compte');
+    }
+    // Delete all user data
+    data.users.delete(user.id);
+    data.profiles.delete(user.id);
+    for (const [k, v] of data.payments) { if (v.userId === user.id) data.payments.delete(k); }
+    for (const [k, v] of data.reservations) { if (v.userId === user.id) data.reservations.delete(k); }
+    for (const [k, v] of data.contacts) { if (v.userId === user.id) data.contacts.delete(k); }
+    for (const [k, v] of data.deals) { if (v.userId === user.id) data.deals.delete(k); }
+    for (const [k, v] of data.invoices) { if (v.userId === user.id) data.invoices.delete(k); }
+    for (const [k, v] of data.notifications) { if (v.userId === user.id) data.notifications.delete(k); }
+    sendJSON(res, { message: 'Compte supprime avec succes' });
+});
+
+route('POST', '/api/account/export', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    const profile = data.profiles.get(user.id);
+    const payments = Array.from(data.payments.values()).filter(p => p.userId === user.id);
+    const reservations = Array.from(data.reservations.values()).filter(r => r.userId === user.id);
+    const contacts = Array.from(data.contacts.values()).filter(c => c.userId === user.id);
+    sendJSON(res, {
+        user: { id: user.id, email: user.email, name: user.name, username: user.username, plan: user.plan, createdAt: user.createdAt },
+        profile,
+        payments,
+        reservations,
+        contacts,
+        exportedAt: new Date().toISOString()
+    });
+});
+
+// --- File Upload ---
+route('POST', '/api/upload', async (req, res) => {
+    const user = requireAuth(req);
+    if (!user) return;
+    // Parse multipart form data
+    const contentType = req.headers['content-type'] || '';
+    if (!contentType.includes('multipart/form-data')) {
+        return send400(res, 'Format: multipart/form-data');
+    }
+    
+    let body = '';
+    req.on('data', chunk => { body += chunk.toString(); });
+    req.on('end', () => {
+        try {
+            // Extract base64 data from multipart
+            const matches = body.match(/data:([^;]+);base64,(.+)/);
+            if (!matches) return send400(res, 'Donnees invalides');
+            
+            const mimeType = matches[1];
+            const base64 = matches[2];
+            const buffer = Buffer.from(base64, 'base64');
+            
+            // Validate file size (max 5MB)
+            if (buffer.length > 5 * 1024 * 1024) {
+                return send400(res, 'Fichier trop volumineux (max 5 MB)');
+            }
+            
+            // Validate mime type
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+            if (!allowedTypes.includes(mimeType)) {
+                return send400(res, 'Type de fichier non autorise');
+            }
+            
+            // Generate filename
+            const ext = mimeType.split('/')[1] || 'jpg';
+            const filename = `${user.id}_${Date.now()}.${ext}`;
+            const filepath = path.join(__dirname, 'public', 'uploads', filename);
+            
+            // Ensure uploads directory exists
+            const uploadsDir = path.join(__dirname, 'public', 'uploads');
+            if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+            
+            // Save file
+            fs.writeFileSync(filepath, buffer);
+            
+            sendJSON(res, { 
+                url: `/uploads/${filename}`,
+                filename,
+                mimeType,
+                size: buffer.length
+            });
+        } catch (e) {
+            send500(res, 'Erreur lors de l\'upload: ' + e.message);
+        }
+    });
+});
+
 // --- Profile ---
+route('GET', '/api/profile/my', (req, res) => {
+    const user = auth(req);
+    if (!user) return send401(res);
+    const profile = data.profiles.get(user.id);
+    if (!profile) return send404(res);
+    sendJSON(res, { profile });
+});
+
+route('GET', '/api/profile/themes', (req, res) => {
+    const themes = [
+        { id: 'dark', name: 'Dark', colors: { bg: '#0a0a1a', text: '#e2e8f0', card: '#12121f', primary: '#818cf8' }},
+        { id: 'light', name: 'Light', colors: { bg: '#f8f9fa', text: '#111111', card: '#ffffff', primary: '#6366f1' }},
+        { id: 'midnight', name: 'Midnight', colors: { bg: '#0a0a1a', text: '#e2e8f0', card: '#111122', primary: '#60a5fa' }},
+        { id: 'ocean', name: 'Ocean', colors: { bg: '#0a1628', text: '#e2e8f0', card: '#0f2035', primary: '#06b6d4' }},
+        { id: 'emerald', name: 'Emerald', colors: { bg: '#0a1a1a', text: '#e2e8f0', card: '#0f2525', primary: '#10b981' }},
+        { id: 'sunset', name: 'Sunset', colors: { bg: '#1a0a0a', text: '#e2e8f0', card: '#251212', primary: '#f59e0b' }},
+        { id: 'electric', name: 'Electric', colors: { bg: '#0a0a1a', text: '#e2e8f0', card: '#1a1a2e', primary: '#a855f7' }},
+        { id: 'rose', name: 'Rose', colors: { bg: '#1a0a1a', text: '#e2e8f0', card: '#251025', primary: '#ec4899' }},
+        { id: 'forest', name: 'Forest', colors: { bg: '#0a1a0a', text: '#e2e8f0', card: '#0f250f', primary: '#22c55e' }},
+        { id: 'gold', name: 'Gold', colors: { bg: '#1a1a0a', text: '#e2e8f0', card: '#252510', primary: '#eab308' }},
+        { id: 'aurora', name: 'Aurora', colors: { bg: '#0a0a1a', text: '#e2e8f0', card: '#15152a', primary: '#8b5cf6' }}
+    ];
+    sendJSON(res, { themes });
+});
+
 route('GET', '/api/profile/:slug', (req, res, params) => {
     const slug = params[0];
     let profile = null;
@@ -294,6 +438,9 @@ route('PUT', '/api/profile', async (req, res) => {
         user.username = body.username;
         profile.slug = body.username;
     }
+    // Update user name if provided
+    if (body.name) user.name = body.name;
+    if (body.phone) user.phone = body.phone;
     sendJSON(res, { profile, message: 'Profil mis a jour' });
 });
 
@@ -399,6 +546,17 @@ route('POST', '/api/payments/:id/confirm', async (req, res, params) => {
     if (!user) return;
     const payment = data.payments.get(params[0]);
     if (!payment) return send404(res);
+    
+    // SECURITY: Only allow confirming own payments (or admin)
+    if (payment.userId !== user.id && user.role !== 'admin') {
+        return send403(res, 'Vous ne pouvez confirmer que vos propres paiements');
+    }
+    
+    // SECURITY: Only confirm pending payments
+    if (payment.status !== 'pending') {
+        return send400(res, 'Ce paiement a deja ete traite');
+    }
+    
     payment.status = 'confirmed';
     payment.confirmedAt = new Date().toISOString();
     payment.waveRef = `WAVE-${Date.now()}`;
@@ -444,6 +602,48 @@ route('GET', '/api/payments/stats', (req, res) => {
 });
 
 // --- Reservations ---
+route('POST', '/api/reservations/public/:slug', async (req, res, params) => {
+    if (!checkRateLimit('reservations_public', 60*1000, 10)) return send400(res, 'Trop de reservations');
+    const slug = params[0];
+    const body = await parseBody(req);
+    
+    // Find profile by slug
+    let ownerId = null;
+    for (const [,p] of data.profiles) {
+        if (p.slug === slug) { ownerId = p.userId; break; }
+    }
+    if (!ownerId) return send404(res, 'Profil non trouve');
+    
+    if (!body.clientName || !body.date) return send400(res, 'Nom et date requis');
+    
+    const id = generateId('res');
+    const reservation = {
+        id, ownerId,
+        clientName: body.clientName,
+        clientEmail: body.clientEmail || '',
+        clientPhone: body.clientPhone || '',
+        service: body.service || '',
+        date: body.date,
+        time: body.time || '',
+        notes: body.notes || '',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+    };
+    data.reservations.set(id, reservation);
+    analyticsEngine.track(ownerId, 'reservations');
+    
+    // Create notification for owner
+    const notifId = `notif_${Date.now()}`;
+    data.notifications.set(notifId, {
+        id: notifId, userId: ownerId, type: 'reservation',
+        title: 'Nouvelle reservation',
+        message: `${body.clientName} reserve pour le ${body.date}`,
+        read: false, createdAt: new Date().toISOString()
+    });
+    
+    sendJSON(res, { reservation, message: 'Reservation envoyee avec succes' }, 201);
+});
+
 route('POST', '/api/reservations', async (req, res) => {
     if (!checkRateLimit('reservations', 60*1000, 20)) return send400(res, 'Trop de reservations');
     const body = await parseBody(req);
@@ -1176,6 +1376,57 @@ route('GET', '/api/security/status', (req, res) => {
     });
 });
 
+// --- Wave Webhook ---
+route('POST', '/api/webhooks/wave', async (req, res) => {
+    const body = await parseBody(req);
+    const signature = req.headers['x-wave-signature'] || '';
+    
+    // Verify webhook signature (if configured)
+    const wavePayment = require('./wave-payment');
+    if (wavePayment.config.webhookSecret && !wavePayment.verifyWebhookSignature(JSON.stringify(body), signature)) {
+        console.error('[WAVE] Invalid webhook signature');
+        return send403(res, 'Signature invalide');
+    }
+    
+    const event = wavePayment.handleWebhook(body);
+    console.log(`[WAVE] Webhook: ${event.status} - ${event.ref}`);
+    
+    if (event.status === 'confirmed') {
+        // Find and confirm the payment
+        for (const [id, payment] of data.payments) {
+            if (payment.waveRef === event.ref || payment.ref === event.ref) {
+                payment.status = 'confirmed';
+                payment.confirmedAt = event.confirmedAt;
+                payment.customerName = event.customerName;
+                
+                // Upgrade user plan
+                const user = data.users.get(payment.userId);
+                if (user) {
+                    user.plan = payment.plan;
+                    user.planExpiry = new Date(Date.now() + 30*24*60*60*1000).toISOString();
+                }
+                
+                const profile = data.profiles.get(payment.userId);
+                if (profile) profile.plan = payment.plan;
+                
+                // Create notification
+                const notifId = `notif_${Date.now()}`;
+                data.notifications.set(notifId, {
+                    id: notifId, userId: payment.userId, type: 'payment',
+                    title: 'Paiement confirme',
+                    message: `Votre plan ${payment.plan} a ete active pour 30 jours.`,
+                    read: false, createdAt: new Date().toISOString()
+                });
+                
+                console.log(`[WAVE] Payment ${id} confirmed for user ${payment.userId}`);
+                break;
+            }
+        }
+    }
+    
+    sendJSON(res, { received: true });
+});
+
 // --- Cookie Consent Info ---
 route('GET', '/api/cookie-consent/config', (req, res) => {
     sendJSON(res, { config: cookieConsent.config });
@@ -1226,11 +1477,17 @@ function sanitizeObj(obj) {
 }
 
 // === MAIN SERVER ===
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGIN || '*').split(',');
+
 const server = http.createServer(async (req, res) => {
     // CORS
+    const origin = req.headers.origin || '*';
+    const allowedOrigin = ALLOWED_ORIGINS.includes('*') ? '*' : 
+                          ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+    
     if (req.method === 'OPTIONS') {
         res.writeHead(204, {
-            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Origin': allowedOrigin,
             'Access-Control-Allow-Methods': 'GET,POST,PUT,DELETE,OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type,Authorization,X-CSRF-Token'
         });
@@ -1266,7 +1523,8 @@ const server = http.createServer(async (req, res) => {
             if (!csrfHeader && !csrfCookie) {
                 // Allow if no CSRF system active (first request) — but log it
                 // In production, uncomment the next line:
-                // return sendJSON(res, { error: 'CSRF token manquant' }, 403);
+                // CSRF protection enabled in production
+                return sendJSON(res, { error: 'CSRF token manquant' }, 403);
             }
         }
     }
