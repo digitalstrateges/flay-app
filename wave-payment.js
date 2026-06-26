@@ -1,5 +1,5 @@
 /**
- * Flay v4.0 - Wave Payment Integration
+ * Flay v14.0 - Wave Payment Integration
  * 
  * Deux modes:
  * 1. Abonnement Flay: Utilisateurs paient leur plan (Pro/Premium)

@@ -18,14 +18,14 @@ server.on('error', (err) => {
 server.listen(PORT, '0.0.0.0', () => {
     console.log('');
     console.log('╔══════════════════════════════════════════════════╗');
-    console.log('║              FLAY ULTIMATE v5.0                  ║');
+    console.log('║              FLAY ULTIMATE v14.0                 ║');
     console.log('║         DIGITALSTRATEGES Business                ║');
     console.log('╠══════════════════════════════════════════════════╣');
     console.log(`║  Serveur:  http://localhost:${PORT}                  ║`);
     console.log(`║  WhatsApp: +225 07 59 73 19 90                  ║`);
     console.log(`║  Wave:     DIGITALSTRATEGE BUSINESS              ║`);
     console.log('╠══════════════════════════════════════════════════╣');
-    console.log('║  V5 - Architecture Renaissance                    ║');
+    console.log('║  V14 - Marketplace & Réseau                       ║');
     console.log('║  Express + SQLite + Routes organisees            ║');
     console.log('╠══════════════════════════════════════════════════╣');
     console.log('║  DEMO: demo@flay.app / demo123                   ║');

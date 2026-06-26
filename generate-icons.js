@@ -1,5 +1,5 @@
 /**
- * Flay v4.0 - PWA Icon Generator
+ * Flay v14.0 - PWA Icon Generator
  * Genere les icons PWA a partir du SVG
  * Run: node generate-icons.js
  */

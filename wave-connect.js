@@ -1,5 +1,5 @@
 /**
- * Flay v4.0 - Wave Connect
+ * Flay v14.0 - Wave Connect
  * 
  * Mode Lien de paiement Wave (sans NINEA)
  * 
