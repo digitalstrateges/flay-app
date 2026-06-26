@@ -28,9 +28,12 @@ const FlayPWA = {
 
         // Listen for install prompt
         window.addEventListener('beforeinstallprompt', (e) => {
+            const btn = document.getElementById('pwa-install-btn');
+            if (!btn) return;
             e.preventDefault();
             this.deferredPrompt = e;
-            this.showInstallButton();
+            btn.style.display = 'flex';
+            btn.onclick = () => this.install();
         });
 
         // Check if already installed
@@ -42,14 +45,6 @@ const FlayPWA = {
 
         // Request notification permission
         this.requestNotificationPermission();
-    },
-
-    showInstallButton() {
-        const btn = document.getElementById('pwa-install-btn');
-        if (btn) {
-            btn.style.display = 'flex';
-            btn.onclick = () => this.install();
-        }
     },
 
     async install() {
