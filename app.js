@@ -248,10 +248,73 @@ app.get('/p/:username', (req, res) => {
     _renderUnifiedSite(req, res, user, profile, { theme: profile.theme });
 });
 
+// === SELLER DASHBOARD ===
+const dashboard = require('./seller-dashboard');
+
+function dashboardAuth(req, res, next) {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) {
+        const auth = req.headers.cookie?.match(/token=([^;]+)/);
+        if (!auth) return res.redirect('/login.html?redirect=' + req.path);
+        req._token = auth[1];
+    } else { req._token = token; }
+    const authUtils = require('./auth-utils');
+    const payload = authUtils.verifyToken(req._token);
+    if (!payload) return res.redirect('/login.html?redirect=' + req.path);
+    const user = db.get('users', payload.userId);
+    if (!user) return res.redirect('/login.html?redirect=' + req.path);
+    req._user = user;
+    next();
+}
+
+app.get('/dashboard', dashboardAuth, (req, res) => {
+    const page = dashboard.overview(req._user.id);
+    res.send(html(page.title, page.body, page.script));
+});
+
+app.get('/dashboard/products', dashboardAuth, (req, res) => {
+    const page = dashboard.products(req._user.id);
+    res.send(html(page.title, page.body, page.script));
+});
+
+app.get('/dashboard/orders', dashboardAuth, (req, res) => {
+    const page = dashboard.orders(req._user.id);
+    res.send(html(page.title, page.body, page.script));
+});
+
+app.get('/dashboard/parcels', dashboardAuth, (req, res) => {
+    const page = dashboard.parcels(req._user.id);
+    res.send(html(page.title, page.body, page.script));
+});
+
+app.get('/dashboard/categories', dashboardAuth, (req, res) => {
+    const page = dashboard.categories(req._user.id);
+    res.send(html(page.title, page.body, page.script));
+});
+
+app.get('/dashboard/coupons', dashboardAuth, (req, res) => {
+    const page = dashboard.coupons(req._user.id);
+    res.send(html(page.title, page.body, page.script));
+});
+
+function html(title, body, script) {
+    return '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">' +
+        '<title>' + title + ' | Flay</title><style>' + (require('./seller-dashboard').CSS || '') + '</style></head>' +
+        '<body class="loading">' + (body || '') +
+        '<script>const TOKEN=localStorage.getItem(\'flay_token\');' +
+        'if(!TOKEN){window.location=\'/login.html?redirect=/dashboard\'}' +
+        'async function api(m,p,b){const r=await fetch(\'/api\'+p,{method:m||\'GET\',headers:{\'Content-Type\':\'application/json\',Authorization:\'Bearer \'+TOKEN},body:b?JSON.stringify(b):undefined});const d=await r.text();try{return JSON.parse(d)}catch{return{error:d}}}' +
+        'function toast(m,t){const d=document.createElement(\'div\');d.className=\'toast toast-\'+(t||\'success\');d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000)}' +
+        'function closeModal(id){document.getElementById(id).classList.remove(\'active\')}' +
+        'document.body.classList.remove(\'loading\');' +
+        (script || '') +
+        '</script></body></html>';
+}
+
 // Username shortcut (now shows unified site)
 app.get('/:username', (req, res) => {
     const username = req.params.username;
-    if (username.includes('.') || username.includes('/') || username === 'api' || username === 'showcase' || username === 'p' || username === 'u' || username === 'store' || username === 'product' || username === 'track' || username === 'cart') return res.status(404).send('Not found');
+    if (username.includes('.') || username.includes('/') || username === 'api' || username === 'showcase' || username === 'p' || username === 'u' || username === 'store' || username === 'product' || username === 'track' || username === 'cart' || username === 'dashboard') return res.status(404).send('Not found');
     const profile = db.findBy('profiles', 'slug', username);
     if (!profile) return res.status(404).send('Profil non trouve');
     const user = db.get('users', profile.userId);
