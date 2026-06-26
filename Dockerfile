@@ -1,15 +1,24 @@
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-COPY . .
-RUN npm ci --only=production 2>/dev/null || true
-
 FROM node:20-alpine
-RUN apk add --no-cache curl
+
 WORKDIR /app
-COPY --from=builder /app .
-ENV NODE_ENV=production
-ENV PORT=4000
+
+RUN apk add --no-cache tini curl
+
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+COPY . .
+
+RUN mkdir -p /app/data /app/uploads && \
+    adduser -D flay && \
+    chown -R flay:flay /app
+
+USER flay
+
 EXPOSE 4000
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 CMD curl -f http://localhost:4000/api/health || exit 1
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -s http://localhost:4000/api/health | grep -q '"status":"ok"' || exit 1
+
+ENTRYPOINT ["/sbin/tini", "--"]
 CMD ["node", "server.js"]

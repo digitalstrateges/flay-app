@@ -12,6 +12,7 @@ logs/
 
 # Data
 data/*.json
+data/*.db
 
 # OS
 .DS_Store

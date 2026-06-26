@@ -3,13 +3,13 @@ module.exports = {
     JWT_SECRET: process.env.JWT_SECRET || 'flay_ultimate_secret_2024_digitalstrateges_ci',
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'flay_refresh_ultimate_2024',
     BASE_URL: process.env.BASE_URL || 'http://localhost:4000',
+    SITE_URL: process.env.SITE_URL || 'http://localhost:4000',
 
     // === PAYMENT GATEWAYS ===
-    // Wave Business (pour recevoir les abonnements Flay)
-    WAVE_MERCHANT_NAME: 'DIGITALSTRATEGE BUSINESS',
-    WAVE_MERCHANT_PHONE: '+2250759731990',
-    WAVE_MERCHANT_EMAIL: 'contact@digitalstrateges.ci',
-    WAVE_PAYMENT_URL: 'https://pay.wave.com/m/M_uv5jVAEPkSWs/c/ci/',
+    WAVE_MERCHANT_NAME: process.env.WAVE_MERCHANT_NAME || 'DIGITALSTRATEGE BUSINESS',
+    WAVE_MERCHANT_PHONE: process.env.WAVE_MERCHANT_PHONE || '+2250759731990',
+    WAVE_MERCHANT_EMAIL: process.env.WAVE_MERCHANT_EMAIL || 'contact@digitalstrateges.ci',
+    WAVE_PAYMENT_URL: process.env.WAVE_PAYMENT_URL || 'https://pay.wave.com/m/M_uv5jVAEPkSWs/c/ci/',
     
     // Wave Checkout API (optionnel - si tu as un API key Wave Business)
     WAVE_API_BASE: 'https://api.wave.com/v1',
@@ -24,8 +24,8 @@ module.exports = {
     CINETPAY_SECRET_KEY: process.env.CINETPAY_SECRET_KEY || '',
 
     // === WHATSAPP ===
-    WHATSAPP_NUMBER: '2250759731990',
-    WHATSAPP_LINK: 'https://wa.me/2250759731990',
+    WHATSAPP_NUMBER: process.env.WHATSAPP_NUMBER || '2250759731990',
+    WHATSAPP_LINK: process.env.WHATSAPP_LINK || 'https://wa.me/2250759731990',
 
     // === PLANS ===
     PLANS: {
