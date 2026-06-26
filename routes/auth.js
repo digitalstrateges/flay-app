@@ -1,239 +1,163 @@
 const express = require('express');
 const crypto = require('crypto');
-const { signToken, genId } = require('../auth-utils');
-const User = require('../models/User');
-const Profile = require('../models/Profile');
+const authUtils = require('../auth-utils');
+const db = require('../db');
 const config = require('../config');
-const { auth, rateLimit, validateBody, auditLog } = require('../middleware/auth');
-
+const { rateLimit } = require('../middleware/auth');
 const router = express.Router();
 
-// Rate limit auth routes
-router.use(rateLimit(config.RATE_LIMITS.auth.window, config.RATE_LIMITS.auth.max));
-
-// POST /api/auth/register
-router.post('/register', validateBody({
-    name: { required: true, min: 2, max: 100 },
-    email: { required: true, pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/ },
-    username: { required: true, min: 3, max: 30, pattern: /^[a-zA-Z0-9_-]+$/ },
-    password: { required: true, min: 6 }
-}), auditLog('REGISTER'), async (req, res) => {
+router.post('/register', rateLimit(config.RATE_LIMITS?.auth?.window || 900000, config.RATE_LIMITS?.auth?.max || 10), async (req, res) => {
     try {
-        const { name, email, username, password } = req.body;
+        const { email, password, name, username } = req.body;
+        if (!email || !password || !name || !username) return res.status(400).json({ error: 'Champs requis manquants' });
+        if (password.length < 6) return res.status(400).json({ error: 'Mot de passe trop court (min 6)' });
+        if (!/^[a-zA-Z0-9_-]+$/.test(username) || username.length < 3) return res.status(400).json({ error: 'Nom d\'utilisateur invalide' });
 
-        const user = User.create({ name, email, username, password });
-        Profile.create(user.id, { slug: username, title: `${name} - Profil Flay`, email });
+        const existingEmail = db.findBy('users', 'email', email);
+        if (existingEmail) return res.status(400).json({ error: 'Email deja utilise' });
+        const existingUsername = db.findBy('users', 'username', username);
+        if (existingUsername) return res.status(400).json({ error: 'Nom d\'utilisateur deja pris' });
 
-        const token = signToken({ id: user.id }, config.JWT_SECRET, 30 * 24 * 60 * 60); // 30 days
-        const refreshToken = signToken({ id: user.id, type: 'refresh' }, config.JWT_REFRESH_SECRET, 90 * 24 * 60 * 60); // 90 days
+        const id = `user_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+        const hashed = authUtils.hashPassword(password);
+        const tokens = authUtils.generateTokens(id);
 
-        // Store session
-        User.addSession(user.id, {
-            ip: req.ip,
-            userAgent: req.headers['user-agent'],
-            token: token.substring(0, 20) + '...'
+        db.insert('users', {
+            id, email, name, username, password: hashed.hash.split(':')[1], salt: hashed.salt,
+            plan: 'free', role: 'user'
+        });
+        db.insert('profiles', {
+            userId: id, slug: username, theme: 'dark', template: 'minimal', email,
+            services: '[]', socials: '{}', analytics: '{}', plan: 'free'
         });
 
-        res.status(201).json({
-            message: 'Compte cree avec succes !',
-            token,
-            refreshToken,
-            user,
-            expiresIn: 30 * 24 * 60 * 60
-        });
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(201).json({ user: { id, email, name, username, plan: 'free' }, ...tokens });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
-// POST /api/auth/login
-router.post('/login', validateBody({
-    email: { required: true },
-    password: { required: true }
-}), auditLog('LOGIN'), async (req, res) => {
+router.post('/login', rateLimit(config.RATE_LIMITS?.auth?.window || 900000, config.RATE_LIMITS?.auth?.max || 15), async (req, res) => {
     try {
-        const { email, password, remember } = req.body;
+        const { email, password } = req.body;
+        if (!email || !password) return res.status(400).json({ error: 'Email et mot de passe requis' });
 
-        const user = User.verify(email, password);
-        if (!user) return res.status(401).json({ message: 'Email ou mot de passe incorrect.' });
+        const user = db.findBy('users', 'email', email);
+        if (!user || !authUtils.verifyPassword(password, user.password, user.salt)) {
+            return res.status(400).json({ error: 'Identifiants incorrects' });
+        }
 
-        const expiresIn = remember ? 90 * 24 * 60 * 60 : 30 * 24 * 60 * 60; // 90 or 30 days
-        const token = signToken({ id: user.id }, config.JWT_SECRET, expiresIn);
-        const refreshToken = signToken({ id: user.id, type: 'refresh' }, config.JWT_REFRESH_SECRET, 90 * 24 * 60 * 60);
-
-        User.addSession(user.id, {
-            ip: req.ip,
-            userAgent: req.headers['user-agent'],
-            token: token.substring(0, 20) + '...'
-        });
-
-        const profile = Profile.findByUserId(user.id);
-        const daysLeft = User.getPlanDaysLeft(user.id);
-
+        const tokens = authUtils.generateTokens(user.id);
+        const profile = db.findBy('profiles', 'userId', user.id);
         res.json({
-            token,
-            refreshToken,
-            user,
+            user: { id: user.id, email: user.email, name: user.name, username: user.username, plan: user.plan },
             profile,
-            planInfo: {
-                plan: user.plan,
-                daysLeft,
-                isActive: User.isPlanActive(user.id)
-            },
-            expiresIn
+            ...tokens
         });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
-// POST /api/auth/refresh
-router.post('/refresh', (req, res) => {
+router.post('/refresh', async (req, res) => {
     try {
-        const { refreshToken } = req.body;
-        if (!refreshToken) return res.status(400).json({ message: 'Refresh token requis.' });
-
-        const decoded = require('../auth-utils').verifyToken(refreshToken, config.JWT_REFRESH_SECRET);
-        if (!decoded || decoded.type !== 'refresh') {
-            return res.status(401).json({ message: 'Refresh token invalide.' });
-        }
-
-        const user = User.findById(decoded.id);
-        if (!user) return res.status(404).json({ message: 'Utilisateur non trouve.' });
-
-        const token = signToken({ id: user.id }, config.JWT_SECRET, 30 * 24 * 60 * 60);
-        const newRefreshToken = signToken({ id: user.id, type: 'refresh' }, config.JWT_REFRESH_SECRET, 90 * 24 * 60 * 60);
-
-        res.json({ token, refreshToken: newRefreshToken });
-    } catch (error) {
-        res.status(401).json({ message: 'Token invalide.' });
+        if (!req.body.refreshToken) return res.status(400).json({ error: 'Refresh token requis' });
+        const payload = authUtils.verifyToken(req.body.refreshToken);
+        if (!payload) return res.status(401).json({ error: 'Token invalide' });
+        const tokens = authUtils.generateTokens(payload.userId);
+        res.json(tokens);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
-// POST /api/auth/forgot-password
-router.post('/forgot-password', validateBody({ email: { required: true } }), auditLog('FORGOT_PASSWORD'), (req, res) => {
+router.post('/forgot-password', async (req, res) => {
     try {
-        const { email } = req.body;
-        const user = User.findByEmail(email);
-
-        // Always return success to prevent email enumeration
-        if (!user) {
-            return res.json({ message: 'Si cet email existe, un lien de reinitialisation a ete envoye.' });
+        if (!req.body.email) return res.status(400).json({ error: 'Email requis' });
+        const user = db.findBy('users', 'email', req.body.email);
+        if (user) {
+            const resetToken = authUtils.generateToken({ userId: user.id, type: 'reset' }, '1h');
+            console.log(`[AUTH] Reset token for ${req.body.email}: /reset-password.html?token=${resetToken}`);
         }
-
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        User.setResetToken(user.id, resetToken);
-
-        // In production, send email here
-        console.log(`[PASSWORD RESET] User: ${user.email} | Token: ${resetToken}`);
-
-        res.json({
-            message: 'Si cet email existe, un lien de reinitialisation a ete envoye.',
-            // In dev only - remove in production
-            debug: { resetToken, resetUrl: `${config.BASE_URL}/reset-password?token=${resetToken}` }
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
+        res.json({ message: 'Si cet email existe, un lien a ete envoye' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
-// POST /api/auth/reset-password
-router.post('/reset-password', validateBody({
-    token: { required: true },
-    password: { required: true, min: 6 }
-}), auditLog('RESET_PASSWORD'), (req, res) => {
+router.post('/reset-password', async (req, res) => {
     try {
         const { token, password } = req.body;
-
-        const user = User.resetPassword(token, password);
-        if (!user) return res.status(400).json({ message: 'Token invalide ou expire.' });
-
-        res.json({ message: 'Mot de passe reinitialise avec succes.' });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
+        if (!token || !password) return res.status(400).json({ error: 'Token et mot de passe requis' });
+        const payload = authUtils.verifyToken(token);
+        if (!payload || payload.type !== 'reset') return res.status(400).json({ error: 'Token invalide' });
+        const user = db.get('users', payload.userId);
+        if (!user) return res.status(404).json({ error: 'Utilisateur non trouve' });
+        const hashed = authUtils.hashPassword(password);
+        db.update('users', user.id, { password: hashed.hash.split(':')[1], salt: hashed.salt });
+        res.json({ message: 'Mot de passe reinitialise' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
-// GET /api/auth/me
-router.get('/me', auth, (req, res) => {
-    try {
-        const user = User.findById(req.user.id);
-        if (!user) return res.status(404).json({ message: 'Utilisateur non trouve.' });
+router.get('/me', (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token manquant' });
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.status(401).json({ error: 'Token invalide' });
+    const user = db.get('users', payload.userId);
+    if (!user) return res.status(401).json({ error: 'Utilisateur non trouve' });
+    res.json({ user: { id: user.id, email: user.email, name: user.name, username: user.username, plan: user.plan, planExpiry: user.planExpiry } });
+});
 
-        const { password: _, ...safeUser } = user;
-        const profile = Profile.findByUserId(user.id);
-        const daysLeft = User.getPlanDaysLeft(user.id);
-        const invoices = require('../models/Payment').getUserInvoices(user.id);
+router.put('/password', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token manquant' });
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.status(401).json({ error: 'Token invalide' });
+    const user = db.get('users', payload.userId);
+    if (!user) return res.status(401).json({ error: 'Utilisateur non trouve' });
 
-        res.json({
-            user: safeUser,
-            profile,
-            planInfo: {
-                plan: user.plan,
-                daysLeft,
-                isActive: User.isPlanActive(user.id),
-                expiry: user.planExpiry,
-                autoRenew: user.planAutoRenew
-            },
-            invoices: invoices.slice(0, 5)
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
+    const { currentPassword, newPassword } = req.body;
+    if (!currentPassword || !newPassword) return res.status(400).json({ error: 'Mot de passe actuel et nouveau requis' });
+    if (newPassword.length < 6) return res.status(400).json({ error: 'Nouveau mot de passe trop court (min 6)' });
+    if (!authUtils.verifyPassword(currentPassword, user.password, user.salt)) {
+        return res.status(400).json({ error: 'Mot de passe actuel incorrect' });
     }
+    const hashed = authUtils.hashPassword(newPassword);
+    db.update('users', user.id, { password: hashed.hash.split(':')[1], salt: hashed.salt });
+    res.json({ message: 'Mot de passe mis a jour' });
 });
 
-// PUT /api/auth/me
-router.put('/me', auth, auditLog('UPDATE_PROFILE'), (req, res) => {
-    try {
-        const allowed = ['name', 'email', 'language', 'avatar', 'phone', 'location', 'bio', 'notifications'];
-        const updateData = {};
-        allowed.forEach(field => {
-            if (req.body[field] !== undefined) updateData[field] = req.body[field];
-        });
-
-        const user = User.update(req.user.id, updateData);
-        if (!user) return res.status(404).json({ message: 'Utilisateur non trouve.' });
-        res.json({ user });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+router.delete('/account', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token manquant' });
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.status(401).json({ error: 'Token invalide' });
+    const user = db.get('users', payload.userId);
+    if (!user) return res.status(401).json({ error: 'Utilisateur non trouve' });
+    if (!req.body.password || !authUtils.verifyPassword(req.body.password, user.password, user.salt)) {
+        return res.status(400).json({ error: 'Mot de passe requis pour supprimer le compte' });
     }
+    db.delete('users', user.id);
+    db.delete('profiles', user.id);
+    db.deleteWhere('payments', 'userId', user.id);
+    db.deleteWhere('reservations', 'userId', user.id);
+    res.json({ message: 'Compte supprime avec succes' });
 });
 
-// PUT /api/auth/password
-router.put('/password', auth, validateBody({
-    currentPassword: { required: true },
-    newPassword: { required: true, min: 6 }
-}), auditLog('CHANGE_PASSWORD'), (req, res) => {
-    try {
-        const { currentPassword, newPassword } = req.body;
-        const user = User.findById(req.user.id);
-
-        if (!require('../auth-utils').verifyPassword(currentPassword, user.password)) {
-            return res.status(400).json({ message: 'Mot de passe actuel incorrect.' });
-        }
-
-        User.update(req.user.id, { password: require('../auth-utils').hashPassword(newPassword) });
-        res.json({ message: 'Mot de passe mis a jour.' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// GET /api/auth/plans
-router.get('/plans', (req, res) => {
-    res.json({ plans: config.PLANS });
-});
-
-// GET /api/auth/sessions
-router.get('/sessions', auth, (req, res) => {
-    const user = User.findById(req.user.id);
-    res.json({ sessions: user?.sessions || [] });
-});
-
-// DELETE /api/auth/sessions/:id
-router.delete('/sessions/:id', auth, (req, res) => {
-    User.removeSession(req.user.id, req.params.id);
-    res.json({ message: 'Session supprimee.' });
+router.post('/export', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token manquant' });
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.status(401).json({ error: 'Token invalide' });
+    const user = db.get('users', payload.userId);
+    if (!user) return res.status(401).json({ error: 'Non trouve' });
+    const profile = db.findBy('profiles', 'userId', user.id);
+    const payments = db.findAll('payments', 'userId', user.id);
+    const reservations = db.findAll('reservations', 'userId', user.id);
+    res.json({ user: { id: user.id, email: user.email, name: user.name, username: user.username, plan: user.plan }, profile, payments, reservations, exportedAt: new Date().toISOString() });
 });
 
 module.exports = router;

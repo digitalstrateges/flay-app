@@ -1,145 +1,81 @@
 const express = require('express');
-const Reservation = require('../models/Reservation');
-const Profile = require('../models/Profile');
-const User = require('../models/User');
-const { auth, rateLimit } = require('../middleware/auth');
-const config = require('../config');
-
+const crypto = require('crypto');
+const db = require('../db');
+const analyticsEngine = require('../analytics-engine');
 const router = express.Router();
 
-// POST /api/reservation/public/:slug
-router.post('/public/:slug', rateLimit(config.RATE_LIMITS.reservation.window, config.RATE_LIMITS.reservation.max), (req, res) => {
-    try {
-        const profile = Profile.findBySlug(req.params.slug);
-        if (!profile) return res.status(404).json({ message: 'Profil non trouve.' });
+router.post('/public/:slug', async (req, res) => {
+    const slug = req.params.slug;
+    const body = req.body;
+    const profile = db.findBy('profiles', 'slug', slug);
+    if (!profile) return res.status(404).json({ error: 'Profil non trouve' });
+    if (!body.clientName || !body.date) return res.status(400).json({ error: 'Nom et date requis' });
 
-        // Check if booking is enabled
-        if (!profile.settings?.enableBooking) {
-            return res.status(403).json({ message: 'Les reservations sont desactivees pour ce profil.' });
-        }
+    const id = `res_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    const reservation = {
+        id, userId: profile.userId,
+        clientName: body.clientName, clientEmail: body.clientEmail || '',
+        clientPhone: body.clientPhone || '', service: body.service || '',
+        date: body.date, time: body.time || '', notes: body.notes || '',
+        status: 'pending', createdAt: new Date().toISOString()
+    };
+    db.insert('reservations', reservation);
+    if (typeof analyticsEngine.track === 'function') analyticsEngine.track(profile.userId, 'reservations');
 
-        // Check plan for reservations
-        const owner = User.findById(profile.userId);
-        if (owner && owner.plan === 'free' && !User.isPlanActive(owner.id)) {
-            return res.status(403).json({ message: 'Reservations disponibles avec le plan Pro.', upgrade: true });
-        }
-
-        const { clientName, clientEmail, clientPhone, service, date, time, message } = req.body;
-
-        // Validation
-        const errors = [];
-        if (!clientName || clientName.trim().length < 2) errors.push('Nom requis (2 caracteres min)');
-        if (!clientEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) errors.push('Email invalide');
-        if (!date) errors.push('Date requise');
-        if (!time) errors.push('Heure requise');
-
-        if (date) {
-            const reservationDate = new Date(date);
-            if (reservationDate < new Date().setHours(0, 0, 0, 0)) {
-                errors.push('La date doit etre dans le futur');
-            }
-        }
-
-        if (errors.length > 0) {
-            return res.status(400).json({ message: 'Erreurs de validation', errors });
-        }
-
-        const reservation = Reservation.create({
-            profileId: profile.id,
-            clientName: clientName.trim(),
-            clientEmail: clientEmail.trim().toLowerCase(),
-            clientPhone: clientPhone || '',
-            service: service || '',
-            date,
-            time,
-            message: message || ''
-        });
-
-        // Record reservation in profile analytics
-        Profile.recordReservation(profile.slug);
-
-        // Get owner info for notification
-        const ownerName = owner ? owner.name : '';
-
-        res.status(201).json({
-            reservation,
-            message: 'Reservation envoyee avec succes !',
-            ownerName,
-            profileTitle: profile.title
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+    res.status(201).json({ reservation, message: 'Reservation envoyee avec succes' });
 });
 
-// GET /api/reservation/my
-router.get('/my', auth, (req, res) => {
-    try {
-        const profiles = Profile.getAllByUserId(req.user.id);
-        let all = [];
-        for (const p of profiles) {
-            const resList = Reservation.findByProfileId(p.id).map(r => ({
-                ...r,
-                profileSlug: p.slug,
-                profileTitle: p.title
-            }));
-            all = all.concat(resList);
-        }
-        all.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-        // Stats
-        const stats = {
-            total: all.length,
-            pending: all.filter(r => r.status === 'pending').length,
-            confirmed: all.filter(r => r.status === 'confirmed').length,
-            cancelled: all.filter(r => r.status === 'cancelled').length
-        };
-
-        res.json({ reservations: all, stats });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
+router.post('/', async (req, res) => {
+    const body = req.body;
+    if (!body.name || !body.phone || !body.service || !body.date || !body.time) {
+        return res.status(400).json({ error: 'Champs requis manquants' });
     }
+    const id = `res_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+    let ownerId = null;
+    if (body.profileId) {
+        const profile = db.findBy('profiles', 'slug', body.profileId) || db.get('profiles', body.profileId);
+        if (profile) ownerId = profile.userId;
+    }
+    const reservation = {
+        id, userId: ownerId, name: body.name, phone: body.phone, email: body.email || '',
+        service: body.service, date: body.date, time: body.time, message: body.message || '',
+        status: 'pending', createdAt: new Date().toISOString()
+    };
+    db.insert('reservations', reservation);
+    if (ownerId && typeof analyticsEngine.track === 'function') analyticsEngine.track(ownerId, 'reservations');
+    res.status(201).json({ reservation, message: 'Reservation envoyee avec succes' });
 });
 
-// PUT /api/reservation/:id/status
-router.put('/:id/status', auth, (req, res) => {
-    try {
-        const { status } = req.body;
-        if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
-            return res.status(400).json({ message: 'Statut invalide. Valeurs: pending, confirmed, cancelled' });
-        }
-
-        const reservation = Reservation.findById(req.params.id);
-        if (!reservation) return res.status(404).json({ message: 'Reservation non trouvee.' });
-
-        const profile = Profile.findByUserId(req.user.id);
-        if (!profile || profile.id !== reservation.profileId) {
-            return res.status(403).json({ message: 'Acces refuse.' });
-        }
-
-        const updated = Reservation.updateStatus(req.params.id, status);
-        res.json({ reservation: updated });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+router.get('/', (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token manquant' });
+    const authUtils = require('../auth-utils');
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.status(401).json({ error: 'Token invalide' });
+    const reservations = db.findAll('reservations', 'userId', payload.userId);
+    res.json({ reservations });
 });
 
-// DELETE /api/reservation/:id
-router.delete('/:id', auth, (req, res) => {
-    try {
-        const reservation = Reservation.findById(req.params.id);
-        if (!reservation) return res.status(404).json({ message: 'Reservation non trouvee.' });
+router.put('/:id/status', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token manquant' });
+    const authUtils = require('../auth-utils');
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.status(401).json({ error: 'Token invalide' });
+    const reservation = db.get('reservations', req.params.id);
+    if (!reservation) return res.status(404).json({ error: 'Reservation non trouvee' });
+    db.update('reservations', req.params.id, { status: req.body.status });
+    res.json({ reservation: { ...reservation, status: req.body.status } });
+});
 
-        const profile = Profile.findByUserId(req.user.id);
-        if (!profile || profile.id !== reservation.profileId) {
-            return res.status(403).json({ message: 'Acces refuse.' });
-        }
-
-        Reservation.delete(req.params.id);
-        res.json({ message: 'Reservation supprimee.' });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+router.delete('/:id', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token manquant' });
+    const authUtils = require('../auth-utils');
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.status(401).json({ error: 'Token invalide' });
+    db.delete('reservations', req.params.id);
+    res.json({ message: 'Reservation supprimee' });
 });
 
 module.exports = router;

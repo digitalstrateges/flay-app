@@ -1,6 +1,6 @@
 {
   "name": "flay-app",
-  "version": "3.0.0",
+  "version": "5.0.0",
   "description": "Flay - Plateforme de cartes de visite digitales professionnelles | DIGITALSTRATEGES",
   "main": "server.js",
   "scripts": {
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/DIGITALSTRATEGES/flay-app.git"
+    "url": "git+https://github.com/DIGITALSTRATEGES/flay-app.git"
   },
   "keywords": [
     "carte-de-visite-digitale",
@@ -25,5 +25,14 @@
   ],
   "author": "DIGITALSTRATEGES <contact@digitalstrateges.com>",
   "license": "UNLICENSED",
-  "private": true
+  "private": true,
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DIGITALSTRATEGES/flay-app/issues"
+  },
+  "homepage": "https://github.com/DIGITALSTRATEGES/flay-app#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "sql.js": "^1.11.0"
+  }
 }

@@ -1,234 +1,91 @@
 const express = require('express');
-const Profile = require('../models/Profile');
-const User = require('../models/User');
-const config = require('../config');
-const { auth, optionalAuth, requirePlan, rateLimit } = require('../middleware/auth');
-
+const { authenticate } = require('../lib/auth');
+const db = require('../db');
+const analyticsEngine = require('../analytics-engine');
 const router = express.Router();
 
-// GET /api/profile/my
-router.get('/my', auth, (req, res) => {
-    try {
-        const profile = Profile.findByUserId(req.user.id);
-        if (!profile) return res.status(404).json({ message: 'Profil non trouve.' });
-        const analytics = Profile.getAnalytics(profile.id);
-        res.json({ profile, analytics });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
+router.get('/my', (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token manquant' });
+    const authUtils = require('../auth-utils');
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.status(401).json({ error: 'Token invalide' });
+    const profile = db.findBy('profiles', 'userId', payload.userId);
+    if (!profile) return res.status(404).json({ error: 'Profil non trouve' });
+    res.json({ profile });
+});
+
+router.get('/:slug', (req, res) => {
+    const slug = req.params.slug;
+    const profile = db.findBy('profiles', 'slug', slug);
+    if (!profile) return res.status(404).json({ error: 'Profil non trouve' });
+    const user = db.get('users', profile.userId);
+    if (!user) return res.status(404).json({ error: 'Profil non trouve' });
+    analyticsEngine.track(profile.userId, 'views', { referrer: req.headers.referer, userAgent: req.headers['user-agent'] });
+    res.json({ profile, user: { name: user.name, username: user.username, plan: user.plan } });
+});
+
+router.put('/', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token manquant' });
+    const authUtils = require('../auth-utils');
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.status(401).json({ error: 'Token invalide' });
+    const user = db.get('users', payload.userId);
+    if (!user) return res.status(401).json({ error: 'Non trouve' });
+
+    const profile = db.findBy('profiles', 'userId', user.id);
+    if (!profile) return res.status(404).json({ error: 'Profil non trouve' });
+
+    const allowed = ['bio', 'title', 'location', 'phone', 'email', 'avatar', 'logo', 'signature', 'banner', 'services', 'socials', 'theme', 'template', 'geoLocation', 'gallery', 'website', 'seo', 'customCss', 'customJs'];
+    const updates = {};
+    for (const key of allowed) {
+        if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
-});
-
-// PUT /api/profile/my
-router.put('/my', auth, (req, res) => {
-    try {
-        const existing = Profile.findByUserId(req.user.id);
-        if (!existing) return res.status(404).json({ message: 'Profil non trouve.' });
-
-        // Check slug uniqueness
-        if (req.body.slug && req.body.slug !== existing.slug) {
-            const conflict = Profile.findBySlug(req.body.slug);
-            if (conflict) return res.status(400).json({ message: 'Ce lien est deja utilise.' });
-        }
-
-        // Check theme access
-        const user = User.findById(req.user.id);
-        if (user.plan === 'free' && req.body.theme) {
-            const theme = Profile.THEMES[req.body.theme];
-            if (theme && theme.premium) {
-                return res.status(403).json({ message: 'Theme premium. Upgardez au plan Pro.', upgrade: true });
-            }
-        }
-
-        // Check template access
-        if (req.body.template && req.body.template !== 'minimal') {
-            if (user.plan === 'free') {
-                return res.status(403).json({ message: 'Templates premium. Upgardez au plan Pro.', upgrade: true });
-            }
-        }
-
-        const profile = Profile.update(req.user.id, req.body);
-        res.json({ profile });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if (req.body.username && req.body.username !== user.username) {
+        const existing = db.findBy('users', 'username', req.body.username);
+        if (existing && existing.id !== user.id) return res.status(400).json({ error: 'Username deja pris' });
+        updates.slug = req.body.username;
+        db.update('users', user.id, { username: req.body.username });
     }
+    if (req.body.name) db.update('users', user.id, { name: req.body.name });
+    if (req.body.phone) db.update('users', user.id, { phone: req.body.phone });
+
+    const updated = db.update('profiles', user.id, updates);
+    res.json({ profile: updated, message: 'Profil mis a jour' });
 });
 
-// GET /api/profile/themes
-router.get('/themes', (req, res) => {
-    res.json({ themes: Profile.THEMES });
+router.put('/services', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token manquant' });
+    const authUtils = require('../auth-utils');
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.status(401).json({ error: 'Token invalide' });
+
+    const profile = db.findBy('profiles', 'userId', payload.userId);
+    if (!profile) return res.status(404).json({ error: 'Profil non trouve' });
+    if (!Array.isArray(req.body.services)) return res.status(400).json({ error: 'Services invalides' });
+    db.update('profiles', payload.userId, { services: JSON.stringify(req.body.services) });
+    res.json({ services: req.body.services, message: 'Services mis a jour' });
 });
 
-// GET /api/profile/templates
-router.get('/templates', (req, res) => {
-    res.json({ templates: Profile.TEMPLATES });
-});
+router.put('/geo', async (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token manquant' });
+    const authUtils = require('../auth-utils');
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.status(401).json({ error: 'Token invalide' });
 
-// GET /api/profile/public/:slug
-router.get('/public/:slug', optionalAuth, rateLimit(60000, 60), (req, res) => {
-    try {
-        const profile = Profile.findBySlug(req.params.slug);
-        if (!profile) return res.status(404).json({ message: 'Profil non trouve.' });
+    const profile = db.findBy('profiles', 'userId', payload.userId);
+    if (!profile) return res.status(404).json({ error: 'Profil non trouve' });
 
-        // Check if published
-        if (!profile.isPublished) return res.status(404).json({ message: 'Profil non publie.' });
-
-        // Check password protection
-        if (profile.settings?.passwordProtected) {
-            const provided = req.headers['x-profile-password'] || req.query.password;
-            if (provided !== profile.settings.password) {
-                return res.status(401).json({ message: 'Mot de passe requis.', passwordRequired: true });
-            }
-        }
-
-        // Record view
-        Profile.recordView(profile.slug, req.ip, req.headers.referer);
-
-        const user = User.findById(profile.userId);
-        const authorName = user ? user.name : 'Utilisateur';
-        const isVerified = user && (user.plan === 'pro' || user.plan === 'premium');
-        const isOwner = req.user && req.user.id === profile.userId;
-
-        res.json({
-            profile,
-            authorName,
-            isVerified,
-            isOwner,
-            planInfo: user ? { plan: user.plan } : null
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
+    const designStudio = require('../design-studio');
+    let geoLocation = null;
+    if (req.body.latitude && req.body.longitude) {
+        geoLocation = designStudio.generateGeoLocation(req.body.latitude, req.body.longitude, req.body.address, req.body.city, req.body.country);
     }
-});
-
-// POST /api/profile/public/:slug/click
-router.post('/public/:slug/click', (req, res) => {
-    try {
-        const profile = Profile.findBySlug(req.params.slug);
-        if (profile) Profile.recordClick(profile.slug);
-        res.json({ ok: true });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
-    }
-});
-
-// POST /api/profile/public/:slug/share
-router.post('/public/:slug/share', (req, res) => {
-    try {
-        const profile = Profile.findBySlug(req.params.slug);
-        if (profile) Profile.recordShare(profile.slug);
-        res.json({ ok: true });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
-    }
-});
-
-// GET /api/profile/search
-router.get('/search', rateLimit(60000, 30), (req, res) => {
-    try {
-        const { q } = req.query;
-        if (!q || q.length < 2) return res.json({ results: [] });
-        const results = Profile.search(q).slice(0, 20).map(p => {
-            const user = User.findById(p.userId);
-            return {
-                slug: p.slug,
-                title: p.title,
-                bio: p.bio,
-                location: p.location,
-                avatar: p.avatar,
-                theme: p.theme,
-                views: p.analytics?.views || 0,
-                authorName: user ? user.name : 'Utilisateur'
-            };
-        });
-        res.json({ results, total: results.length });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
-    }
-});
-
-// GET /api/profile/top
-router.get('/top', (req, res) => {
-    try {
-        const top = Profile.getTopProfiles(10).map(p => {
-            const user = User.findById(p.userId);
-            return {
-                slug: p.slug,
-                title: p.title,
-                location: p.location,
-                views: p.analytics?.views || 0,
-                authorName: user ? user.name : 'Utilisateur'
-            };
-        });
-        res.json({ top });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
-    }
-});
-
-// GET /api/profile/stats
-router.get('/stats', auth, (req, res) => {
-    try {
-        const profiles = Profile.getAllByUserId(req.user.id);
-        const Reservation = require('../models/Reservation');
-
-        let totalViews = 0, totalClicks = 0, totalShares = 0, totalReservations = 0;
-        let allRes = [];
-        const dailyViews = {};
-
-        for (const p of profiles) {
-            totalViews += p.analytics?.views || 0;
-            totalClicks += p.analytics?.clicks || 0;
-            totalShares += p.analytics?.shares || 0;
-            totalReservations += p.analytics?.reservations || 0;
-            allRes = allRes.concat(Reservation.findByProfileId(p.id));
-
-            // Merge daily views
-            if (p.analytics?.dailyViews) {
-                for (const [date, count] of Object.entries(p.analytics.dailyViews)) {
-                    dailyViews[date] = (dailyViews[date] || 0) + count;
-                }
-            }
-        }
-
-        // Last 7 days trend
-        const weeklyTrend = [];
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            const key = date.toISOString().split('T')[0];
-            weeklyTrend.push({ date: key, views: dailyViews[key] || 0 });
-        }
-
-        res.json({
-            profiles: profiles.length,
-            totalViews,
-            totalClicks,
-            totalShares,
-            weeklyTrend,
-            reservations: {
-                total: allRes.length,
-                pending: allRes.filter(r => r.status === 'pending').length,
-                confirmed: allRes.filter(r => r.status === 'confirmed').length,
-                cancelled: allRes.filter(r => r.status === 'cancelled').length
-            }
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
-    }
-});
-
-// GET /api/profile/analytics/:id
-router.get('/analytics/:id', auth, (req, res) => {
-    try {
-        const profile = Profile.findByUserId(req.user.id);
-        if (!profile || profile.id !== req.params.id) {
-            return res.status(404).json({ message: 'Profil non trouve.' });
-        }
-        const analytics = Profile.getAnalytics(profile.id, parseInt(req.query.days) || 30);
-        res.json({ analytics });
-    } catch (error) {
-        res.status(500).json({ message: 'Erreur serveur.' });
-    }
+    db.update('profiles', payload.userId, { geoLocation: geoLocation ? JSON.stringify(geoLocation) : null });
+    res.json({ geoLocation });
 });
 
 module.exports = router;
