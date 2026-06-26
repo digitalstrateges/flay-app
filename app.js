@@ -69,8 +69,13 @@ app.get('/manifest.json', (req, res) => {
 });
 app.get('/sw.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
-    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(path.join(__dirname, 'public', 'sw.js'));
+});
+app.get('/pwa.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.sendFile(path.join(__dirname, 'public', 'pwa.js'));
 });
 
 // === STATIC FILES ===
