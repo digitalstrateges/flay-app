@@ -1,6 +1,7 @@
 const express = require('express');
 const { authenticate } = require('../lib/auth');
 const ecommerce = require('../ecommerce');
+const market = require('../market-intelligence');
 const db = require('../db');
 const router = express.Router();
 
@@ -238,6 +239,31 @@ router.get('/track/:trackingNumber', (req, res) => {
     if (!parcel) return res.status(404).json({ error: 'Colis non trouve' });
     const order = db.get('orders', parcel.orderId);
     res.json({ parcel, order: order ? { id: order.id, status: order.status, total: order.total } : null });
+});
+
+// === MARKET INTELLIGENCE ===
+const marketAuth = [authenticate];
+
+router.get('/market/sales', ...marketAuth, (req, res) => {
+    const period = req.query.period || '30d';
+    res.json(market.getSalesAnalytics(req.user.id, period));
+});
+
+router.get('/market/products', ...marketAuth, (req, res) => {
+    const period = req.query.period || '30d';
+    res.json(market.getProductAnalytics(req.user.id, period));
+});
+
+router.get('/market/customers', ...marketAuth, (req, res) => {
+    res.json(market.getCustomerInsights(req.user.id));
+});
+
+router.get('/market/trends', ...marketAuth, (req, res) => {
+    res.json(market.getTrends(req.user.id));
+});
+
+router.get('/market/report', ...marketAuth, (req, res) => {
+    res.json(market.generateReport(req.user.id));
 });
 
 module.exports = router;

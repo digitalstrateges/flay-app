@@ -147,6 +147,57 @@ class AIAgent {
         return insights;
     }
 
+    generateInsightsFromSales(sales, products, customers, trends) {
+        const insights = [];
+
+        const hasOrders = sales.totalOrders > 0;
+        if (sales.totalRevenue > 100000) {
+            insights.push({ type: 'success', icon: '💰', title: 'Chiffre d\'affaires solide', message: `${sales.totalRevenue.toLocaleString()} FCFA de revenus sur la periode.` });
+        } else if (sales.totalRevenue > 0) {
+            insights.push({ type: 'info', icon: '📈', title: 'Premiers revenus', message: `${sales.totalRevenue.toLocaleString()} FCFA generes. Continuez a promouvoir votre boutique.` });
+        } else if (!hasOrders) {
+            insights.push({ type: 'suggestion', icon: '🚀', title: 'Lancez vos ventes', message: 'Commencez a partager vos produits sur WhatsApp et les reseaux sociaux.' });
+        } else {
+            insights.push({ type: 'info', icon: '📦', title: 'Commandes en attente', message: `${sales.totalOrders} commande(s) passee(s). Confirmez les pour comptabiliser les revenus.` });
+        }
+
+        if (sales.averageOrderValue > 0) {
+            insights.push({ type: 'info', icon: '🛒', title: 'Panier moyen', message: `${sales.averageOrderValue.toLocaleString()} FCFA par commande.` });
+        }
+
+        if (sales.revenueGrowth > 20) {
+            insights.push({ type: 'success', icon: '📊', title: 'Croissance forte', message: `Revenus en hausse de ${sales.revenueGrowth}% vs periode precedente.` });
+        } else if (sales.revenueGrowth < -10) {
+            insights.push({ type: 'warning', icon: '⚠️', title: 'Baisse d\'activite', message: `Revenus en baisse de ${Math.abs(sales.revenueGrowth)}%. Essayez de nouvelles promotions.` });
+        }
+
+        const top = products.topSellers?.[0];
+        if (top) {
+            insights.push({ type: 'info', icon: '🏆', title: 'Top produit', message: `"${top.name}" est votre meilleure vente (${top.periodSales} unites).` });
+        }
+
+        if (products.outOfStock?.length > 0) {
+            insights.push({ type: 'warning', icon: '📦', title: 'Stock epuise', message: `${products.outOfStock.length} produit(s) en rupture. Reapprovisionnez-vous.` });
+        }
+
+        if (customers.repeatRate > 30) {
+            insights.push({ type: 'success', icon: '❤️', title: 'Fidelite client', message: `${customers.repeatRate}% de clients reviennent. Excellent taux de fidelisation.` });
+        } else if (customers.totalCustomers > 5 && customers.repeatRate < 10) {
+            insights.push({ type: 'suggestion', icon: '🤝', title: 'Fidélisez vos clients', message: 'Offrez un coupon de reduction pour encourager les achats recurrings.' });
+        }
+
+        if (trends?.today?.orders > 0) {
+            insights.push({ type: 'info', icon: '📅', title: 'Aujourd\'hui', message: `${trends.today.orders} commande(s) aujourd'hui pour ${trends.today.revenue.toLocaleString()} FCFA.` });
+        }
+
+        if (sales.paymentMethods?.wave) {
+            const wavePct = Math.round(sales.paymentMethods.wave.count / (sales.totalOrders || 1) * 100);
+            insights.push({ type: 'info', icon: '📱', title: 'Paiement Wave', message: `Wave represente ${wavePct}% des paiements.` });
+        }
+
+        return insights;
+    }
+
     /**
      * Genere des titres SEO optimises
      */
