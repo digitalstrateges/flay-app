@@ -325,7 +325,8 @@ function html(title, body, script, lang) {
         '<title>' + title + ' | Flay</title>' +
         '<link rel="manifest" href="/manifest.json">' +
         '<meta name="theme-color" content="#818cf8">' +
-        '<meta name="apple-mobile-web-app-capable" content="yes">' +
+        '<meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">' +
         '<style>' + (require('./seller-dashboard').CSS || '') + I18n.selectorCSS() + '</style></head>' +
         '<body class="loading">' + (body || '') +
         '<script>if(\'serviceWorker\' in navigator){window.addEventListener(\'load\',()=>{navigator.serviceWorker.register(\'/sw.js\')})}' +
