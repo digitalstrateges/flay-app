@@ -14,6 +14,9 @@ const app = express();
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Trust proxy for correct IP behind reverse proxy
+app.set('trust proxy', 1);
+
 // Security headers
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
@@ -58,6 +61,18 @@ app.use('/api/auth', (req, res, next) => {
     next();
 });
 
+// === PWA ===
+app.get('/manifest.json', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.sendFile(path.join(__dirname, 'public', 'manifest.json'));
+});
+app.get('/sw.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.sendFile(path.join(__dirname, 'public', 'sw.js'));
+});
+
 // === STATIC FILES ===
 app.use(express.static(path.join(__dirname, 'public'), {
     maxAge: '1h',
@@ -71,6 +86,8 @@ app.use(express.static(path.join(__dirname, 'public'), {
             '.webp': 'image/webp', '.pdf': 'application/pdf'
         };
         if (mime[ext]) res.setHeader('Content-Type', mime[ext]);
+        // Long cache for hashed assets, short for HTML
+        if (ext === '.html') res.setHeader('Cache-Control', 'no-cache');
     }
 }));
 
@@ -298,10 +315,15 @@ app.get('/dashboard/coupons', dashboardAuth, (req, res) => {
 });
 
 function html(title, body, script) {
-    return '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">' +
-        '<title>' + title + ' | Flay</title><style>' + (require('./seller-dashboard').CSS || '') + '</style></head>' +
+    return '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">' +
+        '<title>' + title + ' | Flay</title>' +
+        '<link rel="manifest" href="/manifest.json">' +
+        '<meta name="theme-color" content="#818cf8">' +
+        '<meta name="apple-mobile-web-app-capable" content="yes">' +
+        '<style>' + (require('./seller-dashboard').CSS || '') + '</style></head>' +
         '<body class="loading">' + (body || '') +
-        '<script>const TOKEN=localStorage.getItem(\'flay_token\');' +
+        '<script>if(\'serviceWorker\' in navigator){window.addEventListener(\'load\',()=>{navigator.serviceWorker.register(\'/sw.js\')})}' +
+        'const TOKEN=localStorage.getItem(\'flay_token\');' +
         'if(!TOKEN){window.location=\'/login.html?redirect=/dashboard\'}' +
         'async function api(m,p,b){const r=await fetch(\'/api\'+p,{method:m||\'GET\',headers:{\'Content-Type\':\'application/json\',Authorization:\'Bearer \'+TOKEN},body:b?JSON.stringify(b):undefined});const d=await r.text();try{return JSON.parse(d)}catch{return{error:d}}}' +
         'function toast(m,t){const d=document.createElement(\'div\');d.className=\'toast toast-\'+(t||\'success\');d.textContent=m;document.body.appendChild(d);setTimeout(()=>d.remove(),3000)}' +
@@ -365,10 +387,33 @@ function broadcast(userId, event) {
     if (client) client.write(`data: ${JSON.stringify(event)}\n\n`);
 }
 
-// === ERROR HANDLER ===
+// === CUSTOM ERROR PAGES ===
+app.use((req, res) => {
+    if (req.accepts('html') && !req.path.startsWith('/api/')) {
+        res.status(404).send(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="manifest" href="/manifest.json"><title>Page non trouvee | Flay</title><style>
+        *{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a1a;color:#e2e8f0;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
+        .card{background:#12121f;border-radius:16px;padding:3rem;text-align:center;max-width:480px;width:100%;border:1px solid #1e293b}
+        .code{font-size:5rem;font-weight:800;background:linear-gradient(135deg,#818cf8,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+        h1{font-size:1.25rem;margin:1rem 0 .5rem;color:#f1f5f9}p{color:#64748b;margin-bottom:1.5rem;font-size:.9rem}
+        .btn{display:inline-block;padding:.75rem 2rem;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:500}
+        .btn:hover{opacity:.9}</style></head><body><div class="card"><div class="code">404</div><h1>Page non trouvee</h1><p>La page que vous cherchez n\\'existe pas ou a ete deplacee.</p><a href="/" class="btn">Retour a l\\'accueil</a></div></body></html>`);
+    } else {
+        res.status(404).json({ error: 'Not found' });
+    }
+});
+
 app.use((err, req, res, next) => {
     console.error('[ERROR]', err.message);
-    res.status(err.status || 500).json({ error: err.message || 'Erreur serveur' });
+    if (req.accepts('html') && !req.path.startsWith('/api/')) {
+        res.status(500).send(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="manifest" href="/manifest.json"><title>Erreur | Flay</title><style>
+        *{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a1a;color:#e2e8f0;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
+        .card{background:#12121f;border-radius:16px;padding:3rem;text-align:center;max-width:480px;width:100%;border:1px solid #1e293b}
+        .code{font-size:5rem;font-weight:800;background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+        h1{font-size:1.25rem;margin:1rem 0 .5rem;color:#f1f5f9}p{color:#64748b;margin-bottom:1.5rem;font-size:.9rem}
+        .btn{display:inline-block;padding:.75rem 2rem;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:500}</style></head><body><div class="card"><div class="code">500</div><h1>Erreur serveur</h1><p>Une erreur s\\'est produite. Reessayez plus tard.</p><a href="/" class="btn">Retour a l\\'accueil</a></div></body></html>`);
+    } else {
+        res.status(err.status || 500).json({ error: err.message || 'Erreur serveur' });
+    }
 });
 
 module.exports = { app, broadcast };
