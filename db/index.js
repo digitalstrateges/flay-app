@@ -367,6 +367,25 @@ class Database {
             CREATE INDEX IF NOT EXISTS idx_contacts_user ON contacts(userId);
             CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(userId);
             CREATE INDEX IF NOT EXISTS idx_analytics_user ON analytics(userId);
+            CREATE TABLE IF NOT EXISTS referrals (
+                id TEXT PRIMARY KEY,
+                userId TEXT NOT NULL UNIQUE,
+                code TEXT NOT NULL UNIQUE,
+                totalReferrals INTEGER DEFAULT 0,
+                totalCommission INTEGER DEFAULT 0,
+                paidCommission INTEGER DEFAULT 0,
+                createdAt TEXT DEFAULT (datetime('now'))
+            );
+            CREATE TABLE IF NOT EXISTS referral_conversions (
+                id TEXT PRIMARY KEY,
+                referralId TEXT NOT NULL,
+                referrerUserId TEXT NOT NULL,
+                referredUserId TEXT NOT NULL,
+                status TEXT DEFAULT 'pending',
+                commission INTEGER DEFAULT 0,
+                createdAt TEXT DEFAULT (datetime('now'))
+            );
+            CREATE INDEX IF NOT EXISTS idx_referrals_code ON referrals(code);
             CREATE INDEX IF NOT EXISTS idx_products_user ON products(userId);
             CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(userId);
             CREATE INDEX IF NOT EXISTS idx_parcels_tracking ON parcels(trackingNumber);

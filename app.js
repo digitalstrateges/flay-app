@@ -279,6 +279,14 @@ app.get('/p/:username', (req, res) => {
     _renderUnifiedSite(req, res, user, profile, { theme: profile.theme });
 });
 
+// === MARKETPLACE PAGE ===
+const marketplace = require('./marketplace');
+app.get('/vendors', (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    const vendors = marketplace.getVendors(page);
+    res.send(marketplace.generateVendorsPage(vendors));
+});
+
 // === SELLER DASHBOARD ===
 const dashboard = require('./seller-dashboard');
 
@@ -334,7 +342,7 @@ function html(title, body, script, lang) {
 // Username shortcut (now shows unified site)
 app.get('/:username', (req, res) => {
     const username = req.params.username;
-    if (username.includes('.') || username.includes('/') || username === 'api' || username === 'showcase' || username === 'p' || username === 'u' || username === 'store' || username === 'product' || username === 'track' || username === 'cart' || username === 'dashboard') return res.status(404).send('Not found');
+    if (username.includes('.') || username.includes('/') || username === 'api' || username === 'showcase' || username === 'p' || username === 'u' || username === 'store' || username === 'product' || username === 'track' || username === 'cart' || username === 'dashboard' || username === 'vendors' || username === 'lang') return res.status(404).send('Not found');
     const profile = db.findBy('profiles', 'slug', username);
     if (!profile) return res.status(404).send('Profil non trouve');
     const user = db.get('users', profile.userId);

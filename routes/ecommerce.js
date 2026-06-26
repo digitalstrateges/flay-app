@@ -2,6 +2,7 @@ const express = require('express');
 const { authenticate } = require('../lib/auth');
 const ecommerce = require('../ecommerce');
 const market = require('../market-intelligence');
+const marketplace = require('../marketplace');
 const db = require('../db');
 const router = express.Router();
 
@@ -264,6 +265,33 @@ router.get('/market/trends', ...marketAuth, (req, res) => {
 
 router.get('/market/report', ...marketAuth, (req, res) => {
     res.json(market.generateReport(req.user.id));
+});
+
+// === MARKETPLACE & REFERRALS ===
+router.get('/vendors', (req, res) => {
+    const page = parseInt(req.query.page) || 1;
+    res.json(marketplace.getVendors(page));
+});
+
+router.get('/referral/code', authenticate, (req, res) => {
+    let ref = marketplace.getReferralCode(req.user.id);
+    if (!ref) ref = marketplace.generateReferralCode(req.user.id);
+    res.json({ referral: marketplace.getReferralStats(req.user.id) });
+});
+
+router.post('/referral/generate', authenticate, (req, res) => {
+    const ref = marketplace.generateReferralCode(req.user.id);
+    res.json({ referral: ref });
+});
+
+router.post('/referral/track', (req, res) => {
+    const result = marketplace.trackReferral(req.body.code, req.body.userId);
+    if (result.error) return res.status(400).json({ error: result.error });
+    res.json({ conversion: result });
+});
+
+router.get('/referral/stats', authenticate, (req, res) => {
+    res.json(marketplace.getReferralStats(req.user.id));
 });
 
 module.exports = router;
