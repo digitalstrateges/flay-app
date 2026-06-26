@@ -267,11 +267,12 @@ const translations = {
 
 class I18n {
     constructor(lang = 'fr') {
-        this.lang = lang;
+        this.lang = translations[lang] ? lang : 'fr';
     }
 
     setLang(lang) {
         this.lang = translations[lang] ? lang : 'fr';
+        return this;
     }
 
     t(key) {
@@ -286,6 +287,25 @@ class I18n {
 
     getLangs() {
         return Object.keys(translations);
+    }
+
+    static detect(req) {
+        const cookie = req.headers.cookie?.match(/lang=([a-z]+)/);
+        if (cookie && translations[cookie[1]]) return cookie[1];
+        const accept = req.headers['accept-language'] || '';
+        if (accept.startsWith('en')) return 'en';
+        return 'fr';
+    }
+
+    static selector(lang, currentPath = '/') {
+        const langs = { fr: 'Français', en: 'English' };
+        return Object.entries(langs).map(([code, name]) =>
+            `<a href="/lang/${code}?redirect=${encodeURIComponent(currentPath)}" class="lang-btn ${code === lang ? 'active' : ''}" data-lang="${code}">${name}</a>`
+        ).join('');
+    }
+
+    static selectorCSS() {
+        return '.lang-switch{display:flex;gap:4px;align-items:center}.lang-btn{padding:4px 10px;border-radius:6px;font-size:.75rem;text-decoration:none;color:var(--muted,#64748b);border:1px solid var(--border,#1e293b);background:transparent;transition:all .15s}.lang-btn:hover{color:var(--text,#e2e8f0);border-color:var(--muted)}.lang-btn.active{background:var(--primary2,#6366f1);color:#fff;border-color:var(--primary2)}';
     }
 }
 

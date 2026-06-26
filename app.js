@@ -108,6 +108,20 @@ app.use('/api/wave', require('./routes/wave'));
 app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api', require('./routes/settings'));
 
+// === I18N MIDDLEWARE ===
+const I18n = require('./i18n');
+app.use((req, res, next) => {
+    req.lang = I18n.detect(req);
+    next();
+});
+
+// Language switcher
+app.get('/lang/:lang', (req, res) => {
+    const lang = ['fr', 'en'].includes(req.params.lang) ? req.params.lang : 'fr';
+    res.setHeader('Set-Cookie', `lang=${lang}; Path=/; Max-Age=31536000; SameSite=Lax`);
+    res.redirect(req.query.redirect || '/');
+});
+
 // === E-COMMERCE PUBLIC PAGES ===
 const ecommerce = require('./ecommerce');
 const ecommerceDB = require('./db');
@@ -284,43 +298,27 @@ function dashboardAuth(req, res, next) {
     next();
 }
 
-app.get('/dashboard', dashboardAuth, (req, res) => {
-    const page = dashboard.overview(req._user.id);
-    res.send(html(page.title, page.body, page.script));
-});
+function _dashPage(req, res, page) {
+    const langSwitcher = '<div class="lang-switch" style="padding:.75rem 1.25rem;border-top:1px solid var(--border);margin-top:auto">' + I18n.selector(req.lang, req.path) + '</div>';
+    const body = (page.body || '').replace('</nav>', '</nav>' + langSwitcher);
+    res.send(html(page.title, body, page.script, req.lang));
+}
 
-app.get('/dashboard/products', dashboardAuth, (req, res) => {
-    const page = dashboard.products(req._user.id);
-    res.send(html(page.title, page.body, page.script));
-});
+app.get('/dashboard', dashboardAuth, (req, res) => _dashPage(req, res, dashboard.overview(req._user.id)));
+app.get('/dashboard/products', dashboardAuth, (req, res) => _dashPage(req, res, dashboard.products(req._user.id)));
+app.get('/dashboard/orders', dashboardAuth, (req, res) => _dashPage(req, res, dashboard.orders(req._user.id)));
+app.get('/dashboard/parcels', dashboardAuth, (req, res) => _dashPage(req, res, dashboard.parcels(req._user.id)));
+app.get('/dashboard/categories', dashboardAuth, (req, res) => _dashPage(req, res, dashboard.categories(req._user.id)));
+app.get('/dashboard/coupons', dashboardAuth, (req, res) => _dashPage(req, res, dashboard.coupons(req._user.id)));
 
-app.get('/dashboard/orders', dashboardAuth, (req, res) => {
-    const page = dashboard.orders(req._user.id);
-    res.send(html(page.title, page.body, page.script));
-});
-
-app.get('/dashboard/parcels', dashboardAuth, (req, res) => {
-    const page = dashboard.parcels(req._user.id);
-    res.send(html(page.title, page.body, page.script));
-});
-
-app.get('/dashboard/categories', dashboardAuth, (req, res) => {
-    const page = dashboard.categories(req._user.id);
-    res.send(html(page.title, page.body, page.script));
-});
-
-app.get('/dashboard/coupons', dashboardAuth, (req, res) => {
-    const page = dashboard.coupons(req._user.id);
-    res.send(html(page.title, page.body, page.script));
-});
-
-function html(title, body, script) {
-    return '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">' +
+function html(title, body, script, lang) {
+    const currentLang = lang || 'fr';
+    return '<!DOCTYPE html><html lang="' + currentLang + '"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">' +
         '<title>' + title + ' | Flay</title>' +
         '<link rel="manifest" href="/manifest.json">' +
         '<meta name="theme-color" content="#818cf8">' +
         '<meta name="apple-mobile-web-app-capable" content="yes">' +
-        '<style>' + (require('./seller-dashboard').CSS || '') + '</style></head>' +
+        '<style>' + (require('./seller-dashboard').CSS || '') + I18n.selectorCSS() + '</style></head>' +
         '<body class="loading">' + (body || '') +
         '<script>if(\'serviceWorker\' in navigator){window.addEventListener(\'load\',()=>{navigator.serviceWorker.register(\'/sw.js\')})}' +
         'const TOKEN=localStorage.getItem(\'flay_token\');' +
