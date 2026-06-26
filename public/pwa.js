@@ -43,6 +43,12 @@ const FlayPWA = {
             window.navigator.standalone === true) {
             this.isInstalled = true;
         }
+
+        setInterval(() => {
+            navigator.serviceWorker.getRegistration().then(reg => {
+                if (reg) reg.update();
+            });
+        }, 60000);
     },
 
     async install() {
