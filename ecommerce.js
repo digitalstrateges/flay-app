@@ -246,6 +246,7 @@ class ECommerce {
             }
         }
         this.clearCart(userId);
+        this.createParcel(userId, id);
         return order;
     }
 
@@ -296,6 +297,64 @@ class ECommerce {
         const order = db.get('orders', orderId);
         if (!order || order.userId !== userId) return null;
         return db.update('orders', orderId, { deliveryStatus: status });
+    }
+
+    // === PARCEL TRACKING ===
+    createParcel(userId, orderId) {
+        const order = db.get('orders', orderId);
+        if (!order || order.userId !== userId) return { error: 'Commande non trouvee' };
+        const existing = db.findBy('parcels', 'orderId', orderId);
+        if (existing) return { error: 'Colis deja cree', parcel: existing };
+        const crypto = require('crypto');
+        const id = `parcel_${Date.now()}_${crypto.randomBytes(3).toString('hex')}`;
+        const trackingNumber = `FLY-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+        const history = [{ status: 'preparation', timestamp: new Date().toISOString(), note: 'Colis cree' }];
+        const parcel = db.insert('parcels', {
+            id, orderId, userId, trackingNumber,
+            status: 'preparation',
+            destination: typeof order.shippingAddress === 'string' ? order.shippingAddress : JSON.stringify(order.shippingAddress || {}),
+            estimatedDelivery: order.estimatedDelivery || null,
+            history: JSON.stringify(history)
+        });
+        db.update('orders', orderId, { deliveryStatus: 'preparation' });
+        return parcel;
+    }
+
+    getParcel(parcelId) { return db.get('parcels', parcelId); }
+
+    getParcelByTracking(trackingNumber) {
+        return db.findBy('parcels', 'trackingNumber', trackingNumber);
+    }
+
+    getOrderParcel(orderId) {
+        return db.findBy('parcels', 'orderId', orderId);
+    }
+
+    getUserParcels(userId) {
+        const parcels = db.findAll('parcels', 'userId', userId);
+        parcels.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        return parcels;
+    }
+
+    updateParcelStatus(parcelId, userId, status, note) {
+        const parcel = db.get('parcels', parcelId);
+        if (!parcel) return null;
+        if (parcel.userId !== userId) return { error: 'Non autorise' };
+        const validStatuses = ['preparation', 'shipped', 'in_transit', 'delivered', 'cancelled'];
+        if (!validStatuses.includes(status)) return { error: 'Statut invalide' };
+        const history = typeof parcel.history === 'string' ? JSON.parse(parcel.history) : (parcel.history || []);
+        history.push({ status, timestamp: new Date().toISOString(), note: note || '' });
+        const updates = { status, history: JSON.stringify(history), updatedAt: new Date().toISOString() };
+        if (status === 'shipped') updates.shippedAt = new Date().toISOString();
+        if (status === 'delivered') updates.deliveredAt = new Date().toISOString();
+        db.update('parcels', parcelId, updates);
+        db.update('orders', parcel.orderId, { deliveryStatus: status });
+        return db.get('parcels', parcelId);
+    }
+
+    generateTrackingUrl(trackingNumber) {
+        const config = require('./config');
+        return `${config.SITE_URL || 'http://localhost:3000'}/track/${trackingNumber}`;
     }
 
     // === COUPONS ===

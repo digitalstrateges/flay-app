@@ -157,7 +157,16 @@ router.delete('/cart', authenticate, (req, res) => {
 router.post('/orders', authenticate, (req, res) => {
     const order = ecommerce.createOrder(req.user.id, req.body);
     if (order.error) return res.status(400).json({ error: order.error });
-    res.status(201).json({ order });
+    const config = require('../config');
+    const parcel = ecommerce.getOrderParcel(order.id);
+    const whatsappMsg = `Bonjour%2C%20je%20viens%20de%20passer%20une%20commande%20%23${order.id.substring(0,12)}%20d%27un%20montant%20de%20${order.total}%20FCFA.%20Merci%20de%20me%20confirmer%20le%20paiement%20Wave.`;
+    const whatsappLink = config.WHATSAPP_LINK ? `${config.WHATSAPP_LINK}?text=${whatsappMsg}` : null;
+    res.status(201).json({
+        order,
+        whatsappPaymentLink: whatsappLink,
+        trackingNumber: parcel?.trackingNumber || null,
+        trackingUrl: parcel ? `/track/${parcel.trackingNumber}` : null
+    });
 });
 
 router.get('/orders', authenticate, (req, res) => {
@@ -197,6 +206,38 @@ router.get('/coupons', authenticate, (req, res) => {
 router.delete('/coupons/:id', authenticate, (req, res) => {
     if (!ecommerce.deleteCoupon(req.params.id, req.user.id)) return res.status(404).json({ error: 'Coupon non trouve' });
     res.json({ message: 'Coupon supprime' });
+});
+
+// === PARCEL TRACKING ===
+router.post('/parcels', authenticate, (req, res) => {
+    const parcel = ecommerce.createParcel(req.user.id, req.body.orderId);
+    if (parcel.error) return res.status(400).json({ error: parcel.error });
+    res.status(201).json({ parcel });
+});
+
+router.get('/parcels', authenticate, (req, res) => {
+    res.json({ parcels: ecommerce.getUserParcels(req.user.id) });
+});
+
+router.get('/parcels/:id', authenticate, (req, res) => {
+    const parcel = ecommerce.getParcel(req.params.id);
+    if (!parcel || parcel.userId !== req.user.id) return res.status(404).json({ error: 'Colis non trouve' });
+    res.json({ parcel });
+});
+
+router.put('/parcels/:id/status', authenticate, (req, res) => {
+    const result = ecommerce.updateParcelStatus(req.params.id, req.user.id, req.body.status, req.body.note);
+    if (!result) return res.status(404).json({ error: 'Colis non trouve' });
+    if (result.error) return res.status(400).json({ error: result.error });
+    res.json({ parcel: result });
+});
+
+// Public tracking lookup
+router.get('/track/:trackingNumber', (req, res) => {
+    const parcel = ecommerce.getParcelByTracking(req.params.trackingNumber);
+    if (!parcel) return res.status(404).json({ error: 'Colis non trouve' });
+    const order = db.get('orders', parcel.orderId);
+    res.json({ parcel, order: order ? { id: order.id, status: order.status, total: order.total } : null });
 });
 
 module.exports = router;

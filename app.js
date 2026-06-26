@@ -132,6 +132,67 @@ app.get('/cart', (req, res) => {
     res.send(html);
 });
 
+// --- Public tracking page ---
+app.get('/track/:trackingNumber', (req, res) => {
+    const parcel = ecommerce.getParcelByTracking(req.params.trackingNumber);
+    if (!parcel) return res.status(404).send(`
+        <!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <title>Colis non trouve | Flay</title><style>body{font-family:sans-serif;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0;background:#0a0a1a;color:#e2e8f0}
+        .card{background:#12121f;padding:3rem;border-radius:16px;text-align:center;max-width:480px;width:90%}
+        h1{color:#f87171;margin-bottom:1rem}.btn{display:inline-block;margin-top:1.5rem;padding:.75rem 2rem;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none}
+        </style></head><body><div class="card"><h1>Colis non trouve</h1>
+        <p>Verifiez votre numero de suivi et reessayez.</p><a href="/" class="btn">Retour a l'accueil</a></div></body></html>
+    `);
+    const order = ecommerceDB.get('orders', parcel.orderId);
+    const statusLabels = { preparation: 'Preparation', shipped: 'Expedie', in_transit: 'En transit', delivered: 'Livree', cancelled: 'Annule' };
+    const statusIcons = { preparation: '📦', shipped: '🚚', in_transit: '✈️', delivered: '✅', cancelled: '❌' };
+    const history = typeof parcel.history === 'string' ? JSON.parse(parcel.history) : (parcel.history || []);
+    const qrUrl = require('./auth-utils').generateQRCode(`${config.SITE_URL || ''}/track/${parcel.trackingNumber}`);
+    const address = typeof parcel.destination === 'string' ? (() => { try { return JSON.parse(parcel.destination); } catch { return { address: parcel.destination }; } })() : (parcel.destination || {});
+    const addrStr = [address.address, address.city, address.zone].filter(Boolean).join(', ') || 'Non renseignee';
+    const timeline = history.map(h => `<div class="tl-item ${h.status === parcel.status ? 'active' : ''}">
+        <div class="tl-dot ${h.status === parcel.status ? 'current' : ''}"></div>
+        <div class="tl-content"><strong>${statusLabels[h.status] || h.status}</strong>
+        <span class="tl-date">${new Date(h.timestamp).toLocaleDateString('fr-FR', { day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' })}</span>
+        ${h.note ? '<p>' + h.note + '</p>' : ''}</div></div>`).join('');
+    const whatsappLink = config.WHATSAPP_LINK ? `${config.WHATSAPP_LINK}?text=${encodeURIComponent('Suivi colis ' + parcel.trackingNumber)}` : '#';
+    res.send(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <title>Suivi colis ${parcel.trackingNumber} | Flay</title>
+        <style>body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;margin:0;background:#0a0a1a;color:#e2e8f0;padding:2rem 1rem}
+        .container{max-width:720px;margin:0 auto}.card{background:#12121f;border-radius:16px;padding:2rem;margin-bottom:1.5rem}
+        .header{text-align:center;margin-bottom:2rem}.header h1{font-size:1.5rem;color:#f1f5f9;margin:0 0 .5rem}
+        .tracking-number{font-size:1.25rem;color:#818cf8;font-weight:700;letter-spacing:2px}
+        .status-badge{display:inline-block;padding:.5rem 1.5rem;border-radius:999px;font-weight:600;font-size:.9rem;
+        ${parcel.status === 'delivered' ? 'background:#065f46;color:#6ee7b7' : parcel.status === 'cancelled' ? 'background:#7f1d1d;color:#fca5a5' : 'background:#1e1b4b;color:#a5b4fc'}}
+        .qr-section{display:flex;justify-content:center;margin:1.5rem 0}
+        .qr-section img{width:160px;height:160px;border-radius:12px;background:#fff;padding:8px}
+        .info-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+        .info-label{color:#94a3b8;font-size:.85rem}.info-value{color:#f1f5f9;font-weight:500;margin-top:.25rem}
+        .timeline{position:relative;padding-left:2rem}.timeline::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:2px;background:#1e293b}
+        .tl-item{position:relative;padding-bottom:1.5rem}.tl-item:last-child{padding-bottom:0}
+        .tl-dot{position:absolute;left:-1.5rem;top:4px;width:16px;height:16px;border-radius:50%;background:#1e293b;border:2px solid #334155}
+        .tl-dot.current{background:#818cf8;border-color:#6366f1;box-shadow:0 0 12px rgba(99,102,241,.5)}
+        .tl-content strong{display:block;color:#f1f5f9}.tl-date{font-size:.8rem;color:#64748b;display:block;margin:.25rem 0}
+        .tl-content p{color:#94a3b8;margin:.25rem 0 0;font-size:.9rem}
+        .actions{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem}
+        .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.5rem;border-radius:8px;text-decoration:none;font-weight:500;transition:opacity .2s}
+        .btn:hover{opacity:.9}.btn-primary{background:#6366f1;color:#fff}.btn-success{background:#059669;color:#fff}
+        @media(max-width:480px){.info-grid{grid-template-columns:1fr}}
+        </style></head><body><div class="container">
+        <div class="card header"><p class="tracking-number">${parcel.trackingNumber}</p>
+        <h1>Suivi de colis</h1><span class="status-badge">${statusIcons[parcel.status] || '📦'} ${statusLabels[parcel.status] || parcel.status}</span>
+        <div class="qr-section"><img src="${qrUrl}" alt="QR Code suivi"></div></div>
+        <div class="card"><h2 style="margin:0 0 1rem;font-size:1.1rem;color:#f1f5f9">Informations</h2>
+        <div class="info-grid"><div><div class="info-label">Commande</div><div class="info-value">#${order ? order.id.substring(0,16) : 'N/A'}</div></div>
+        <div><div class="info-label">Destination</div><div class="info-value">${addrStr}</div></div>
+        ${parcel.estimatedDelivery ? '<div><div class="info-label">Livraison estimee</div><div class="info-value">' + new Date(parcel.estimatedDelivery).toLocaleDateString('fr-FR') + '</div></div>' : ''}
+        <div><div class="info-label">Derniere mise a jour</div><div class="info-value">${new Date(parcel.updatedAt || parcel.createdAt).toLocaleDateString('fr-FR', { day:'numeric', month:'long', hour:'2-digit', minute:'2-digit' })}</div></div></div></div>
+        <div class="card"><h2 style="margin:0 0 1rem;font-size:1.1rem;color:#f1f5f9">Chronologie</h2>
+        <div class="timeline">${timeline}</div></div>
+        <div class="actions"><a href="${whatsappLink}" target="_blank" class="btn btn-success">💬 Contacter sur WhatsApp</a></div>
+        </div></body></html>`);
+});
+
 // === NON-API ROUTES ===
 
 // Showcase site

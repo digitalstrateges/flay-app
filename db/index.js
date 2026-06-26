@@ -330,6 +330,23 @@ class Database {
                 active INTEGER DEFAULT 1,
                 createdAt TEXT DEFAULT (datetime('now'))
             );
+            CREATE TABLE IF NOT EXISTS parcels (
+                id TEXT PRIMARY KEY,
+                orderId TEXT NOT NULL,
+                userId TEXT NOT NULL,
+                trackingNumber TEXT NOT NULL UNIQUE,
+                carrier TEXT DEFAULT '',
+                status TEXT DEFAULT 'preparation',
+                origin TEXT DEFAULT '',
+                destination TEXT DEFAULT '',
+                estimatedDelivery TEXT,
+                shippedAt TEXT,
+                deliveredAt TEXT,
+                notes TEXT DEFAULT '',
+                history TEXT DEFAULT '[]',
+                createdAt TEXT DEFAULT (datetime('now')),
+                updatedAt TEXT DEFAULT (datetime('now'))
+            );
             CREATE TABLE IF NOT EXISTS categories (
                 id TEXT PRIMARY KEY,
                 userId TEXT NOT NULL,
@@ -352,6 +369,7 @@ class Database {
             CREATE INDEX IF NOT EXISTS idx_analytics_user ON analytics(userId);
             CREATE INDEX IF NOT EXISTS idx_products_user ON products(userId);
             CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(userId);
+            CREATE INDEX IF NOT EXISTS idx_parcels_tracking ON parcels(trackingNumber);
         `;
         this.db.run(schema);
     }
@@ -362,6 +380,7 @@ class Database {
         payments: ['metadata'],
         products: ['images', 'variants', 'tags', 'stats'],
         orders: ['items', 'shipping', 'payment'],
+        parcels: ['history'],
         invoices: ['items'],
         contacts: ['tags'],
         notifications: ['data'],
