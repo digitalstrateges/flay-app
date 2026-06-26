@@ -514,14 +514,21 @@ if(r.ok){alert('Ajoute au panier !')}else{const d=await r.json();alert(d.error||
 
     generateStorePage(userId, products, categories, storeInfo = {}) {
         const items = products.items || [];
+        const profileUrl = storeInfo.profileSlug ? `/${storeInfo.profileSlug}` : null;
         return `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>${storeInfo.storeName || 'Boutique'} | Flay</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#0a0a1a;--card:#12121f;--text:#e2e8f0;--muted:#64748b;--primary:#818cf8;--border:#1e293b}
+:root{--bg:#0a0a1a;--card:#12121f;--text:#e2e8f0;--muted:#64748b;--primary:#818cf8;--border:#1e293b;--accent:#818cf8}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.site-nav{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.5rem;background:rgba(0,0,0,.3);backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+.site-nav-brand{font-weight:700;color:var(--text);text-decoration:none;font-size:1.1rem}
+.site-nav-links{display:flex;gap:.5rem;align-items:center}
+.site-nav-link{color:var(--muted);text-decoration:none;padding:.4rem 1rem;border-radius:999px;font-size:.875rem;transition:all .2s}
+.site-nav-link:hover{color:var(--text);background:rgba(255,255,255,.08)}
+.site-nav-link.active{color:var(--accent);background:rgba(99,102,241,.15)}
 .container{max-width:1200px;margin:0 auto;padding:20px}
 .header{text-align:center;padding:40px 0}
 .header h1{font-size:36px;margin-bottom:8px}
@@ -539,9 +546,19 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .card-old{font-size:14px;color:var(--muted);text-decoration:line-through;margin-left:8px}
 .empty{text-align:center;padding:60px 20px;color:var(--muted)}
 .empty svg{width:64px;height:64px;margin-bottom:16px;opacity:.3}
+footer{text-align:center;padding:2rem;color:var(--muted);font-size:.85rem;border-top:1px solid var(--border);margin-top:2rem}
+footer a{color:var(--primary);text-decoration:none}
 @media(max-width:600px){.products-grid{grid-template-columns:1fr 1fr}}
 </style></head>
-<body><div class="container">
+<body>
+<nav class="site-nav">
+    <a href="${profileUrl || '/'}" class="site-nav-brand">${storeInfo.storeName || 'Boutique'}</a>
+    <div class="site-nav-links">
+        ${profileUrl ? `<a href="${profileUrl}" class="site-nav-link">👤 Profil</a>` : ''}
+        <a href="#products-section" class="site-nav-link active">Produits</a>
+    </div>
+</nav>
+<div class="container" id="products-section">
 <div class="header">
 <h1>${storeInfo.storeName || 'Boutique'}</h1>
 <p>${storeInfo.storeDescription || 'Decouvrez nos produits'}</p></div>
@@ -557,7 +574,9 @@ ${p.comparePrice > p.price ? `<span class="card-old">${Number(p.comparePrice).to
 }).join('') : `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><p>Aucun produit pour le moment</p></div>`}</div>
 <div class="pagination" style="text-align:center;padding:32px 0">
 ${products.pagination?.totalPages > 1 ? Array.from({length: products.pagination.totalPages}, (_, i) => `<button class="cat-btn ${i+1===products.pagination.page?'active':''}" onclick="window.location='?page=${i+1}'">${i+1}</button>`).join('') : ''}
-</div></div>
+</div>
+<footer><a href="${profileUrl || '/'}">${storeInfo.storeName || 'Retour au profil'}</a> &middot; Propulse par <strong>Flay</strong></footer>
+</div>
 <script>function filter(c){window.location='?category='+c}</script>
 </body></html>`;
     }

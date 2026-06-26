@@ -76,6 +76,9 @@ class DesignStudio {
         const theme = options.theme || profile.theme || 'dark';
         const lang = options.lang || 'fr';
         const colors = this.getThemeCSS(theme, profile.plan);
+        const ecom = options.ecommerce || {};
+        const hasStore = ecom.hasStore && ecom.storeUrl;
+        const storeProducts = ecom.products || [];
 
         return `<!DOCTYPE html>
 <html lang="${lang}">
@@ -87,9 +90,35 @@ class DesignStudio {
     <meta property="og:title" content="${this.esc(user.name)}">
     <meta property="og:description" content="${this.esc(profile.bio?.substring(0, 200) || '')}">
     ${profile.avatar ? `<meta property="og:image" content="${profile.avatar}">` : ''}
-    <style>${this.getFullCSS(colors, theme)}</style>
+    <style>${this.getFullCSS(colors, theme)}
+    .site-nav{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1.5rem;background:rgba(0,0,0,.3);backdrop-filter:blur(12px);position:fixed;top:0;left:0;right:0;z-index:100;border-bottom:1px solid var(--border)}
+    .site-nav-brand{font-weight:700;color:var(--text);text-decoration:none;font-size:1.1rem}
+    .site-nav-links{display:flex;gap:.5rem;align-items:center}
+    .site-nav-link{color:var(--muted);text-decoration:none;padding:.4rem 1rem;border-radius:999px;font-size:.875rem;transition:all .2s}
+    .site-nav-link:hover{color:var(--text);background:rgba(255,255,255,.08)}
+    .site-nav-link.active{color:var(--accent);background:rgba(99,102,241,.15)}
+    .products-mini-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;margin-top:1rem}
+    .product-mini-card{background:var(--cardBg);border-radius:12px;padding:1rem;border:1px solid var(--border);transition:transform .2s,box-shadow .2s;text-decoration:none;color:inherit}
+    .product-mini-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+    .product-mini-name{font-size:.95rem;font-weight:600;color:var(--text);margin-bottom:.25rem}
+    .product-mini-price{font-size:1.1rem;font-weight:700;color:var(--accent)}
+    .product-mini-desc{font-size:.8rem;color:var(--textLight);margin-top:.25rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .store-cta{text-align:center;margin-top:1.5rem}
+    .badge-store{background:linear-gradient(135deg,var(--accent),#a855f7);color:#fff;padding:.3rem .8rem;border-radius:999px;font-size:.75rem;font-weight:600}
+    .nav-store-link{display:inline-flex;align-items:center;gap:.5rem;padding:.4rem 1.2rem!important;background:linear-gradient(135deg,var(--accent),#a855f7);color:#fff!important;border-radius:999px!important;font-weight:500}
+    .nav-store-link:hover{opacity:.9;background:linear-gradient(135deg,var(--accent),#a855f7)!important}
+    </style>
 </head>
 <body>
+    <nav class="site-nav">
+        <a href="/${user.username || profile.slug}" class="site-nav-brand">${this.esc(user.name)}</a>
+        <div class="site-nav-links">
+            <a href="#services" class="site-nav-link">Services</a>
+            <a href="#about" class="site-nav-link">A propos</a>
+            <a href="#contact" class="site-nav-link">Contact</a>
+            ${hasStore ? `<a href="${ecom.storeUrl}" class="site-nav-link nav-store-link">🛍️ Boutique</a>` : ''}
+        </div>
+    </nav>
     <div class="vitrine" id="vitrine">
         <div class="vitrine-bg"></div>
 
@@ -167,6 +196,33 @@ class DesignStudio {
                     <iframe src="${profile.geoLocation.embedUrl}" width="100%" height="300" style="border:0;border-radius:12px;" allowfullscreen="" loading="lazy"></iframe>
                     <p class="map-address">${this.esc(profile.geoLocation.address || profile.location || '')}</p>
                 </div>
+            </div>
+        </section>` : ''}
+
+        ${storeProducts.length > 0 ? `
+        <!-- STORE SECTION -->
+        <section class="section" id="store" style="background:rgba(0,0,0,.15)">
+            <div class="container">
+                <h2 class="section-title">🛍️ Boutique ${hasStore ? `<span class="badge-store">En ligne</span>` : ''}</h2>
+                <div class="products-mini-grid">
+                    ${storeProducts.map(p => `
+                    <a href="${ecom.storeUrl}/../product/${p.id}" class="product-mini-card">
+                        ${p.image ? `<img src="${p.image}" alt="${this.esc(p.name)}" style="width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:.5rem">` : ''}
+                        <div class="product-mini-name">${this.esc(p.name)}</div>
+                        <div class="product-mini-price">${(p.price || 0).toLocaleString()} FCFA</div>
+                        ${p.shortDescription ? `<div class="product-mini-desc">${this.esc(p.shortDescription)}</div>` : ''}
+                    </a>`).join('')}
+                </div>
+                <div class="store-cta">
+                    <a href="${ecom.storeUrl}" class="btn btn-primary">Voir toute la boutique</a>
+                </div>
+            </div>
+        </section>` : hasStore ? `
+        <section class="section" id="store" style="background:rgba(0,0,0,.15);text-align:center;padding:3rem 1rem">
+            <div class="container">
+                <h2 class="section-title">🛍️ Boutique</h2>
+                <p style="color:var(--textLight);margin-bottom:1.5rem">Decouvrez nos produits et services</p>
+                <a href="${ecom.storeUrl}" class="btn btn-primary">Visiter la boutique</a>
             </div>
         </section>` : ''}
 

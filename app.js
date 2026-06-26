@@ -105,7 +105,7 @@ app.get('/store/:userId', (req, res) => {
     const categories = ecommerce.getActiveCategories(req.params.userId);
     const storeInfo = { storeName: user.name, storeDescription: '' };
     const profile = ecommerceDB.findBy('profiles', 'userId', req.params.userId);
-    if (profile) storeInfo.storeDescription = profile.bio;
+    if (profile) { storeInfo.storeDescription = profile.bio; storeInfo.profileSlug = profile.slug; }
     const html = ecommerce.generateStorePage(req.params.userId, products, categories, storeInfo);
     res.send(html);
 });
@@ -193,9 +193,31 @@ app.get('/track/:trackingNumber', (req, res) => {
         </div></body></html>`);
 });
 
-// === NON-API ROUTES ===
+// === SITE UNIFIE (V10) ===
 
-// Showcase site
+function _buildEcomOptions(userId) {
+    const userProducts = ecommerce.getPublicProducts(userId, 1, 6, {});
+    const items = (userProducts.items || []).map(p => ({ id: p.id, name: p.name, price: p.price, shortDescription: p.shortDescription, image: Array.isArray(p.images) ? p.images[0] : (p.thumbnail || '') }));
+    return items.length > 0 || ecommerce.getUserProducts(userId, {}).products?.length > 0 ? { hasStore: true, storeUrl: `/store/${userId}`, products: items } : { hasStore: false };
+}
+
+function _renderUnifiedSite(req, res, user, profile, options = {}) {
+    const ecomOpts = _buildEcomOptions(user.id);
+    const html = designStudio.generateShowcaseSite(profile, user, { ...options, ecommerce: ecomOpts });
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(html);
+}
+
+// Unified profile + store page
+app.get('/u/:slug', (req, res) => {
+    const profile = db.findBy('profiles', 'slug', req.params.slug);
+    if (!profile) return res.status(404).send('Profil non trouve');
+    const user = db.get('users', profile.userId);
+    if (!user) return res.status(404).send('Profil non trouve');
+    _renderUnifiedSite(req, res, user, profile, { theme: profile.theme });
+});
+
+// Showcase site (API)
 app.get('/api/showcase', (req, res) => {
     const token = req.headers.authorization?.replace('Bearer ', '');
     if (!token) return res.status(401).json({ error: 'Token manquant' });
@@ -205,9 +227,7 @@ app.get('/api/showcase', (req, res) => {
     const user = db.get('users', payload.userId);
     const profile = db.get('profiles', payload.userId);
     if (!profile) return res.status(404).json({ error: 'Profil non trouve' });
-    const html = designStudio.generateShowcaseSite(profile, user, { theme: profile.theme, lang: 'fr' });
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(html);
+    _renderUnifiedSite(req, res, user, profile, { theme: profile.theme, lang: 'fr' });
 });
 
 app.get('/showcase/:slug', (req, res) => {
@@ -216,9 +236,7 @@ app.get('/showcase/:slug', (req, res) => {
     const user = db.get('users', profile.userId);
     if (!user) return res.status(404).send('Profil non trouve');
     if (typeof analyticsEngine.track === 'function') analyticsEngine.track(user.id, 'views', { referrer: req.headers.referer });
-    const html = designStudio.generateShowcaseSite(profile, user, { theme: profile.theme, lang: 'fr' });
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(html);
+    _renderUnifiedSite(req, res, user, profile, { theme: profile.theme, lang: 'fr' });
 });
 
 // Public profile pages
@@ -227,23 +245,19 @@ app.get('/p/:username', (req, res) => {
     if (!profile) return res.status(404).send('Profil non trouve');
     const user = db.get('users', profile.userId);
     if (!user) return res.status(404).send('Profil non trouve');
-    const html = designStudio.generateShowcaseSite(profile, user, { theme: profile.theme });
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(html);
+    _renderUnifiedSite(req, res, user, profile, { theme: profile.theme });
 });
 
-// Username shortcut
+// Username shortcut (now shows unified site)
 app.get('/:username', (req, res) => {
     const username = req.params.username;
-    if (username.includes('.') || username.includes('/') || username === 'api' || username === 'showcase' || username === 'p') return res.status(404).send('Not found');
+    if (username.includes('.') || username.includes('/') || username === 'api' || username === 'showcase' || username === 'p' || username === 'u' || username === 'store' || username === 'product' || username === 'track' || username === 'cart') return res.status(404).send('Not found');
     const profile = db.findBy('profiles', 'slug', username);
     if (!profile) return res.status(404).send('Profil non trouve');
     const user = db.get('users', profile.userId);
     if (!user) return res.status(404).send('Profil non trouve');
     if (typeof analyticsEngine.track === 'function') analyticsEngine.track(profile.userId, 'views');
-    const html = designStudio.generateShowcaseSite(profile, user, { theme: profile.theme });
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.send(html);
+    _renderUnifiedSite(req, res, user, profile, { theme: profile.theme });
 });
 
 // Design Studio image processing
