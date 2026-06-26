@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Commander | Flay</title>
+<link rel="stylesheet" href="/css/style.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a1a;--card:#12121f;--text:#e2e8f0;--muted:#64748b;--primary:#818cf8;--border:#1e293b;--success:#10b981;--danger:#ef4444}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;padding:20px}
+.container{max-width:900px;margin:0 auto}
+h1{font-size:28px;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+@media(max-width:768px){.grid{grid-template-columns:1fr}}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;margin-bottom:4px;color:var(--muted);font-size:14px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:15px}
+.form-group input:focus,.form-group select:focus{border-color:var(--primary);outline:none}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.order-summary{background:var(--card);border-radius:16px;padding:24px;position:sticky;top:20px}
+.summary-item{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.summary-item:last-child{border-bottom:none}
+.summary-total{font-size:24px;font-weight:700;color:var(--primary);text-align:right;margin-top:16px}
+.btn{width:100%;padding:16px;border:none;border-radius:12px;cursor:pointer;font-size:16px;font-weight:600;transition:.2s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{opacity:.9}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.payment-info{background:var(--card);border-radius:12px;padding:16px;margin-top:12px;font-size:14px;color:var(--muted)}
+.payment-info strong{color:var(--text)}
+.step{display:flex;align-items:center;gap:8px;margin-bottom:20px;color:var(--muted);font-size:14px}
+.step.active{color:var(--primary)}
+.step .num{width:24px;height:24px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:12px}
+.step.active .num{background:var(--primary);color:#fff}
+.error-msg{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:12px;margin-bottom:16px;color:var(--danger);display:none}
+.success-msg{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:8px;padding:24px;text-align:center;display:none}
+.success-msg h2{color:var(--success);margin-bottom:8px}
+</style>
+</head>
+<body>
+<div class="container">
+<div id="error" class="error-msg"></div>
+<div id="success" class="success-msg">
+<h2>Commande confirmee !</h2>
+<p id="success-message">Merci pour votre commande. Vous allez recevoir un recapitulatif par WhatsApp.</p>
+<a href="/" style="display:inline-block;margin-top:16px;color:var(--primary)">Retour a l'accueil</a>
+</div>
+
+<div id="checkout-content">
+<h1>Finaliser la commande</h1>
+
+<div class="step active"><span class="num">1</span> Panier</div>
+<div class="step active"><span class="num">2</span> Livraison & Paiement</div>
+<div class="step"><span class="num">3</span> Confirmation</div>
+
+<div class="grid">
+<div>
+<h2 style="margin-bottom:16px">Adresse de livraison</h2>
+<div class="row">
+<div class="form-group"><label>Prenom</label><input id="firstName" placeholder="Jean"></div>
+<div class="form-group"><label>Nom</label><input id="lastName" placeholder="Koffi"></div>
+</div>
+<div class="form-group"><label>Telephone</label><input id="phone" type="tel" placeholder="+225 01 02 03 04 05"></div>
+<div class="form-group"><label>Email</label><input id="email" type="email" placeholder="jean@email.com"></div>
+<div class="form-group"><label>Ville / Zone</label>
+<select id="zone"><option value="">Selectionnez votre zone</option>
+<option value="abidjan">Abidjan (1 500 FCFA)</option>
+<option value="interieur">Interieur (3 000 FCFA)</option>
+<option value="national">National (2 500 FCFA)</option>
+</select></div>
+<div class="form-group"><label>Adresse complete</label><textarea id="address" rows="2" placeholder="Rue, quartier, point de repere..."></textarea></div>
+<div class="form-group"><label>Mode de livraison</label>
+<select id="shippingMethod"><option value="standard">Standard</option><option value="express">Express (2x tarif)</option></select></div>
+
+<h2 style="margin:24px 0 16px">Moyen de paiement</h2>
+<div class="form-group">
+<select id="paymentMethod">
+<option value="wave">Wave (Orange Money / Wave)</option>
+<option value="whatsapp">WhatsApp (paiement apres confirmation)</option>
+</select></div>
+
+<div class="payment-info" id="paymentInfo">
+<strong>Wave:</strong> DIGITALSTRATEGE BUSINESS<br>
+Apres validation, vous recevrez le lien de paiement par WhatsApp
+</div>
+
+<div class="form-group" style="margin-top:16px">
+<label>Note pour le vendeur (optionnel)</label>
+<textarea id="notes" rows="2" placeholder="Instructions particulieres..."></textarea>
+</div>
+</div>
+
+<div>
+<div class="order-summary" id="orderSummary">
+<h3 style="margin-bottom:16px">Recapitulatif</h3>
+<div id="summaryItems">Chargement...</div>
+<div id="summaryTotal" class="summary-total"></div>
+<button id="submitBtn" class="btn btn-primary" onclick="placeOrder()">
+Confirmer la commande
+</button>
+<p style="text-align:center;margin-top:8px;font-size:12px;color:var(--muted)">En commandant, vous acceptez nos conditions</p>
+</div></div></div></div></div>
+
+<script>
+let cartData = null;
+let userData = null;
+
+async function loadCart() {
+    const token = localStorage.getItem('flay_token');
+    if (!token) { window.location.href = '/login.html?redirect=/checkout.html'; return; }
+    try {
+        const [cartRes, userRes] = await Promise.all([
+            fetch('/api/cart', { headers: { 'Authorization': 'Bearer ' + token } }),
+            fetch('/api/auth/me', { headers: { 'Authorization': 'Bearer ' + token } })
+        ]);
+        cartData = await cartRes.json();
+        userData = await userRes.json();
+        if (!cartData.items || cartData.items.length === 0) {
+            document.getElementById('checkout-content').innerHTML = '<div style="text-align:center;padding:60px"><h2>Panier vide</h2><p style="color:var(--muted);margin-top:8px">Ajoutez des produits avant de commander</p><a href="/store" style="color:var(--primary);margin-top:16px;display:inline-block">Voir la boutique</a></div>';
+            return;
+        }
+        renderSummary();
+        if (userData.user) {
+            document.getElementById('email').value = userData.user.email || '';
+            document.getElementById('phone').value = userData.user.phone || '';
+        }
+    } catch(e) { showError('Erreur de chargement du panier'); }
+}
+
+function renderSummary() {
+    const html = cartData.items.map(i => `<div class="summary-item"><span>${i.name} × ${i.quantity}</span><span>${(i.price*i.quantity).toLocaleString()} ${cartData.currency||'XOF'}</span></div>`).join('');
+    document.getElementById('summaryItems').innerHTML = html;
+    updateTotal();
+}
+
+function updateTotal() {
+    const subtotal = cartData.total;
+    const shipping = getShipping();
+    const total = subtotal + shipping;
+    const html = `<div class="summary-item"><span>Sous-total</span><span>${subtotal.toLocaleString()} XOF</span></div>
+                  <div class="summary-item"><span>Livraison</span><span>${shipping.toLocaleString()} XOF</span></div>`;
+    document.getElementById('summaryItems').innerHTML += html;
+    document.getElementById('summaryTotal').textContent = `${total.toLocaleString()} XOF`;
+}
+
+function getShipping() {
+    const zone = document.getElementById('zone').value;
+    const method = document.getElementById('shippingMethod').value;
+    const rates = { abidjan: 1500, interieur: 3000, national: 2500 };
+    const base = rates[zone] || 2000;
+    return method === 'express' ? base * 2 : base;
+}
+
+document.getElementById('zone').addEventListener('change', updateTotal);
+document.getElementById('shippingMethod').addEventListener('change', updateTotal);
+
+async function placeOrder() {
+    const token = localStorage.getItem('flay_token');
+    if (!token) return;
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = 'Traitement...';
+
+    const data = {
+        shippingAddress: {
+            firstName: document.getElementById('firstName').value,
+            lastName: document.getElementById('lastName').value,
+            phone: document.getElementById('phone').value,
+            email: document.getElementById('email').value,
+            address: document.getElementById('address').value,
+            zone: document.getElementById('zone').value
+        },
+        shippingZone: document.getElementById('zone').value,
+        shippingMethod: document.getElementById('shippingMethod').value,
+        paymentMethod: document.getElementById('paymentMethod').value,
+        notes: document.getElementById('notes').value
+    };
+
+    try {
+        const res = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (res.ok) {
+            document.getElementById('checkout-content').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('success').style.display = 'block';
+            document.getElementById('success-message').textContent =
+                `Commande ${result.order.id} confirmee. Vous allez etre contacte par WhatsApp pour le paiement.`;
+        } else {
+            showError(result.error || 'Erreur lors de la commande');
+            btn.disabled = false; btn.textContent = 'Confirmer la commande';
+        }
+    } catch(e) {
+        showError('Erreur reseau');
+        btn.disabled = false; btn.textContent = 'Confirmer la commande';
+    }
+}
+
+function showError(msg) {
+    const el = document.getElementById('error');
+    el.textContent = msg;
+    el.style.display = 'block';
+}
+
+loadCart();
+</script>
+</body>
+</html>

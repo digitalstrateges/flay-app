@@ -91,6 +91,47 @@ app.use('/api/wave', require('./routes/wave'));
 app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api', require('./routes/settings'));
 
+// === E-COMMERCE PUBLIC PAGES ===
+const ecommerce = require('./ecommerce');
+const ecommerceDB = require('./db');
+
+app.get('/store/:userId', (req, res) => {
+    const user = ecommerceDB.get('users', req.params.userId);
+    if (!user) return res.status(404).send('Boutique non trouvee');
+    const page = parseInt(req.query.page) || 1;
+    const filters = {};
+    if (req.query.category) filters.category = req.query.category;
+    const products = ecommerce.getPublicProducts(req.params.userId, page, 20, filters);
+    const categories = ecommerce.getActiveCategories(req.params.userId);
+    const storeInfo = { storeName: user.name, storeDescription: '' };
+    const profile = ecommerceDB.findBy('profiles', 'userId', req.params.userId);
+    if (profile) storeInfo.storeDescription = profile.bio;
+    const html = ecommerce.generateStorePage(req.params.userId, products, categories, storeInfo);
+    res.send(html);
+});
+
+app.get('/product/:id', (req, res) => {
+    const product = ecommerce.getProduct(req.params.id);
+    if (!product) return res.status(404).send('Produit non trouve');
+    const user = ecommerceDB.get('users', product.userId);
+    const storeInfo = { storeName: user?.name || 'Boutique' };
+    const stats = typeof product.stats === 'string' ? JSON.parse(product.stats) : (product.stats || {});
+    stats.views = (stats.views || 0) + 1;
+    ecommerceDB.update('products', product.id, { stats: JSON.stringify(stats) });
+    const html = ecommerce.generateProductPage(product, storeInfo);
+    res.send(html);
+});
+
+app.get('/cart', (req, res) => {
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    if (!token) return res.redirect('/login.html?redirect=/checkout.html');
+    const authUtils = require('./auth-utils');
+    const payload = authUtils.verifyToken(token);
+    if (!payload) return res.redirect('/login.html?redirect=/checkout.html');
+    const html = ecommerce.generateCartPage(payload.userId);
+    res.send(html);
+});
+
 // === NON-API ROUTES ===
 
 // Showcase site

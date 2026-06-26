@@ -4,16 +4,50 @@ const ecommerce = require('../ecommerce');
 const db = require('../db');
 const router = express.Router();
 
-// --- Products ---
+// === CATEGORIES ===
+router.post('/categories', authenticate, (req, res) => {
+    const cat = ecommerce.createCategory(req.user.id, req.body);
+    res.status(201).json({ category: cat });
+});
+
+router.get('/categories', authenticate, (req, res) => {
+    res.json({ categories: ecommerce.getUserCategories(req.user.id) });
+});
+
+router.put('/categories/:id', authenticate, (req, res) => {
+    const cat = ecommerce.updateCategory(req.params.id, req.user.id, req.body);
+    if (!cat) return res.status(404).json({ error: 'Categorie non trouvee' });
+    res.json({ category: cat });
+});
+
+router.delete('/categories/:id', authenticate, (req, res) => {
+    if (!ecommerce.deleteCategory(req.params.id, req.user.id)) return res.status(404).json({ error: 'Categorie non trouvee' });
+    res.json({ message: 'Categorie supprimee' });
+});
+
+// --- Public categories ---
+router.get('/categories/:userId/public', (req, res) => {
+    const user = db.get('users', req.params.userId);
+    if (!user) return res.status(404).json({ error: 'Non trouve' });
+    res.json({ categories: ecommerce.getActiveCategories(req.params.userId) });
+});
+
+// === PRODUCTS ===
 router.get('/products/:userId', (req, res) => {
     const page = parseInt(req.query.page) || 1;
-    res.json(ecommerce.getPublicProducts(req.params.userId, page));
+    const filters = {};
+    if (req.query.category) filters.category = req.query.category;
+    if (req.query.search) filters.search = req.query.search;
+    if (req.query.featured) filters.featured = true;
+    res.json(ecommerce.getPublicProducts(req.params.userId, page, 20, filters));
 });
 
 router.get('/products/:userId/:productId', (req, res) => {
     const product = ecommerce.getProduct(req.params.productId);
-    if (!product || product.userId !== req.params.userId) return res.status(404).json({ error: 'Product not found' });
-    product.stats.views++;
+    if (!product || product.userId !== req.params.userId) return res.status(404).json({ error: 'Produit non trouve' });
+    const stats = typeof product.stats === 'string' ? JSON.parse(product.stats) : (product.stats || {});
+    stats.views = (stats.views || 0) + 1;
+    db.update('products', product.id, { stats: JSON.stringify(stats) });
     res.json({ product });
 });
 
@@ -25,21 +59,66 @@ router.post('/products', authenticate, (req, res) => {
 
 router.put('/products/:id', authenticate, (req, res) => {
     const product = ecommerce.updateProduct(req.params.id, req.user.id, req.body);
-    if (!product) return res.status(404).json({ error: 'Product not found' });
+    if (!product) return res.status(404).json({ error: 'Produit non trouve' });
     res.json({ product });
 });
 
 router.delete('/products/:id', authenticate, (req, res) => {
-    if (!ecommerce.deleteProduct(req.params.id, req.user.id)) return res.status(404).json({ error: 'Product not found' });
+    if (!ecommerce.deleteProduct(req.params.id, req.user.id)) return res.status(404).json({ error: 'Produit non trouve' });
     res.json({ message: 'Produit supprime' });
 });
 
 router.get('/my-products', authenticate, (req, res) => {
-    res.json({ products: ecommerce.getUserProducts(req.user.id) });
+    const filter = {};
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.category) filter.category = req.query.category;
+    res.json({ products: ecommerce.getUserProducts(req.user.id, filter) });
 });
 
-// --- Reviews ---
+// --- Public product page (HTML) ---
+router.get('/product/:id', (req, res) => {
+    const product = ecommerce.getProduct(req.params.id);
+    if (!product) return res.status(404).send('Produit non trouve');
+    const user = db.get('users', product.userId);
+    const storeInfo = { storeName: user?.name || 'Boutique' };
+    const stats = typeof product.stats === 'string' ? JSON.parse(product.stats) : (product.stats || {});
+    stats.views = (stats.views || 0) + 1;
+    db.update('products', product.id, { stats: JSON.stringify(stats) });
+    const html = ecommerce.generateProductPage(product, storeInfo);
+    res.send(html);
+});
+
+// === STORE STATS ===
+router.get('/store/stats', authenticate, (req, res) => {
+    res.json(ecommerce.getStoreStats(req.user.id));
+});
+
+// --- Public store page (HTML) ---
+router.get('/store/:userId', (req, res) => {
+    const user = db.get('users', req.params.userId);
+    if (!user) return res.status(404).send('Boutique non trouvee');
+    const page = parseInt(req.query.page) || 1;
+    const filters = {};
+    if (req.query.category) filters.category = req.query.category;
+    const products = ecommerce.getPublicProducts(req.params.userId, page, 20, filters);
+    const categories = ecommerce.getActiveCategories(req.params.userId);
+    const storeInfo = { storeName: user.name, storeDescription: '' };
+    const profile = db.findBy('profiles', 'userId', req.params.userId);
+    if (profile) storeInfo.storeDescription = profile.bio;
+    const html = ecommerce.generateStorePage(req.params.userId, products, categories, storeInfo);
+    res.send(html);
+});
+
+// --- Cart HTML page ---
+router.get('/cart/page', authenticate, (req, res) => {
+    const html = ecommerce.generateCartPage(req.user.id);
+    res.send(html);
+});
+
+// === REVIEWS ===
 router.post('/products/:id/reviews', authenticate, (req, res) => {
+    const product = ecommerce.getProduct(req.params.id);
+    if (!product) return res.status(404).json({ error: 'Produit non trouve' });
     const review = ecommerce.addReview(req.params.id, req.user.id, req.body);
     res.status(201).json({ review });
 });
@@ -48,7 +127,7 @@ router.get('/products/:id/reviews', (req, res) => {
     res.json({ reviews: ecommerce.getProductReviews(req.params.id) });
 });
 
-// --- Cart ---
+// === CART ===
 router.get('/cart', authenticate, (req, res) => {
     res.json(ecommerce.getCart(req.user.id));
 });
@@ -66,7 +145,7 @@ router.put('/cart/item', authenticate, (req, res) => {
 });
 
 router.delete('/cart/:productId', authenticate, (req, res) => {
-    const cart = ecommerce.removeFromCart(req.user.id, req.params.productId);
+    const cart = ecommerce.removeFromCart(req.user.id, req.params.productId, req.query.variant);
     res.json({ cart });
 });
 
@@ -74,7 +153,7 @@ router.delete('/cart', authenticate, (req, res) => {
     res.json({ cart: ecommerce.clearCart(req.user.id) });
 });
 
-// --- Orders ---
+// === ORDERS ===
 router.post('/orders', authenticate, (req, res) => {
     const order = ecommerce.createOrder(req.user.id, req.body);
     if (order.error) return res.status(400).json({ error: order.error });
@@ -88,26 +167,36 @@ router.get('/orders', authenticate, (req, res) => {
 
 router.get('/orders/:id', authenticate, (req, res) => {
     const order = ecommerce.getOrder(req.params.id);
-    if (!order || order.userId !== req.user.id) return res.status(404).json({ error: 'Order not found' });
+    if (!order || order.userId !== req.user.id) return res.status(404).json({ error: 'Commande non trouvee' });
     res.json({ order });
 });
 
 router.put('/orders/:id/status', authenticate, (req, res) => {
     const order = ecommerce.updateOrderStatus(req.params.id, req.user.id, req.body.status);
-    if (!order) return res.status(404).json({ error: 'Order not found' });
+    if (!order) return res.status(404).json({ error: 'Commande non trouvee' });
     if (order.error) return res.status(400).json({ error: order.error });
     res.json({ order });
 });
 
-// --- Coupons ---
+router.put('/orders/:id/delivery', authenticate, (req, res) => {
+    const order = ecommerce.updateDeliveryStatus(req.params.id, req.user.id, req.body.status);
+    if (!order) return res.status(404).json({ error: 'Commande non trouvee' });
+    res.json({ order });
+});
+
+// === COUPONS ===
 router.post('/coupons', authenticate, (req, res) => {
     const coupon = ecommerce.createCoupon(req.user.id, req.body);
     res.status(201).json({ coupon });
 });
 
-// --- Store Stats ---
-router.get('/store/stats', authenticate, (req, res) => {
-    res.json(ecommerce.getStoreStats(req.user.id));
+router.get('/coupons', authenticate, (req, res) => {
+    res.json({ coupons: ecommerce.getUserCoupons(req.user.id) });
+});
+
+router.delete('/coupons/:id', authenticate, (req, res) => {
+    if (!ecommerce.deleteCoupon(req.params.id, req.user.id)) return res.status(404).json({ error: 'Coupon non trouve' });
+    res.json({ message: 'Coupon supprime' });
 });
 
 module.exports = router;
