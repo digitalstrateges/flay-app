@@ -27,6 +27,11 @@ module.exports = {
     WHATSAPP_NUMBER: process.env.WHATSAPP_NUMBER || '2250759731990',
     WHATSAPP_LINK: process.env.WHATSAPP_LINK || 'https://wa.me/2250759731990',
 
+    // === AI GEMINI ===
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'AIzaSyCA4FdSwRvg5J0Vdb-FUo34qzrpRCRfzPk',
+    GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
+    GEMINI_BASE_URL: 'https://generativelanguage.googleapis.com/v1beta',
+
     // === PLANS ===
     PLANS: {
         free: {
@@ -39,22 +44,24 @@ module.exports = {
             features: [
                 'Carte de visite digitale',
                 'Lien unique flay.app/username',
-                '3 services maximum',
+                '5 services maximum',
                 'Statistiques de base',
-                '2 themes (Dark/Light)',
-                'Partage WhatsApp',
-                'QR Code basique'
+                '4 themes (Dark, Light, Midnight, Ocean)',
+                'Partage WhatsApp + QR Code',
+                'Reservation jusqu\'a 10/mois',
+                'Contact jusqu\'a 100',
+                'Stock de base (20 produits)'
             ],
             limits: {
-                services: 3,
-                themes: 2,
-                reservations: 0,
-                contacts: 50,
-                invoices: 10,
-                products: 0,
-                storage: '50 MB',
+                services: 5,
+                themes: 4,
+                reservations: 10,
+                contacts: 100,
+                invoices: 20,
+                products: 20,
+                storage: '100 MB',
                 customDomain: false,
-                ecommerce: false,
+                ecommerce: true,
                 aiAgent: false,
                 whiteLabel: false
             }
