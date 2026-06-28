@@ -8,7 +8,7 @@ const router = express.Router();
 
 const pkg = require('../package.json');
 router.get('/health', (req, res) => {
-    res.json({ status: 'ok', version: pkg.version || '10.0.0', uptime: process.uptime(), features: config.FEATURES, timestamp: new Date().toISOString() });
+    res.json({ status: 'ok', version: config.VERSION || pkg.version || '16.0.0', uptime: process.uptime(), features: config.FEATURES, timestamp: new Date().toISOString() });
 });
 
 router.get('/plans', (req, res) => {

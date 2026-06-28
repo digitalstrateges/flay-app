@@ -1,4 +1,5 @@
 module.exports = {
+    VERSION: '16.0.0',
     PORT: process.env.PORT || 4000,
     JWT_SECRET: process.env.JWT_SECRET || 'flay_ultimate_secret_2024_digitalstrateges_ci',
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'flay_refresh_ultimate_2024',
@@ -31,6 +32,34 @@ module.exports = {
     GEMINI_API_KEY: process.env.GEMINI_API_KEY || 'AIzaSyCA4FdSwRvg5J0Vdb-FUo34qzrpRCRfzPk',
     GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
     GEMINI_BASE_URL: 'https://generativelanguage.googleapis.com/v1beta',
+
+    // === EMAIL (SMTP) ===
+    SMTP_HOST: process.env.SMTP_HOST || '',
+    SMTP_PORT: parseInt(process.env.SMTP_PORT || '587'),
+    SMTP_USER: process.env.SMTP_USER || '',
+    SMTP_PASS: process.env.SMTP_PASS || '',
+    SMTP_FROM: process.env.SMTP_FROM || 'noreply@flay.app',
+    SMTP_FROM_NAME: process.env.SMTP_FROM_NAME || 'Flay',
+
+    // === SMS ===
+    SMS_PROVIDER: process.env.SMS_PROVIDER || 'africastalking',
+    SMS_API_KEY: process.env.SMS_API_KEY || '',
+    SMS_USERNAME: process.env.SMS_USERNAME || '',
+    SMS_SENDER_ID: process.env.SMS_SENDER_ID || 'FLAY',
+
+    // Twilio (alternative)
+    TWILIO_SID: process.env.TWILIO_SID || '',
+    TWILIO_TOKEN: process.env.TWILIO_TOKEN || '',
+    TWILIO_FROM: process.env.TWILIO_FROM || '',
+
+    // === PUSH NOTIFICATIONS (VAPID) ===
+    VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY || '',
+    VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || '',
+
+    // === ANALYTICS ===
+    GA4_MEASUREMENT_ID: process.env.GA4_MEASUREMENT_ID || '',
+    META_PIXEL_ID: process.env.META_PIXEL_ID || '',
+    HOTJAR_ID: process.env.HOTJAR_ID || '',
 
     // === PLANS ===
     PLANS: {

@@ -118,6 +118,9 @@ app.use('/api/webhooks', require('./routes/webhooks'));
 app.use('/api', require('./routes/settings'));
 app.use('/api/accounting', require('./routes/accounting'));
 app.use('/api/premium', require('./routes/premium'));
+app.use('/api/export', require('./routes/export'));
+app.use('/api/push', require('./routes/push'));
+app.use('/api/tracking', require('./routes/analytics'));
 
 // === I18N MIDDLEWARE ===
 const I18n = require('./i18n');

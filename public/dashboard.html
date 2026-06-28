@@ -327,6 +327,28 @@
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 014 4v2a4 4 0 01-8 0V6a4 4 0 014-4z"/><path d="M16 14h.01M8 14h.01M12 17v4M8 21h8"/></svg>
                         AI Agent
                     </a>
+                    <a class="nav-item" data-page="loyalty" onclick="navigate('loyalty')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                        Loyalty
+                        <span class="nav-badge" style="background:rgba(251,191,36,.15);color:#fbbf24;">PRO</span>
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Growth</div>
+                    <a class="nav-item" data-page="seo" onclick="navigate('seo')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        SEO
+                        <span class="nav-badge" style="background:rgba(129,140,248,.15);color:#818cf8;">PREM</span>
+                    </a>
+                    <a class="nav-item" data-page="exports" onclick="navigate('exports')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Exports
+                    </a>
+                    <a class="nav-item" data-page="team" onclick="navigate('team')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                        Team
+                        <span class="nav-badge" style="background:rgba(245,158,11,.15);color:#f59e0b;">DOR</span>
+                    </a>
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">System</div>
@@ -678,6 +700,135 @@
                 </div>
             </div>
 
+            <!-- ==================== LOYALTY PAGE ==================== -->
+            <div class="page" id="page-loyalty">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Loyalty Program</h1>
+                        <p>Manage your customer loyalty points and rewards</p>
+                    </div>
+                    <div class="topbar-right">
+                        <button class="btn btn-primary" onclick="showAddLoyaltyModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            Add Points
+                        </button>
+                    </div>
+                </div>
+                <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
+                    <div class="stat-card"><div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg></div><div class="stat-label">Total Points Given</div><div class="stat-value" id="loyaltyTotalPoints">0</div></div>
+                    <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="stat-label">Active Members</div><div class="stat-value" id="loyaltyMembers">0</div></div>
+                    <div class="stat-card"><div class="stat-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M16 8l-8 8M8 8l8 8"/></svg></div><div class="stat-label">Points Redeemed</div><div class="stat-value" id="loyaltyRedeemed">0</div></div>
+                    <div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div><div class="stat-label">Rewards Claimed</div><div class="stat-value" id="loyaltyRewards">0</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Loyalty Members</div>
+                    <table class="table"><thead><tr><th>Client</th><th>Points</th><th>Total Earned</th><th>Redeemed</th><th>Actions</th></tr></thead><tbody id="loyaltyTable"><tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">No loyalty data yet</td></tr></tbody></table>
+                </div>
+            </div>
+
+            <!-- ==================== SEO PAGE ==================== -->
+            <div class="page" id="page-seo">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>SEO Analysis</h1>
+                        <p>Optimize your profile for search engines</p>
+                    </div>
+                    <div class="topbar-right">
+                        <button class="btn btn-primary" onclick="runSeoAnalysis()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            Run Analysis
+                        </button>
+                    </div>
+                </div>
+                <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+                    <div class="stat-card"><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="stat-label">SEO Score</div><div class="stat-value" id="seoScore">--</div></div>
+                    <div class="stat-card"><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div><div class="stat-label">Page Views</div><div class="stat-value" id="seoViews">0</div></div>
+                    <div class="stat-card"><div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div class="stat-label">Search Ranking</div><div class="stat-value" id="seoRanking">--</div></div>
+                </div>
+                <div class="card">
+                    <div class="card-title">SEO Recommendations</div>
+                    <div id="seoRecommendations" style="color:var(--muted);padding:20px;text-align:center;">Click "Run Analysis" to get recommendations</div>
+                </div>
+            </div>
+
+            <!-- ==================== EXPORTS PAGE ==================== -->
+            <div class="page" id="page-exports">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Export Data</h1>
+                        <p>Download your data in CSV, PDF, or HTML format</p>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;">
+                    <div class="card" style="cursor:pointer" onclick="exportData('invoices')">
+                        <div style="display:flex;align-items:center;gap:16px">
+                            <div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
+                            <div><div style="font-weight:600;margin-bottom:2px">Invoices</div><div style="font-size:12px;color:var(--muted)">Export all invoices as CSV or HTML</div></div>
+                        </div>
+                    </div>
+                    <div class="card" style="cursor:pointer" onclick="exportData('receipts')">
+                        <div style="display:flex;align-items:center;gap:16px">
+                            <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1.5L8 21l2-1.5L12 21l2-1.5L16 21l2-1.5L20 21V2l-2 1.5L16 2l-2 1.5L12 2l-2 1.5L8 2 6 3.5 4 2z"/></svg></div>
+                            <div><div style="font-weight:600;margin-bottom:2px">Receipts</div><div style="font-size:12px;color:var(--muted)">Export all receipts as CSV or HTML</div></div>
+                        </div>
+                    </div>
+                    <div class="card" style="cursor:pointer" onclick="exportData('contacts')">
+                        <div style="display:flex;align-items:center;gap:16px">
+                            <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+                            <div><div style="font-weight:600;margin-bottom:2px">CRM Contacts</div><div style="font-size:12px;color:var(--muted)">Export customer data as CSV</div></div>
+                        </div>
+                    </div>
+                    <div class="card" style="cursor:pointer" onclick="exportData('stock')">
+                        <div style="display:flex;align-items:center;gap:16px">
+                            <div class="stat-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
+                            <div><div style="font-weight:600;margin-bottom:2px">Stock</div><div style="font-size:12px;color:var(--muted)">Export inventory as CSV</div></div>
+                        </div>
+                    </div>
+                    <div class="card" style="cursor:pointer" onclick="exportData('transactions')">
+                        <div style="display:flex;align-items:center;gap:16px">
+                            <div class="stat-icon pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+                            <div><div style="font-weight:600;margin-bottom:2px">Transactions</div><div style="font-size:12px;color:var(--muted)">Export financial transactions</div></div>
+                        </div>
+                    </div>
+                    <div class="card" style="cursor:pointer" onclick="exportData('analytics')">
+                        <div style="display:flex;align-items:center;gap:16px">
+                            <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+                            <div><div style="font-weight:600;margin-bottom:2px">Analytics Report</div><div style="font-size:12px;color:var(--muted)">Full analytics as HTML report</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== TEAM PAGE ==================== -->
+            <div class="page" id="page-team">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Team Management</h1>
+                        <p>Manage team members and permissions</p>
+                    </div>
+                    <div class="topbar-right">
+                        <button class="btn btn-primary" onclick="showInviteTeamModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                            Invite Member
+                        </button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Team Members</div>
+                    <div id="teamMembersList" style="color:var(--muted);padding:32px;text-align:center;">No team members yet. Invite someone to get started.</div>
+                </div>
+                <div class="card" style="margin-top:16px">
+                    <div class="card-title">Permissions</div>
+                    <div style="padding:16px 0">
+                        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+                            <div style="padding:16px;background:var(--bg2);border-radius:var(--radius);text-align:center;"><div style="font-weight:600;margin-bottom:4px">Admin</div><div style="font-size:12px;color:var(--muted)">Full access to all features</div></div>
+                            <div style="padding:16px;background:var(--bg2);border-radius:var(--radius);text-align:center;"><div style="font-weight:600;margin-bottom:4px">Editor</div><div style="font-size:12px;color:var(--muted)">Edit content and products</div></div>
+                            <div style="padding:16px;background:var(--bg2);border-radius:var(--radius);text-align:center;"><div style="font-weight:600;margin-bottom:4px">Viewer</div><div style="font-size:12px;color:var(--muted)">View only access</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- ==================== SETTINGS PAGE ==================== -->
             <div class="page" id="page-settings">
                 <div class="topbar">
@@ -842,6 +993,10 @@
             if (page === 'coupons') loadCoupons();
             if (page === 'settings') loadSettings();
             if (page === 'analytics') loadAnalytics();
+            if (page === 'loyalty') loadLoyalty();
+            if (page === 'seo') loadSEO();
+            if (page === 'exports') loadExports();
+            if (page === 'team') loadTeam();
             window.scrollTo(0, 0);
         }
 
@@ -1441,6 +1596,151 @@
             }
         }
         window.addEventListener('resize', checkMobile);
+
+        /* ===========================
+           LOYALTY
+        =========================== */
+        async function loadLoyalty() {
+            if (!canUseFeature('loyalty')) {
+                document.getElementById('loyaltyTable').innerHTML = showUpgradeGate('loyalty');
+                return;
+            }
+            const data = await api('/api/premium/loyalty');
+            if (!data) return;
+            const members = data.members || data.points || [];
+            document.getElementById('loyaltyTotalPoints').textContent = (data.totalPoints || 0).toLocaleString();
+            document.getElementById('loyaltyMembers').textContent = (data.totalMembers || members.length || 0);
+            document.getElementById('loyaltyRedeemed').textContent = (data.totalRedeemed || 0).toLocaleString();
+            document.getElementById('loyaltyRewards').textContent = (data.rewardsClaimed || 0);
+            const tbody = document.getElementById('loyaltyTable');
+            if (!members.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px">No loyalty members yet</td></tr>'; return; }
+            tbody.innerHTML = members.map(m => `<tr>
+                <td><strong>${esc(m.clientName || m.name || 'Unknown')}</strong></td>
+                <td><span style="color:var(--accent);font-weight:700">${(m.points || 0).toLocaleString()}</span></td>
+                <td>${(m.totalEarned || 0).toLocaleString()}</td>
+                <td>${(m.totalRedeemed || 0).toLocaleString()}</td>
+                <td><button class="btn btn-secondary btn-sm" onclick="redeemLoyaltyPoints('${m.clientId || m.id}')">Redeem</button></td>
+            </tr>`).join('');
+        }
+
+        async function redeemLoyaltyPoints(clientId) {
+            const points = prompt('Enter points to redeem:');
+            if (!points || isNaN(points)) return;
+            await api('/api/premium/loyalty/redeem', { method: 'POST', body: JSON.stringify({ clientId, points: parseInt(points) }) });
+            loadLoyalty();
+        }
+
+        function showAddLoyaltyModal() {
+            showModal('Add Loyalty Points', '<div style="padding:8px 0">' +
+                '<div class="form-group"><label>Client Name</label><input type="text" id="loyaltyClientName" placeholder="Client name"></div>' +
+                '<div class="form-group"><label>Points</label><input type="number" id="loyaltyPoints" placeholder="100"></div>' +
+                '<div class="form-group"><label>Reason</label><input type="text" id="loyaltyReason" placeholder="Purchase, referral, etc."></div>' +
+                '</div>',
+                '<button class="btn btn-primary btn-sm" onclick="saveLoyaltyPoints()">Add Points</button>' +
+                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>'
+            );
+        }
+
+        async function saveLoyaltyPoints() {
+            const name = document.getElementById('loyaltyClientName').value;
+            const points = parseInt(document.getElementById('loyaltyPoints').value);
+            const reason = document.getElementById('loyaltyReason').value;
+            if (!name || !points) { toast('Name and points are required', 'error'); return; }
+            await api('/api/premium/loyalty/add', { method: 'POST', body: JSON.stringify({ clientName: name, points, reason }) });
+            closeModal(); loadLoyalty(); toast('Points added!', 'success');
+        }
+
+        /* ===========================
+           SEO
+        =========================== */
+        async function loadSEO() {
+            const data = await api('/api/premium/seo');
+            if (!data) return;
+            document.getElementById('seoScore').textContent = (data.score || '--');
+            document.getElementById('seoViews').textContent = (data.pageViews || 0).toLocaleString();
+            document.getElementById('seoRanking').textContent = data.ranking || '--';
+            if (data.recommendations && data.recommendations.length) {
+                document.getElementById('seoRecommendations').innerHTML = data.recommendations.map(r => `
+                    <div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">
+                        <div style="width:24px;height:24px;border-radius:50%;background:${r.type === 'critical' ? 'var(--danger)' : r.type === 'warning' ? 'var(--warning)' : 'var(--success)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff;font-size:12px;font-weight:700">${r.type === 'critical' ? '!' : r.type === 'warning' ? '?' : '&#10003;'}</div>
+                        <div><div style="font-weight:600;margin-bottom:2px">${esc(r.title)}</div><div style="font-size:12px;color:var(--muted)">${esc(r.description)}</div></div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        async function runSeoAnalysis() {
+            toast('Running SEO analysis...', 'info');
+            const data = await api('/api/premium/seo/analyze', { method: 'POST' });
+            if (data) { toast('Analysis complete!', 'success'); loadSEO(); }
+        }
+
+        /* ===========================
+           EXPORTS
+        =========================== */
+        function loadExports() {
+            // Exports page is static - just shows buttons
+        }
+
+        async function exportData(type) {
+            const format = prompt('Format: csv, html, or json?', 'csv');
+            if (!format || !['csv', 'html', 'json'].includes(format)) return;
+            toast(`Exporting ${type} as ${format.toUpperCase()}...`, 'info');
+            window.open(`/api/export/${type}/${user.id}?format=${format}`, '_blank');
+            toast('Export started!', 'success');
+        }
+
+        /* ===========================
+           TEAM
+        =========================== */
+        async function loadTeam() {
+            if (!canUseFeature('team')) {
+                document.getElementById('teamMembersList').innerHTML = showUpgradeGate('team');
+                return;
+            }
+            const data = await api('/api/premium/team');
+            if (!data) return;
+            const members = data.members || [];
+            const container = document.getElementById('teamMembersList');
+            if (!members.length) {
+                container.innerHTML = '<div style="text-align:center;padding:32px"><div style="font-size:48px;margin-bottom:16px">👥</div><p style="color:var(--muted);margin-bottom:16px">No team members yet</p><button class="btn btn-primary" onclick="showInviteTeamModal()">Invite First Member</button></div>';
+                return;
+            }
+            container.innerHTML = `<table class="table"><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th></tr></thead><tbody>` +
+                members.map(m => `<tr>
+                    <td><strong>${esc(m.name)}</strong></td>
+                    <td>${esc(m.email)}</td>
+                    <td><span class="plan-badge ${m.role === 'admin' ? 'plan-pro' : 'plan-free'}" style="font-size:11px">${esc(m.role)}</span></td>
+                    <td><span style="color:${m.status === 'active' ? 'var(--success)' : 'var(--warning)'};font-weight:600">${esc(m.status)}</span></td>
+                    <td><button class="btn btn-danger btn-sm" onclick="removeTeamMember('${m.id}')">Remove</button></td>
+                </tr>`).join('') + `</tbody></table>`;
+        }
+
+        function showInviteTeamModal() {
+            showModal('Invite Team Member', '<div style="padding:8px 0">' +
+                '<div class="form-group"><label>Name</label><input type="text" id="teamName" placeholder="Full name"></div>' +
+                '<div class="form-group"><label>Email</label><input type="email" id="teamEmail" placeholder="email@example.com"></div>' +
+                '<div class="form-group"><label>Role</label><select id="teamRole" style="width:100%;padding:10px;border-radius:var(--radius);background:var(--card);border:1px solid var(--border);color:var(--text)"><option value="viewer">Viewer</option><option value="editor">Editor</option><option value="admin">Admin</option></select></div>' +
+                '</div>',
+                '<button class="btn btn-primary btn-sm" onclick="inviteTeamMember()">Send Invitation</button>' +
+                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button>'
+            );
+        }
+
+        async function inviteTeamMember() {
+            const name = document.getElementById('teamName').value;
+            const email = document.getElementById('teamEmail').value;
+            const role = document.getElementById('teamRole').value;
+            if (!name || !email) { toast('Name and email are required', 'error'); return; }
+            await api('/api/premium/team/invite', { method: 'POST', body: JSON.stringify({ name, email, role }) });
+            closeModal(); loadTeam(); toast('Invitation sent!', 'success');
+        }
+
+        async function removeTeamMember(id) {
+            if (!confirm('Remove this team member?')) return;
+            await api(`/api/premium/team/${id}`, { method: 'DELETE' });
+            loadTeam(); toast('Member removed', 'success');
+        }
 
         /* ===========================
            INIT
