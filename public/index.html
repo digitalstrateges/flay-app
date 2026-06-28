@@ -3,230 +3,615 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flay - Votre Carte de Visite Digitale Pro</title>
-    <meta name="description" content="Creez votre carte de visite digitale professionnelle en 2 minutes. Reservations, paiements Wave, analytics integres.">
-    <meta name="theme-color" content="#667eea">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <style>
-        :root { --bg: #0a0a1a; --bg2: #111128; --text: #ffffff; --text2: #a0a0c0; --accent: #667eea; --accent2: #764ba2; --card: #15152a; --border: #252545; --gold: #ffd700; --gradient: linear-gradient(135deg, #667eea, #764ba2); }
-        @media (prefers-color-scheme: light) { :root.auto-theme { --bg: #f8fafc; --bg2: #f1f5f9; --text: #0f172a; --text2: #64748b; --card: #ffffff; --border: #e2e8f0; } }
-    </style>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
-        .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; position: relative; padding: 60px 24px; }
-        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(circle at 50% 50%, rgba(102,126,234,0.15) 0%, transparent 70%); }
-        .hero-content { position: relative; z-index: 1; max-width: 800px; }
-        .badge-top { display: inline-flex; align-items: center; gap: 8px; padding: 8px 20px; background: rgba(102,126,234,0.15); border: 1px solid rgba(102,126,234,0.3); border-radius: 30px; font-size: 13px; color: var(--accent); margin-bottom: 32px; animation: fadeInUp 0.8s ease; }
-        .badge-dot { width: 8px; height: 8px; background: #4ade80; border-radius: 50%; animation: pulse 2s infinite; }
-        h1 { font-size: clamp(36px, 7vw, 72px); font-weight: 900; line-height: 1.1; margin-bottom: 24px; animation: fadeInUp 0.8s ease 0.1s both; }
-        h1 .gradient { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .subtitle { font-size: clamp(16px, 2.5vw, 20px); color: var(--text2); line-height: 1.7; margin-bottom: 40px; max-width: 600px; margin-left: auto; margin-right: auto; animation: fadeInUp 0.8s ease 0.2s both; }
-        .cta-group { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; animation: fadeInUp 0.8s ease 0.3s both; }
-        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 16px 32px; border-radius: 12px; font-size: 16px; font-weight: 600; text-decoration: none; transition: all 0.3s; border: none; cursor: pointer; }
-        .btn-primary { background: var(--gradient); color: white; box-shadow: 0 4px 20px rgba(102,126,234,0.4); }
-        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(102,126,234,0.5); }
-        .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-        .btn-secondary:hover { border-color: var(--accent); transform: translateY(-3px); }
-        .features { padding: 100px 24px; max-width: 1200px; margin: 0 auto; }
-        .section-title { text-align: center; font-size: 40px; font-weight: 800; margin-bottom: 16px; }
-        .section-sub { text-align: center; color: var(--text2); font-size: 18px; margin-bottom: 60px; max-width: 600px; margin-left: auto; margin-right: auto; }
-        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
-        .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; transition: all 0.3s; }
-        .feature-card:hover { transform: translateY(-8px); border-color: var(--accent); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
-        .feature-icon { width: 48px; height: 48px; margin-bottom: 16px; color: var(--accent); }
-        .feature-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
-        .feature-desc { color: var(--text2); font-size: 15px; line-height: 1.7; }
-        .pricing { padding: 100px 24px; background: var(--bg2); }
-        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; max-width: 1100px; margin: 0 auto; }
-        .price-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 40px; position: relative; transition: all 0.3s; }
-        .price-card:hover { transform: translateY(-8px); }
-        .price-card.popular { border-color: var(--accent); box-shadow: 0 0 40px rgba(102,126,234,0.2); }
-        .popular-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); padding: 4px 16px; background: var(--gradient); color: white; border-radius: 20px; font-size: 12px; font-weight: 700; }
-        .plan-name { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
-        .plan-price { font-size: 36px; font-weight: 900; margin-bottom: 24px; }
-        .plan-price span { font-size: 16px; font-weight: 400; color: var(--text2); }
-        .plan-features { list-style: none; margin-bottom: 32px; }
-        .plan-features li { padding: 8px 0; color: var(--text2); font-size: 14px; display: flex; align-items: flex-start; gap: 10px; }
-        .plan-features li svg { flex-shrink: 0; margin-top: 2px; }
-        .btn-plan { width: 100%; justify-content: center; }
-        .wave-section { padding: 100px 24px; text-align: center; }
-        .wave-card { max-width: 600px; margin: 0 auto; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 48px; }
-        .wave-logo { font-size: 48px; margin-bottom: 16px; }
-        .wave-merchant { font-size: 20px; font-weight: 700; color: var(--accent); margin-bottom: 8px; }
-        .wave-info { color: var(--text2); margin-bottom: 24px; }
-        .footer { padding: 60px 24px; text-align: center; border-top: 1px solid var(--border); }
-        .footer-brand { font-size: 40px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 16px; }
-        .footer-text { color: var(--text2); font-size: 14px; }
-        .footer-text a { color: var(--accent); text-decoration: none; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        @media (max-width: 768px) { .features-grid, .pricing-grid { grid-template-columns: 1fr; } }
-    </style>
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#6366f1">
+    <title>Flay - Plateforme Tout-en-Un pour Professionnels | CI</title>
+    <meta name="description" content="Carte de visite digitale, site vitrine, e-commerce, CRM, reservations, paiements Wave. Creez votre presence digitale en 2 minutes.">
+    <meta name="theme-color" content="#818cf8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Flay">
     <link rel="apple-touch-icon" href="/icons/icon-192x192.svg">
     <link rel="icon" type="image/svg+xml" href="/logo-animated.svg">
+    <link rel="manifest" href="/manifest.json">
     <script src="/pwa.js"></script>
+    <style>
+        :root{--bg:#0a0a1a;--bg2:#111128;--bg3:#181830;--text:#f1f5f9;--text2:#94a3b8;--accent:#818cf8;--accent2:#a78bfa;--card:#15152a;--border:#1e293b;--gold:#fbbf24;--gradient:linear-gradient(135deg,#818cf8,#a78bfa);--green:#34d399;--red:#f87171}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6}
+        .container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+        /* === NAV === */
+        nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;transition:all .3s}
+        nav.scrolled{background:rgba(10,10,26,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+        .nav-inner{display:flex;align-items:center;justify-content:space-between}
+        .nav-brand{font-size:24px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .nav-links{display:flex;gap:32px;align-items:center}
+        .nav-links a{color:var(--text2);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}
+        .nav-links a:hover{color:var(--text)}
+        .nav-cta{padding:10px 20px;background:var(--gradient);color:#fff !important;border-radius:10px;font-weight:600 !important;transition:transform .2s,box-shadow .2s !important}
+        .nav-cta:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(129,140,248,.4)}
+        .nav-mobile{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:8px}
+        @media(max-width:768px){.nav-links{display:none}.nav-mobile{display:block}.nav-links.open{display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(10,10,26,.98);border-bottom:1px solid var(--border);padding:24px;gap:16px}}
+
+        /* === HERO === */
+        .hero{min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;position:relative}
+        .hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(129,140,248,.12) 0%,transparent 70%);pointer-events:none}
+        .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+        .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(129,140,248,.1);border:1px solid rgba(129,140,248,.2);border-radius:20px;font-size:13px;color:var(--accent);margin-bottom:24px}
+        .hero-badge .dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+        .hero h1{font-size:clamp(36px,5vw,56px);font-weight:900;line-height:1.1;margin-bottom:20px}
+        .hero h1 .grad{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .hero p{font-size:18px;color:var(--text2);max-width:520px;margin-bottom:32px;line-height:1.7}
+        .hero-actions{display:flex;gap:16px;flex-wrap:wrap}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:all .25s;font-family:inherit}
+        .btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 24px rgba(129,140,248,.35)}
+        .btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(129,140,248,.45)}
+        .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+        .btn-outline:hover{border-color:var(--accent);transform:translateY(-3px)}
+        .hero-visual{position:relative}
+        .hero-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;position:relative;overflow:hidden}
+        .hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--gradient)}
+        .hero-card-name{font-size:24px;font-weight:800;margin-bottom:4px}
+        .hero-card-role{color:var(--accent);font-size:14px;margin-bottom:20px}
+        .hero-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+        .stat-box{background:var(--bg);border-radius:10px;padding:12px;text-align:center}
+        .stat-num{font-size:20px;font-weight:800;color:var(--accent)}
+        .stat-label{font-size:11px;color:var(--text2);margin-top:2px}
+        .hero-card-actions{display:flex;gap:8px}
+        .hero-card-actions .mini-btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:13px;font-weight:500;text-align:center;text-decoration:none;transition:all .2s}
+        .hero-card-actions .mini-btn:hover{border-color:var(--accent);color:var(--accent)}
+        .hero-float{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:8px;animation:float 3s ease-in-out infinite}
+        .hero-float.tl{top:-20px;left:-30px}
+        .hero-float.br{bottom:-15px;right:-25px;animation-delay:1.5s}
+        .hero-float .icon{font-size:18px}
+
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+        /* === STATS BAR === */
+        .stats-bar{padding:48px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+        .stat-item .num{font-size:32px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .stat-item .label{color:var(--text2);font-size:14px;margin-top:4px}
+
+        /* === SECTIONS === */
+        section{padding:100px 0}
+        .section-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(129,140,248,.1);border:1px solid rgba(129,140,248,.15);border-radius:20px;font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+        .section-title{font-size:clamp(28px,4vw,42px);font-weight:900;margin-bottom:16px;line-height:1.2}
+        .section-title .grad{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .section-sub{color:var(--text2);font-size:17px;max-width:600px;line-height:1.7}
+        .section-sub.center{margin:0 auto 48px}
+        .section-header{text-align:center;margin-bottom:64px}
+        .section-header .section-sub{margin:0 auto}
+
+        /* === FEATURES === */
+        .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+        .feature-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;transition:all .3s}
+        .feature-card:hover{border-color:rgba(129,140,248,.3);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.25)}
+        .feature-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
+        .feature-icon.purple{background:rgba(129,140,248,.12)}
+        .feature-icon.green{background:rgba(52,211,153,.12)}
+        .feature-icon.gold{background:rgba(251,191,36,.12)}
+        .feature-icon.red{background:rgba(248,113,113,.12)}
+        .feature-icon.blue{background:rgba(96,165,250,.12)}
+        .feature-card h3{font-size:17px;font-weight:700;margin-bottom:8px}
+        .feature-card p{color:var(--text2);font-size:14px;line-height:1.6}
+        @media(max-width:768px){.features-grid{grid-template-columns:1fr}}
+
+        /* === HOW IT WORKS === */
+        .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;position:relative}
+        .steps::before{content:'';position:absolute;top:40px;left:16%;right:16%;height:2px;background:linear-gradient(90deg,var(--border),var(--accent),var(--border))}
+        .step{text-align:center;position:relative}
+        .step-num{width:56px;height:56px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:20px;font-weight:800;color:var(--accent);position:relative;z-index:1}
+        .step h3{font-size:18px;font-weight:700;margin-bottom:8px}
+        .step p{color:var(--text2);font-size:14px;max-width:280px;margin:0 auto}
+        @media(max-width:768px){.steps{grid-template-columns:1fr;gap:32px}.steps::before{display:none}}
+
+        /* === SHOWCASE === */
+        .showcase{background:var(--bg2)}
+        .showcase-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+        .showcase-features{list-style:none;display:flex;flex-direction:column;gap:16px}
+        .showcase-features li{display:flex;align-items:flex-start;gap:12px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;transition:all .2s}
+        .showcase-features li:hover{border-color:rgba(129,140,248,.3)}
+        .showcase-features .check{width:28px;height:28px;border-radius:8px;background:rgba(52,211,153,.12);display:flex;align-items:center;justify-content:center;color:var(--green);font-size:14px;flex-shrink:0}
+        .showcase-features .text strong{display:block;font-size:15px;margin-bottom:2px}
+        .showcase-features .text span{color:var(--text2);font-size:13px}
+        @media(max-width:768px){.showcase-grid{grid-template-columns:1fr}}
+
+        /* === PRICING === */
+        .pricing{background:var(--bg2)}
+        .pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+        .price-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 24px;position:relative;transition:all .3s;display:flex;flex-direction:column}
+        .price-card:hover{transform:translateY(-4px)}
+        .price-card.popular{border-color:var(--accent);box-shadow:0 0 40px rgba(129,140,248,.15)}
+        .price-card.gold{border-color:var(--gold);box-shadow:0 0 40px rgba(251,191,36,.1)}
+        .popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 16px;background:var(--gradient);color:#fff;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+        .gold-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 16px;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0a0a1a;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+        .price-card .plan-name{font-size:20px;font-weight:700;margin-bottom:4px}
+        .price-card .plan-desc{color:var(--text2);font-size:13px;margin-bottom:16px}
+        .price-card .plan-price{font-size:32px;font-weight:900;margin-bottom:4px}
+        .price-card .plan-period{color:var(--text2);font-size:13px;margin-bottom:24px}
+        .price-card .plan-features{list-style:none;margin-bottom:24px;flex:1}
+        .price-card .plan-features li{padding:8px 0;color:var(--text2);font-size:13px;display:flex;align-items:flex-start;gap:8px;border-bottom:1px solid var(--border)}
+        .price-card .plan-features li:last-child{border:none}
+        .price-card .plan-features li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+        .price-card .plan-features li.disabled{opacity:.4}
+        .price-card .plan-features li.disabled::before{content:'✕';color:var(--red)}
+        .price-card .btn{width:100%;justify-content:center}
+        @media(max-width:900px){.pricing-grid{grid-template-columns:1fr 1fr}}
+        @media(max-width:500px){.pricing-grid{grid-template-columns:1fr}}
+
+        /* === TESTIMONIALS === */
+        .testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+        .testimonial{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px}
+        .testimonial .stars{color:var(--gold);font-size:14px;margin-bottom:12px}
+        .testimonial .quote{color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px;font-style:italic}
+        .testimonial .author{display:flex;align-items:center;gap:12px}
+        .testimonial .avatar{width:40px;height:40px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
+        .testimonial .author-info strong{display:block;font-size:14px}
+        .testimonial .author-info span{color:var(--text2);font-size:12px}
+        @media(max-width:768px){.testimonials-grid{grid-template-columns:1fr}}
+
+        /* === WAVE === */
+        .wave-section{background:linear-gradient(135deg,rgba(129,140,248,.08),rgba(167,139,250,.08))}
+        .wave-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+        .wave-features{display:flex;flex-direction:column;gap:12px}
+        .wave-feat{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:14px}
+        .wave-feat .ico{font-size:18px}
+        @media(max-width:768px){.wave-grid{grid-template-columns:1fr}}
+
+        /* === CTA === */
+        .cta-section{text-align:center;padding:120px 0}
+        .cta-box{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:64px 48px;position:relative;overflow:hidden}
+        .cta-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gradient)}
+        .cta-box h2{font-size:clamp(28px,4vw,40px);font-weight:900;margin-bottom:16px}
+        .cta-box p{color:var(--text2);font-size:17px;margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto}
+
+        /* === FOOTER === */
+        footer{border-top:1px solid var(--border);padding:60px 0 32px}
+        .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+        .footer-brand{font-size:28px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px}
+        .footer-desc{color:var(--text2);font-size:14px;line-height:1.7;max-width:280px}
+        .footer-col h4{font-size:14px;font-weight:700;margin-bottom:16px}
+        .footer-col a{display:block;color:var(--text2);text-decoration:none;font-size:14px;padding:4px 0;transition:color .2s}
+        .footer-col a:hover{color:var(--accent)}
+        .footer-bottom{text-align:center;padding-top:24px;border-top:1px solid var(--border);color:var(--text2);font-size:13px}
+        .footer-bottom a{color:var(--accent);text-decoration:none}
+        @media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr}}
+
+        /* === ANIMATIONS === */
+        .fade-in{opacity:0;transform:translateY(24px);transition:all .6s ease}
+        .fade-in.visible{opacity:1;transform:translateY(0)}
+        .fade-in-delay-1{transition-delay:.1s}
+        .fade-in-delay-2{transition-delay:.2s}
+        .fade-in-delay-3{transition-delay:.3s}
+    </style>
 </head>
 <body>
-    <section class="hero">
-        <div class="hero-content">
-            <div class="badge-top"><span class="badge-dot"></span> Plateforme N°1 en Côte d'Ivoire</div>
-            <h1>Votre <span class="gradient">Carte de Visite</span> Digitale Pro</h1>
-            <p class="subtitle">Creez votre profil professionnel en 2 minutes. Reservations, services, paiements Wave integres. Partagez votre lien unique.</p>
-            <div class="cta-group">
-                <a href="/register.html" class="btn btn-primary">Creer mon profil gratuit</a>
-                <a href="#pricing" class="btn btn-secondary">Voir les tarifs</a>
+
+<!-- NAV -->
+<nav id="nav">
+    <div class="container nav-inner">
+        <a href="/" class="nav-brand">Flay</a>
+        <div class="nav-links" id="navLinks">
+            <a href="#features">Fonctionnalites</a>
+            <a href="#how">Comment ca marche</a>
+            <a href="#pricing">Tarifs</a>
+            <a href="/login.html">Connexion</a>
+            <a href="/register.html" class="nav-cta">Commencer gratuit</a>
+        </div>
+        <button class="nav-mobile" onclick="document.getElementById('navLinks').classList.toggle('open')">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-grid">
+            <div class="fade-in">
+                <div class="hero-badge"><span class="dot"></span> Plateforme N&deg;1 en C&ocirc;te d'Ivoire</div>
+                <h1>Votre <span class="grad">presence digitale</span> professionnelle</h1>
+                <p>Carte de visite digitale, site vitrine, e-commerce, CRM, reservations et paiements Wave. Tout en un seul lien.</p>
+                <div class="hero-actions">
+                    <a href="/register.html" class="btn btn-primary">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                        Creer mon profil
+                    </a>
+                    <a href="#features" class="btn btn-outline">Decouvrir</a>
+                </div>
+            </div>
+            <div class="hero-visual fade-in fade-in-delay-2">
+                <div class="hero-card">
+                    <div class="hero-card-name">Aya Koné</div>
+                    <div class="hero-card-role">Photographe &bull; Abidjan</div>
+                    <div class="hero-card-stats">
+                        <div class="stat-box"><div class="stat-num">2.4K</div><div class="stat-label">Vues</div></div>
+                        <div class="stat-box"><div class="stat-num">187</div><div class="stat-label">Contacts</div></div>
+                        <div class="stat-box"><div class="stat-num">43</div><div class="stat-label">Resa</div></div>
+                    </div>
+                    <div class="hero-card-actions">
+                        <a class="mini-btn" href="#">Mon site</a>
+                        <a class="mini-btn" href="#">Reserver</a>
+                        <a class="mini-btn" href="#">Payer</a>
+                    </div>
+                </div>
+                <div class="hero-float tl"><span class="icon">📱</span> Lien unique: <strong>flay.app/aya</strong></div>
+                <div class="hero-float br"><span class="icon">💳</span> Paiement Wave recu <strong style="color:var(--green)">+15 000 FCFA</strong></div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="features" id="features">
-        <h2 class="section-title">Tout ce dont vous avez besoin</h2>
-        <p class="section-sub">Une solution complete pour votre presence digitale professionnelle</p>
+<!-- STATS -->
+<div class="stats-bar">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item fade-in"><div class="num">15 000+</div><div class="label">Professionnels</div></div>
+            <div class="stat-item fade-in fade-in-delay-1"><div class="num">50 000+</div><div class="label">Visiteurs/mois</div></div>
+            <div class="stat-item fade-in fade-in-delay-2"><div class="num">2M+</div><div class="label">FCFA payes</div></div>
+            <div class="stat-item fade-in fade-in-delay-3"><div class="num">99.9%</div><div class="label">Uptime</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Fonctionnalites</div>
+            <h2 class="section-title">Tout ce dont vous avez <span class="grad">besoin</span></h2>
+            <p class="section-sub">Une solution complete pour gerer votre activite professionnelle en ligne</p>
+        </div>
         <div class="features-grid">
-            <div class="feature-card">
-                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
-                <div class="feature-title">Profil Professionnel</div>
-                <div class="feature-desc">Page personnalisee avec vos services, tarifs, photos et coordonnees. Design moderne et responsive.</div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon purple">📱</div>
+                <h3>Carte de Visite Digitale</h3>
+                <p>Profil professionnel avec services, tarifs, photos et coordonnees. Partagez votre lien unique.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
-                <div class="feature-title">Reservations en Ligne</div>
-                <div class="feature-desc">Vos clients peuvent reserver vos services directement depuis votre profil. Gestion automatique.</div>
+            <div class="feature-card fade-in fade-in-delay-1">
+                <div class="feature-icon green">🌐</div>
+                <h3>Site Vitrine</h3>
+                <p>Site web complet avec galerie, carte Google Maps, formulaire de contact et animations.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>
-                <div class="feature-title">Paiement Wave</div>
-                <div class="feature-desc">Integation directe avec Wave pour les paiements. Lien de paiement automatique.</div>
+            <div class="feature-card fade-in fade-in-delay-2">
+                <div class="feature-icon gold">🛒</div>
+                <h3>E-Commerce</h3>
+                <p>Boutique en ligne avec panier, commandes, gestion des stocks et suivi de livraison.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg></div>
-                <div class="feature-title">Agent IA</div>
-                <div class="feature-desc">Generation automatique de bio, suggestions de services, insights analytics intelligents.</div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon blue">📅</div>
+                <h3>Reservations</h3>
+                <p>Clients reservent vos services en ligne. Gestion automatique et confirmations.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/></svg></div>
-                <div class="feature-title">Carte de Visite PDF</div>
-                <div class="feature-desc">Generez et imprimez votre carte de visite physique en PDF intelligent recto/verso.</div>
+            <div class="feature-card fade-in fade-in-delay-1">
+                <div class="feature-icon red">🤖</div>
+                <h3>Agent IA</h3>
+                <p>Generation auto de contenu, bio, descriptions de services et insights intelligents.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></div>
-                <div class="feature-title">Site Vitrine</div>
-                <div class="feature-desc">Site web complet avec galerie, map, reservation et contact. Personnalisation avancee.</div>
+            <div class="feature-card fade-in fade-in-delay-2">
+                <div class="feature-icon purple">📊</div>
+                <h3>Analytics & CRM</h3>
+                <p>Suivez vos vues, contacts, ventes. CRM complet avec facturation et exports.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
-                <div class="feature-title">Géolocalisation</div>
-                <div class="feature-desc">Affichez votre position sur une carte Google Maps. Vos clients vous trouvent facilement.</div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon green">💳</div>
+                <h3>Paiements Wave</h3>
+                <p>Recevez des paiements directement depuis votre profil. Activation automatique.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg></div>
-                <div class="feature-title">Analytics Avances</div>
-                <div class="feature-desc">Suivez vos vues, clics, reservations. Graphiques, referrers, devices. Insights IA.</div>
+            <div class="feature-card fade-in fade-in-delay-1">
+                <div class="feature-icon gold">💬</div>
+                <h3>Chat Temps Reel</h3>
+                <p>Discutez avec vos visiteurs en direct. Notifications instantanees.</p>
             </div>
-            <div class="feature-card">
-                <div class="feature-icon"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
-                <div class="feature-title">Chat Temps Reel</div>
-                <div class="feature-desc">Chattez directement avec vos visiteurs. Notifications en temps reel.</div>
+            <div class="feature-card fade-in fade-in-delay-2">
+                <div class="feature-icon blue">📄</div>
+                <h3>Facturation & PDF</h3>
+                <p>Factures automatiques, export PDF, carte de visite imprimee et CV numerique.</p>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="pricing" id="pricing">
-        <h2 class="section-title">Tarifs transparents</h2>
-        <p class="section-sub">Choisissez le plan qui correspond a vos besoins</p>
+<!-- HOW IT WORKS -->
+<section id="how" style="background:var(--bg2)">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Simple et rapide</div>
+            <h2 class="section-title">En <span class="grad">3 etapes</span></h2>
+            <p class="section-sub">Commencez en 2 minutes, sans competence technique</p>
+        </div>
+        <div class="steps">
+            <div class="step fade-in">
+                <div class="step-num">1</div>
+                <h3>Creez votre profil</h3>
+                <p>Ajoutez vos services, tarifs, photos et coordonnees. L'IA genere votre bio automatiquement.</p>
+            </div>
+            <div class="step fade-in fade-in-delay-1">
+                <div class="step-num">2</div>
+                <h3>Partagez votre lien</h3>
+                <p>Recevez votre lien unique flay.app/votre-nom. Partagez-le sur WhatsApp, QR code, reseaux.</p>
+            </div>
+            <div class="step fade-in fade-in-delay-2">
+                <div class="step-num">3</div>
+                <h3>Recevez des clients</h3>
+                <p>Reservations, paiements, messages - tout arrive sur votre profil. Suivez vos stats en temps reel.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SHOWCASE / WHY FLAY -->
+<section class="showcase" id="why">
+    <div class="container">
+        <div class="showcase-grid">
+            <div class="fade-in">
+                <div class="section-tag">Pourquoi Flay</div>
+                <h2 class="section-title">Concu pour les <span class="grad">professionnels CI</span></h2>
+                <p class="section-sub" style="margin-bottom:24px">Pas un simple site web. Une plateforme complete adaptee au marche ivoirien et ouest-africain.</p>
+                <ul class="showcase-features">
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>Wave integre</strong><span>Paiements directs, pas d'integrations complexes</span></div>
+                    </li>
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>PWA installable</strong><span>Votre clients installent votre app depuis le navigateur</span></div>
+                    </li>
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>Multilingue FR/EN</strong><span>Interface automatique selon la langue du visiteur</span></div>
+                    </li>
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>Agent IA integre</strong><span>Generez du contenu, bio et descriptions automatiquement</span></div>
+                    </li>
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>Zero dependance</strong><span>Pas besoin de developpeur. Tout est gere depuis votre telephone</span></div>
+                    </li>
+                </ul>
+            </div>
+            <div class="fade-in fade-in-delay-2">
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px">
+                    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Dashboard en direct</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                        <div style="background:var(--bg);border-radius:10px;padding:16px"><div style="font-size:11px;color:var(--text2)">Vues aujourd'hui</div><div style="font-size:24px;font-weight:800;color:var(--accent)">127</div></div>
+                        <div style="background:var(--bg);border-radius:10px;padding:16px"><div style="font-size:11px;color:var(--text2)">Nouveaux contacts</div><div style="font-size:24px;font-weight:800;color:var(--green)">12</div></div>
+                        <div style="background:var(--bg);border-radius:10px;padding:16px"><div style="font-size:11px;color:var(--text2)">Reservations</div><div style="font-size:24px;font-weight:800;color:var(--gold)">5</div></div>
+                        <div style="background:var(--bg);border-radius:10px;padding:16px"><div style="font-size:11px;color:var(--text2)">Revenus</div><div style="font-size:24px;font-weight:800;color:var(--green)">45K</div></div>
+                    </div>
+                    <div style="height:60px;background:var(--bg);border-radius:10px;display:flex;align-items:end;padding:8px;gap:4px">
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:30%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:50%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:40%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:70%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:60%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:85%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:75%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:90%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:95%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Tarifs</div>
+            <h2 class="section-title">Des prix <span class="grad">transparents</span></h2>
+            <p class="section-sub">Choisissez le plan qui correspond a vos besoins. Changez a tout moment.</p>
+        </div>
         <div class="pricing-grid">
-            <div class="price-card">
+            <div class="price-card fade-in">
                 <div class="plan-name">Gratuit</div>
-                <div class="plan-price">0 FCFA <span>/mois</span></div>
+                <div class="plan-desc">Pour decouvrir</div>
+                <div class="plan-price">0 <span style="font-size:14px;font-weight:400;color:var(--text2)">FCFA/mois</span></div>
+                <div class="plan-period">Pour toujours</div>
                 <ul class="plan-features">
                     <li>Carte de visite digitale</li>
-                    <li>Lien unique flay.app/username</li>
+                    <li>Lien unique flay.app/nom</li>
                     <li>3 services maximum</li>
                     <li>2 themes</li>
                     <li>Stats de base</li>
+                    <li>QR Code</li>
+                    <li class="disabled">Reservations</li>
+                    <li class="disabled">E-Commerce</li>
                 </ul>
-                <a href="/register.html" class="btn btn-secondary btn-plan">Commencer gratuitement</a>
+                <a href="/register.html" class="btn btn-outline" style="justify-content:center">Commencer</a>
             </div>
-            <div class="price-card popular">
-                <div class="popular-badge">Le plus populaire</div>
+            <div class="price-card popular fade-in fade-in-delay-1">
+                <div class="popular-badge">Populaire</div>
                 <div class="plan-name">Pro</div>
-                <div class="plan-price" style="color: var(--accent);">5 000 FCFA <span>/mois</span></div>
+                <div class="plan-desc">Professionnels actifs</div>
+                <div class="plan-price" style="color:var(--accent)">5 000 <span style="font-size:14px;font-weight:400;color:var(--text2)">FCFA/mois</span></div>
+                <div class="plan-period">50 000 FCFA/an (2 mois offerts)</div>
                 <ul class="plan-features">
                     <li>Tout du plan Gratuit</li>
                     <li>Reservations illimitees</li>
                     <li>Services illimites</li>
                     <li>7 themes premium</li>
-                    <li>QR Code personnalise</li>
-                    <li>Badge Verifie Pro</li>
-                    <li>Chat en temps reel</li>
+                    <li>Chat temps reel</li>
                     <li>Analytics detailles</li>
+                    <li>Paiements Wave</li>
+                    <li>Site vitrine complet</li>
                 </ul>
-                <a href="/payment.html?plan=pro" class="btn btn-primary btn-plan">Choisir Pro</a>
+                <a href="/payment.html?plan=pro" class="btn btn-primary" style="justify-content:center">Choisir Pro</a>
             </div>
-            <div class="price-card">
+            <div class="price-card fade-in fade-in-delay-2">
                 <div class="plan-name">Premium</div>
-                <div class="plan-price" style="color: var(--gold);">15 000 FCFA <span>/mois</span></div>
+                <div class="plan-desc">Expansion digitale</div>
+                <div class="plan-price" style="color:var(--accent2)">15 000 <span style="font-size:14px;font-weight:400;color:var(--text2)">FCFA/mois</span></div>
+                <div class="plan-period">150 000 FCFA/an (2 mois offerts)</div>
                 <ul class="plan-features">
                     <li>Tout du plan Pro</li>
                     <li>Agent IA integre</li>
-                    <li>Carte de visite PDF</li>
-                    <li>Site vitrine complet</li>
-                    <li>Geolocalisation</li>
+                    <li>Boutique en ligne (30 articles)</li>
+                    <li>CRM complet</li>
+                    <li>Facturation + PDF</li>
                     <li>Domaine personnalise</li>
-                    <li>Export PDF</li>
-                    <li>API publique</li>
-                    <li>Webhooks</li>
-                    <li>Support prioritaire 24/7</li>
+                    <li>Multi-langues</li>
+                    <li>API + Webhooks</li>
                 </ul>
-                <a href="/payment.html?plan=premium" class="btn btn-secondary btn-plan" style="border-color: var(--gold); color: var(--gold);">Choisir Premium</a>
+                <a href="/payment.html?plan=premium" class="btn btn-outline" style="justify-content:center">Choisir Premium</a>
+            </div>
+            <div class="price-card gold fade-in fade-in-delay-3">
+                <div class="gold-badge">Doree</div>
+                <div class="plan-name">Doree</div>
+                <div class="plan-desc">Business complet</div>
+                <div class="plan-price" style="color:var(--gold)">30 000 <span style="font-size:14px;font-weight:400;color:var(--text2)">FCFA/mois</span></div>
+                <div class="plan-period">300 000 FCFA/an (2 mois offerts)</div>
+                <ul class="plan-features">
+                    <li>Tout du plan Premium</li>
+                    <li>Boutique ILLIMITEE</li>
+                    <li>Multi-utilisateurs (3)</li>
+                    <li>White label</li>
+                    <li>Programme fidelite</li>
+                    <li>Coupons + reductions</li>
+                    <li>Suivi livraison</li>
+                    <li>Support telephone 24/7</li>
+                </ul>
+                <a href="/payment.html?plan=doree" class="btn btn-outline" style="justify-content:center;border-color:var(--gold);color:var(--gold)">Choisir Doree</a>
             </div>
         </div>
-    </section>
+    </div>
+</section>
 
-    <section class="wave-section">
-        <div class="wave-card">
-            <div class="wave-logo">&#128177;</div>
-            <div class="wave-merchant">DIGITALSTRATEGE BUSINESS</div>
-            <div class="wave-info">Paiement securise via Wave - Activation automatique</div>
-            <a href="https://pay.wave.com/m/M_uv5jVAEPkSWs/c/ci/" target="_blank" class="btn btn-primary">Tester le lien Wave</a>
+<!-- TESTIMONIALS -->
+<section style="background:var(--bg2)">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Temoignages</div>
+            <h2 class="section-title">Ils nous font <span class="grad">confiance</span></h2>
         </div>
-    </section>
+        <div class="testimonials-grid">
+            <div class="testimonial fade-in">
+                <div class="stars">★★★★★</div>
+                <div class="quote">"J'ai cree ma page en 5 minutes. Maintenant mes clients reservent et paient en ligne. Je gagne 30% de plus chaque mois."</div>
+                <div class="author"><div class="avatar">SK</div><div class="author-info"><strong>Sarah K.</strong><span>Coiffeuse, Abidjan</span></div></div>
+            </div>
+            <div class="testimonial fade-in fade-in-delay-1">
+                <div class="stars">★★★★★</div>
+                <div class="quote">"Le meilleur outil pour les commerciaux en CI. Mon CRM est toujours a jour, mes factures sont generees automatiquement."</div>
+                <div class="author"><div class="avatar">MK</div><div class="author-info"><strong>Moussa K.</strong><span>Commercial, Yamoussoukro</span></div></div>
+            </div>
+            <div class="testimonial fade-in fade-in-delay-2">
+                <div class="stars">★★★★★</div>
+                <div class="quote">"Ma boutique en ligne fonctionne comme un vrai site e-commerce. Les paiements Wave sont instantanes. Merci Flay !"</div>
+                <div class="author"><div class="avatar">FA</div><div class="author-info"><strong>Fatou A.</strong><span>Accessoiriste, Bouake</span></div></div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <footer class="footer">
-        <div class="footer-brand">Flay</div>
-        <p class="footer-text">Fait avec &#10084; par <a href="https://digitalstrateges.ci">DIGITALSTRATEGES</a> | Contact: <a href="https://wa.me/2250759731990">+225 07 59 73 19 90</a></p>
-        <p class="footer-text" style="margin-top: 8px;">&copy; 2026 Flay. Tous droits reserves.</p>
-    </footer>
+<!-- WAVE SECTION -->
+<section class="wave-section">
+    <div class="container">
+        <div class="wave-grid">
+            <div class="fade-in">
+                <div class="section-tag">Paiements</div>
+                <h2 class="section-title">Recevez vos paiements <span class="grad">via Wave</span></h2>
+                <p class="section-sub" style="margin-bottom:24px">Integation directe avec Wave. Vos clients paient en un clic, les fonds arrivent instantanement.</p>
+                <div class="wave-features">
+                    <div class="wave-feat"><span class="ico">⚡</span> Paiement instantane</div>
+                    <div class="wave-feat"><span class="ico">🔒</span> Securise et certifie</div>
+                    <div class="wave-feat"><span class="ico">📱</span> QR Code de paiement</div>
+                    <div class="wave-feat"><span class="ico">📊</span> Suivi des transactions</div>
+                </div>
+            </div>
+            <div class="fade-in fade-in-delay-2" style="text-align:center">
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px;max-width:400px;margin:0 auto">
+                    <div style="font-size:48px;margin-bottom:16px">💰</div>
+                    <div style="font-size:18px;font-weight:700;margin-bottom:8px">DIGITALSTRATEGE BUSINESS</div>
+                    <div style="color:var(--text2);font-size:14px;margin-bottom:24px">Wave Merchant officiel Flay</div>
+                    <a href="https://pay.wave.com/m/M_uv5jVAEPkSWs/c/ci/" target="_blank" class="btn btn-primary" style="width:100%;justify-content:center">Tester le lien Wave</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
-    <script>
-        // Smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(a => {
-            a.addEventListener('click', e => {
-                e.preventDefault();
-                const t = document.querySelector(a.getAttribute('href'));
-                if (t) t.scrollIntoView({ behavior: 'smooth' });
-            });
-        });
-        // Animate on scroll
-        const observer = new IntersectionObserver(entries => {
-            entries.forEach(e => { if (e.isIntersecting) e.target.style.opacity = '1'; e.target.style.transform = 'translateY(0)'; });
-        }, { threshold: 0.1 });
-        document.querySelectorAll('.feature-card, .price-card').forEach(el => {
-            el.style.opacity = '0'; el.style.transform = 'translateY(30px)'; el.style.transition = 'all 0.6s ease';
-            observer.observe(el);
-        });
-    </script>
+<!-- CTA -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-box fade-in">
+            <h2>Pret a lancer votre <span class="grad">presence digitale</span> ?</h2>
+            <p>Rejoignez 15 000+ professionnels en Cote d'Ivoire. Commencez gratuitement, sans carte bancaire.</p>
+            <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+                <a href="/register.html" class="btn btn-primary">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    Creer mon profil gratuit
+                </a>
+                <a href="https://wa.me/2250759731990" target="_blank" class="btn btn-outline">
+                    💬 Nous contacter
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div>
+                <div class="footer-brand">Flay</div>
+                <p class="footer-desc">La plateforme tout-en-un pour les professionnels en Cote d'Ivoire. Carte de visite digitale, e-commerce, CRM et paiements.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Produit</h4>
+                <a href="#features">Fonctionnalites</a>
+                <a href="#pricing">Tarifs</a>
+                <a href="/vendors">Marketplace</a>
+                <a href="/dashboard">Dashboard</a>
+            </div>
+            <div class="footer-col">
+                <h4>Ressources</h4>
+                <a href="/login.html">Connexion</a>
+                <a href="/register.html">S'inscrire</a>
+                <a href="https://wa.me/2250759731990" target="_blank">Support WhatsApp</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="#">Confidentialite</a>
+                <a href="#">Conditions</a>
+                <a href="#">Mentions legales</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 Flay. Fait avec &#10084; par <a href="https://digitalstrateges.ci">DIGITALSTRATEGES</a> &bull; +225 07 59 73 19 90
+        </div>
+    </div>
+</footer>
+
+<script>
+// Nav scroll effect
+window.addEventListener('scroll',()=>{
+    document.getElementById('nav').classList.toggle('scrolled',window.scrollY>50)
+});
+
+// Intersection observer for animations
+const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})
+},{threshold:0.1});
+document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+        e.preventDefault();
+        const t=document.querySelector(a.getAttribute('href'));
+        if(t)t.scrollIntoView({behavior:'smooth',block:'start'})
+    })
+});
+</script>
+
 </body>
 </html>
