@@ -1,5 +1,5 @@
 module.exports = {
-    VERSION: '18.0.0',
+    VERSION: '19.0.0',
     PORT: process.env.PORT || 4000,
     JWT_SECRET: process.env.JWT_SECRET || 'flay_ultimate_secret_2024_digitalstrateges_ci',
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || 'flay_refresh_ultimate_2024',
