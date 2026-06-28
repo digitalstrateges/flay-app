@@ -419,7 +419,7 @@ class DesignStudio {
             .service-name { font-size: 18px; font-weight: 700; }
             .service-price { font-size: 16px; font-weight: 700; color: var(--accent); white-space: nowrap; }
             .service-desc { font-size: 14px; color: var(--text-light); margin-bottom: 16px; line-height: 1.6; }
-            .service-cta { display: block; text-align: center; padding: 10px; background: var(--accent);10; color: white; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; }
+            .service-cta { display: block; text-align: center; padding: 10px; background: var(--accent); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; }
             .about-content { display: flex; gap: 40px; align-items: center; }
             .about-avatar { width: 200px; height: 200px; border-radius: var(--radius); object-fit: cover; border: 3px solid var(--accent); }
             .about-text { font-size: 16px; color: var(--text-light); line-height: 1.8; }

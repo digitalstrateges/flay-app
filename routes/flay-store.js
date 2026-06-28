@@ -6,8 +6,8 @@
 const express = require('express');
 const router = express.Router();
 const flayStore = require('../flay-store');
-const db = require('../database');
-const { authenticate } = require('../middleware');
+const db = require('../db');
+const { authenticate } = require('../lib/auth');
 
 // Get all store items for current plan
 router.get('/items', authenticate, (req, res) => {

@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const social = require('../social-integration');
-const { authenticate } = require('../middleware');
+const { authenticate } = require('../lib/auth');
 
 // Get supported platforms
 router.get('/platforms', (req, res) => {

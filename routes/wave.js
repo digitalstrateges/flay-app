@@ -8,8 +8,8 @@ const router = express.Router();
 router.get('/info', (req, res) => {
     res.json({
         paymentUrl: config.WAVE_PAYMENT_URL,
-        merchant: config.WAVE_MERCHANT,
-        phone: config.WAVE_PHONE,
+        merchant: config.WAVE_MERCHANT_NAME,
+        phone: config.WAVE_MERCHANT_PHONE,
         whatsapp: config.WHATSAPP_LINK
     });
 });

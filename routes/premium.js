@@ -164,8 +164,9 @@ router.post('/coupons/validate', auth, (req, res) => {
     if (!coupon) return res.status(404).json({ error: 'Coupon not found' });
     
     const now = new Date();
-    if (new Date(coupon.validUntil) < now) return res.status(400).json({ error: 'Coupon expired' });
-    if (new Date(coupon.validFrom) > now) return res.status(400).json({ error: 'Coupon not yet valid' });
+    if (coupon.validUntil && new Date(coupon.validUntil) < now) return res.status(400).json({ error: 'Coupon expired' });
+    if (coupon.valid_from && new Date(coupon.valid_from) > now) return res.status(400).json({ error: 'Coupon not yet valid' });
+    if (coupon.validFrom && new Date(coupon.validFrom) > now) return res.status(400).json({ error: 'Coupon not yet valid' });
     if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) {
         return res.status(400).json({ error: 'Coupon usage limit reached' });
     }

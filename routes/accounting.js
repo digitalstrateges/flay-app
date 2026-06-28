@@ -190,7 +190,7 @@ router.post('/ai/chat', auth, async (req, res) => {
 // === STOCK MANAGEMENT ===
 
 router.get('/stock', auth, (req, res) => {
-    const products = db.findBy('products', 'userId', req.userId);
+    const products = db.findAll('products', 'userId', req.userId) || [];
     const stock = products.map(p => ({
         id: p.id,
         name: p.name,
@@ -246,8 +246,8 @@ router.post('/stock/adjust', auth, (req, res) => {
     db.update('products', productId, { stock: newStock });
     
     // Log stock movement
-    const movements = db.get('stock_movements', 'productId', productId) || [];
-    movements.push({
+    const movement = {
+        id: `mov_${Date.now()}`,
         productId,
         userId: req.userId,
         adjustment,
@@ -255,7 +255,8 @@ router.post('/stock/adjust', auth, (req, res) => {
         previousStock: product.stock || 0,
         newStock,
         timestamp: new Date().toISOString()
-    });
+    };
+    db.insert('stock_movements', movement);
     
     res.json({ success: true, newStock });
 });

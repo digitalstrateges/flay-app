@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const push = require('../push-notifications');
-const { authenticate } = require('../middleware');
+const { authenticate } = require('../lib/auth');
 
 // Get VAPID public key
 router.get('/vapid-public-key', (req, res) => {

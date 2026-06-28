@@ -6,13 +6,13 @@
 const express = require('express');
 const router = express.Router();
 const exportUtils = require('../export-utils');
-const db = require('../database');
-const { authenticate } = require('../middleware');
+const db = require('../db');
+const { authenticate } = require('../lib/auth');
 
 // Export invoices
-router.get('/invoices/:userId', authenticate, (req, res) => {
+router.get('/invoices', authenticate, (req, res) => {
     try {
-        const invoices = db.query('invoices', { user_id: req.params.userId });
+        const invoices = db.findAll('invoices', 'userId', req.user.id) || [];
         const format = req.query.format || 'csv';
 
         if (format === 'html') {
@@ -33,9 +33,9 @@ router.get('/invoices/:userId', authenticate, (req, res) => {
 });
 
 // Export receipts
-router.get('/receipts/:userId', authenticate, (req, res) => {
+router.get('/receipts', authenticate, (req, res) => {
     try {
-        const receipts = db.query('receipts', { user_id: req.params.userId });
+        const receipts = db.findAll('receipts', 'userId', req.user.id) || [];
         const format = req.query.format || 'csv';
 
         if (format === 'html') {
@@ -54,9 +54,9 @@ router.get('/receipts/:userId', authenticate, (req, res) => {
 });
 
 // Export transactions
-router.get('/transactions/:userId', authenticate, (req, res) => {
+router.get('/transactions', authenticate, (req, res) => {
     try {
-        const txns = db.query('transactions', { user_id: req.params.userId });
+        const txns = db.findAll('transactions', 'userId', req.user.id) || [];
         const format = req.query.format || 'csv';
 
         if (format === 'html') {
@@ -75,9 +75,9 @@ router.get('/transactions/:userId', authenticate, (req, res) => {
 });
 
 // Export CRM contacts
-router.get('/contacts/:userId', authenticate, (req, res) => {
+router.get('/contacts', authenticate, (req, res) => {
     try {
-        const contacts = db.query('crm_contacts', { user_id: req.params.userId });
+        const contacts = db.findAll('crm_contacts', 'userId', req.user.id) || [];
         const format = req.query.format || 'csv';
 
         if (format === 'html') {
@@ -96,9 +96,9 @@ router.get('/contacts/:userId', authenticate, (req, res) => {
 });
 
 // Export stock
-router.get('/stock/:userId', authenticate, (req, res) => {
+router.get('/stock', authenticate, (req, res) => {
     try {
-        const stock = db.query('stock_items', { user_id: req.params.userId });
+        const stock = db.findAll('products', 'userId', req.user.id) || [];
         const format = req.query.format || 'csv';
 
         if (format === 'html') {
@@ -117,12 +117,10 @@ router.get('/stock/:userId', authenticate, (req, res) => {
 });
 
 // Export analytics report
-router.get('/analytics/:userId', authenticate, (req, res) => {
+router.get('/analytics', authenticate, (req, res) => {
     try {
-        const analytics = db.getAnalytics(req.params.userId, parseInt(req.query.days) || 30);
-        const html = exportUtils.generateAnalyticsReport(analytics, {
-            period: `${req.query.days || 30} jours`
-        });
+        const events = db.findAll('analytics_events', 'userId', req.user.id) || [];
+        const html = exportUtils.toHTMLTable('Analytics', events);
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.setHeader('Content-Disposition', `attachment; filename=rapport_analytics_${Date.now()}.html`);
         res.send(html);
@@ -132,11 +130,12 @@ router.get('/analytics/:userId', authenticate, (req, res) => {
 });
 
 // Generate single invoice HTML
-router.get('/invoice/:userId/:invoiceId', authenticate, (req, res) => {
+router.get('/invoice/:invoiceId', authenticate, (req, res) => {
     try {
-        const invoices = db.query('invoices', { id: req.params.invoiceId, user_id: req.params.userId });
-        if (invoices.length === 0) return res.status(404).json({ error: 'Facture non trouvee' });
-        const invoice = invoices[0];
+        const invoice = db.get('invoices', req.params.invoiceId);
+        if (!invoice || invoice.userId !== req.user.id) {
+            return res.status(404).json({ error: 'Facture non trouvee' });
+        }
         const items = JSON.parse(invoice.items || '[]');
         const html = exportUtils.generateInvoice(invoice, items);
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -147,11 +146,13 @@ router.get('/invoice/:userId/:invoiceId', authenticate, (req, res) => {
 });
 
 // Generate single receipt HTML
-router.get('/receipt/:userId/:receiptId', authenticate, (req, res) => {
+router.get('/receipt/:receiptId', authenticate, (req, res) => {
     try {
-        const receipts = db.query('receipts', { id: req.params.receiptId, user_id: req.params.userId });
-        if (receipts.length === 0) return res.status(404).json({ error: 'Recu non trouve' });
-        const html = exportUtils.generateReceipt(receipts[0]);
+        const receipt = db.get('receipts', req.params.receiptId);
+        if (!receipt || receipt.userId !== req.user.id) {
+            return res.status(404).json({ error: 'Recu non trouve' });
+        }
+        const html = exportUtils.generateReceipt(receipt);
         res.setHeader('Content-Type', 'text/html; charset=utf-8');
         res.send(html);
     } catch (e) {

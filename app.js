@@ -46,6 +46,18 @@ app.use((req, res, next) => {
     next();
 });
 
+// Cleanup rate limits every 5 min
+setInterval(() => {
+    if (global._rateLimits) {
+        const now = Date.now();
+        for (const [key, hits] of global._rateLimits) {
+            const valid = hits.filter(t => t > now - 60000);
+            if (valid.length === 0) global._rateLimits.delete(key);
+            else global._rateLimits.set(key, valid);
+        }
+    }
+}, 300000);
+
 // Stricter rate limit for auth POST
 const authRateLimits = new Map();
 app.use('/api/auth', (req, res, next) => {
@@ -60,6 +72,16 @@ app.use('/api/auth', (req, res, next) => {
     }
     next();
 });
+
+// Cleanup auth rate limits every 5 min
+setInterval(() => {
+    const now = Date.now();
+    for (const [key, hits] of authRateLimits) {
+        const valid = hits.filter(t => t > now - 60000);
+        if (valid.length === 0) authRateLimits.delete(key);
+        else authRateLimits.set(key, valid);
+    }
+}, 300000);
 
 // === PWA ===
 app.get('/manifest.json', (req, res) => {
@@ -120,7 +142,6 @@ app.use('/api/accounting', require('./routes/accounting'));
 app.use('/api/premium', require('./routes/premium'));
 app.use('/api/export', require('./routes/export'));
 app.use('/api/push', require('./routes/push'));
-app.use('/api/tracking', require('./routes/analytics'));
 app.use('/api/flay-store', require('./routes/flay-store'));
 app.use('/api/africa', require('./routes/africa-world'));
 app.use('/api/local-languages', require('./routes/local-languages'));

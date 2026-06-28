@@ -197,7 +197,7 @@ class Middleware {
     // === Validation ===
     validate(validatorFn) {
         return (req, res, next) => {
-            const validator = require('../validator');
+            const validator = require('./validator');
             validatorFn(validator, req.body);
 
             if (!validator.isValid()) {

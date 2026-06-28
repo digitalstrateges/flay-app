@@ -47,13 +47,14 @@ router.post('/wave', async (req, res) => {
 
 // --- Helper ---
 function processConfirmedPayment(externalId, eventData) {
-    for (const [id, payment] of db.getAll('payments').entries()) {
+    const payments = db.getAll('payments') || [];
+    for (const payment of payments) {
         if (payment.ref === externalId || payment.externalId === externalId) {
             if (payment.status !== 'confirmed') {
                 payment.status = 'confirmed';
                 payment.confirmedAt = eventData.confirmedAt;
                 payment.gatewayRef = eventData.sessionId || eventData.transactionId;
-                db.update('payments', id, payment);
+                db.update('payments', payment.id, payment);
 
                 const user = db.get('users', payment.userId);
                 if (user) {
