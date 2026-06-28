@@ -1,6 +1,6 @@
 {
   "name": "flay-app",
-  "version": "16.0.0",
+  "version": "17.0.0",
   "description": "Flay - Plateforme tout-en-un : showcase, e-commerce, CRM, reservations | DIGITALSTRATEGES",
   "main": "server.js",
   "scripts": {

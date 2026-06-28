@@ -20,15 +20,15 @@ server.on('error', (err) => {
 server.listen(PORT, '0.0.0.0', async () => {
     console.log('');
     console.log('╔══════════════════════════════════════════════════╗');
-    console.log('║              FLAY ULTIMATE v16.0                 ║');
+    console.log('║              FLAY ULTIMATE v17.0                 ║');
     console.log('║         DIGITALSTRATEGES Business                ║');
     console.log('╠══════════════════════════════════════════════════╣');
     console.log(`║  Serveur:  http://localhost:${PORT}                  ║`);
     console.log(`║  WhatsApp: +225 07 59 73 19 90                  ║`);
     console.log(`║  Wave:     DIGITALSTRATEGE BUSINESS              ║`);
     console.log('╠══════════════════════════════════════════════════╣');
-    console.log('║  V16 - Database, Exports, Push, Analytics        ║');
-    console.log('║  SQLite + Email + SMS + Real-time                ║');
+    console.log('║  V17 - 40+ Themes, Flay Store, Africa World      ║');
+    console.log('║  Nations + Payments + Multi-currency             ║');
     console.log('╚══════════════════════════════════════════════════╝');
     console.log('');
     

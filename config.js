@@ -75,7 +75,7 @@ module.exports = {
                 'Lien unique flay.app/username',
                 '5 services maximum',
                 'Statistiques de base',
-                '4 themes (Dark, Light, Midnight, Ocean)',
+                '15 themes (Dark, Light, modes jour/nuit)',
                 'Partage WhatsApp + QR Code',
                 'Reservation jusqu\'a 10/mois',
                 'Contact jusqu\'a 100',
@@ -83,7 +83,7 @@ module.exports = {
             ],
             limits: {
                 services: 5,
-                themes: 4,
+                themes: 15,
                 reservations: 10,
                 contacts: 100,
                 invoices: 20,
@@ -92,7 +92,8 @@ module.exports = {
                 customDomain: false,
                 ecommerce: true,
                 aiAgent: false,
-                whiteLabel: false
+                whiteLabel: false,
+                flayStore: false
             }
         },
         pro: {
@@ -100,7 +101,7 @@ module.exports = {
             slug: 'pro',
             price: 5000,
             priceLabel: '5 000 FCFA/mois',
-            priceAnnual: 50000, // 2 mois offerts
+            priceAnnual: 50000,
             priceAnnualLabel: '50 000 FCFA/an',
             interval: 'monthly',
             features: [
@@ -108,7 +109,7 @@ module.exports = {
                 'Reservations en ligne illimitees',
                 'Services illimites',
                 'Analytics detailles + graphiques',
-                '7 themes premium',
+                '30 themes (tous les modes + drapeaux)',
                 'QR Code personnalise',
                 'Badge Verifie Pro',
                 'Chat en temps reel',
@@ -118,24 +119,27 @@ module.exports = {
                 'Facturation simple',
                 'Export contacts CSV',
                 'Site vitrine professionnel',
-                'Galerie photos (10 images)',
+                'Galerie photos (20 images)',
                 'Formulaire de contact',
                 'Carte Google Maps',
-                'Liens reseaux sociaux'
+                'Liens reseaux sociaux',
+                'Boutique en ligne (50 articles)',
+                'Acces Flay Store (achats d\'espace)'
             ],
             limits: {
                 services: -1,
-                themes: 7,
+                themes: 30,
                 reservations: -1,
                 contacts: 500,
                 invoices: 100,
-                products: 10,
+                products: 50,
                 storage: '500 MB',
                 customDomain: false,
-                ecommerce: false,
+                ecommerce: true,
                 aiAgent: false,
                 whiteLabel: false,
-                gallery: 10
+                gallery: 20,
+                flayStore: true
             }
         },
         premium: {
@@ -143,7 +147,7 @@ module.exports = {
             slug: 'premium',
             price: 15000,
             priceLabel: '15 000 FCFA/mois',
-            priceAnnual: 150000, // 2 mois offerts
+            priceAnnual: 150000,
             priceAnnualLabel: '150 000 FCFA/an',
             interval: 'monthly',
             features: [
@@ -151,10 +155,10 @@ module.exports = {
                 'Agent IA integre',
                 'Generation auto de contenu',
                 'Domaine personnalise',
-                'Multi-langues (FR/EN)',
+                'Multi-langues (FR/EN/AR/PT)',
                 'Export PDF',
                 'Analytics avances + insights IA',
-                'Templates premium (10+)',
+                '40+ themes (tous + saisonniers)',
                 'CSS personnalise',
                 'Badge Premium Or',
                 'API publique',
@@ -162,16 +166,19 @@ module.exports = {
                 'Support prioritaire 24/7',
                 'CRM complet illimite',
                 'Facturation avancee + PDF',
-                'Boutique en ligne (30 articles)',
+                'Boutique en ligne (300 articles)',
                 'Panier d\'achat',
-                'Paiement Wave intégré',
+                'Paiement Wave/OM/Moov integre',
                 'Commandes en ligne',
-                'Gestion des stocks',
-                'Galerie photos (50 images)',
+                'Gestion des stocks avancee',
+                'Galerie photos (100 images)',
                 'CV/Portfolio en ligne',
                 'Animations et effets',
                 'Integration Google Analytics',
-                'Meta Pixel'
+                'Meta Pixel',
+                'Acces Flay Store complet',
+                'Programme de fidelite',
+                'Coupons avances'
             ],
             limits: {
                 services: -1,
@@ -179,13 +186,14 @@ module.exports = {
                 reservations: -1,
                 contacts: -1,
                 invoices: -1,
-                products: 30,
-                storage: '2 GB',
+                products: 300,
+                storage: '5 GB',
                 customDomain: true,
                 ecommerce: true,
                 aiAgent: true,
                 whiteLabel: false,
-                gallery: 50
+                gallery: 100,
+                flayStore: true
             }
         },
         doree: {
@@ -193,43 +201,43 @@ module.exports = {
             slug: 'doree',
             price: 30000,
             priceLabel: '30 000 FCFA/mois',
-            priceAnnual: 300000, // 2 mois offerts
+            priceAnnual: 300000,
             priceAnnualLabel: '300 000 FCFA/an',
             interval: 'monthly',
             badge: 'Doree',
             badgeColor: '#eab308',
             features: [
                 'Tout du plan Premium',
-                'Boutique en ligne ILLIMITEE',
-                'Articles ILLIMITES',
-                'E-commerce complet',
-                'Multi-utilisateurs (3 comptes)',
+                'Boutique en ligne (1000 articles)',
+                'Achats d\'espace supplementaire via Flay Store',
+                'Multi-utilisateurs (5 comptes)',
                 'Team management',
                 'White label (votre marque)',
                 'Domaine personnalise',
                 'SSL inclus',
-                'SEO avance',
+                'SEO avance + Meta tags auto',
                 'Emails de confirmation auto',
                 'Notifications push',
-                'Reporting avance',
-                'Export donnees complet',
-                'API avancee',
-                'Webhooks custom',
+                'Reporting avance + export',
+                'Export donnees complet (CSV/PDF/JSON)',
+                'API avancee + Webhooks custom',
                 'Support telephone 24/7',
                 'Formation incluse',
                 'Galerie photos ILLIMITEE',
                 'Video embed',
                 'Booking en ligne',
                 'Abonnements clients',
-                'Programme de fidelite',
-                'Coupons et reductions',
-                'Statistiques ventes',
-                'Multi-devises',
+                'Programme de fidelite complet',
+                'Coupons et reductions illimites',
+                'Statistiques ventes detaillees',
+                'Multi-devises (XOF/EUR/USD/GHS/NGN)',
                 'Facturation automatique',
                 'Suivi livraison',
-                'Avis clients',
-                'Wishlist',
-                'Comparateur de produits'
+                'Avis clients + notation',
+                'Wishlist + comparateur',
+                'Dropshipping ready',
+                'Marketplace multi-vendeurs',
+                'Flay Store: achats d\'espace a la carte'
             ],
             limits: {
                 services: -1,
@@ -237,14 +245,15 @@ module.exports = {
                 reservations: -1,
                 contacts: -1,
                 invoices: -1,
-                products: -1, // Illimite
-                storage: '10 GB',
+                products: 1000,
+                storage: '20 GB',
                 customDomain: true,
                 ecommerce: true,
                 aiAgent: true,
                 whiteLabel: true,
-                gallery: -1, // Illimite
-                users: 3
+                gallery: -1,
+                users: 5,
+                flayStore: true
             }
         }
     },

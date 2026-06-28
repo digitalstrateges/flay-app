@@ -121,6 +121,8 @@ app.use('/api/premium', require('./routes/premium'));
 app.use('/api/export', require('./routes/export'));
 app.use('/api/push', require('./routes/push'));
 app.use('/api/tracking', require('./routes/analytics'));
+app.use('/api/flay-store', require('./routes/flay-store'));
+app.use('/api/africa', require('./routes/africa-world'));
 
 // === I18N MIDDLEWARE ===
 const I18n = require('./i18n');
