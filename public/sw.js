@@ -1,5 +1,5 @@
-const CACHE = 'flay-v15';
-const PRECACHE = 'flay-precache-v15';
+const CACHE = 'flay-v19';
+const PRECACHE = 'flay-precache-v19';
 
 self.addEventListener('install', e => {
     e.waitUntil(
