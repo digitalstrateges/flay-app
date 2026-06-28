@@ -1,6 +1,7 @@
 const { app, broadcast } = require('./app');
 const http = require('http');
 const config = require('./config');
+const demoSetup = require('./demo-setup');
 
 const PORT = process.env.PORT || config.PORT || 4000;
 
@@ -15,20 +16,21 @@ server.on('error', (err) => {
     console.error('Server error:', err);
 });
 
-server.listen(PORT, '0.0.0.0', () => {
+server.listen(PORT, '0.0.0.0', async () => {
     console.log('');
     console.log('╔══════════════════════════════════════════════════╗');
-    console.log('║              FLAY ULTIMATE v14.0                 ║');
+    console.log('║              FLAY ULTIMATE v15.0                 ║');
     console.log('║         DIGITALSTRATEGES Business                ║');
     console.log('╠══════════════════════════════════════════════════╣');
     console.log(`║  Serveur:  http://localhost:${PORT}                  ║`);
     console.log(`║  WhatsApp: +225 07 59 73 19 90                  ║`);
     console.log(`║  Wave:     DIGITALSTRATEGE BUSINESS              ║`);
     console.log('╠══════════════════════════════════════════════════╣');
-    console.log('║  V14 - Marketplace & Réseau                       ║');
-    console.log('║  Express + SQLite + Routes organisees            ║');
-    console.log('╠══════════════════════════════════════════════════╣');
-    console.log('║  DEMO: demo@flay.app / demo123                   ║');
+    console.log('║  V15 - AI, Comptabilite, Stocks, Recus           ║');
+    console.log('║  Express + SQLite + Gemini AI + Routes           ║');
     console.log('╚══════════════════════════════════════════════════╝');
     console.log('');
+    
+    // Initialize demo account
+    await demoSetup.init();
 });

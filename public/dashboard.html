@@ -3,65 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flay - Tableau de bord</title>
+    <title>Flay - Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root { --bg: #0a0a1a; --card: #15152a; --border: #252545; --accent: #667eea; --accent2: #764ba2; --text: #fff; --text2: #a0a0c0; --gradient: linear-gradient(135deg, #667eea, #764ba2); --gold: #ffd700; --success: #4ade80; --danger: #ef4444; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); }
-        .topbar { display: flex; justify-content: space-between; align-items: center; padding: 16px 32px; background: var(--card); border-bottom: 1px solid var(--border); }
-        .topbar-brand { font-size: 24px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .topbar-nav { display: flex; gap: 8px; }
-        .topbar-nav a { padding: 8px 16px; border-radius: 8px; color: var(--text2); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 0.3s; }
-        .topbar-nav a:hover, .topbar-nav a.active { color: var(--text); background: rgba(102,126,234,0.15); }
-        .topbar-user { display: flex; align-items: center; gap: 12px; }
-        .topbar-user span { font-size: 14px; color: var(--text2); }
-        .logout-btn { padding: 8px 16px; background: rgba(239,68,68,0.15); color: var(--danger); border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
-        .main { max-width: 1200px; margin: 0 auto; padding: 32px; }
-        .welcome { font-size: 28px; font-weight: 800; margin-bottom: 8px; }
-        .welcome-sub { color: var(--text2); margin-bottom: 32px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
-        .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
-        .stat-label { font-size: 13px; color: var(--text2); margin-bottom: 8px; }
-        .stat-value { font-size: 32px; font-weight: 800; }
-        .stat-value.accent { color: var(--accent); }
-        .stat-value.success { color: var(--success); }
-        .stat-value.gold { color: var(--gold); }
-        .grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 32px; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
-        .card-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
-        .plan-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
-        .plan-free { background: rgba(160,160,192,0.2); color: var(--text2); }
-        .plan-pro { background: rgba(102,126,234,0.2); color: var(--accent); }
-        .plan-premium { background: rgba(255,215,0,0.2); color: var(--gold); }
-        .profile-link { display: flex; align-items: center; gap: 12px; padding: 16px; background: var(--bg); border-radius: 10px; margin-top: 16px; }
-        .profile-link input { flex: 1; padding: 10px 14px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; color: var(--accent); font-size: 14px; font-family: monospace; }
-        .copy-btn { padding: 10px 20px; background: var(--gradient); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; white-space: nowrap; }
-        .qr-section { text-align: center; padding: 20px; }
-        .qr-section img { width: 180px; height: 180px; border-radius: 12px; border: 3px solid var(--border); }
-        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; text-decoration: none; transition: all 0.3s; border: none; cursor: pointer; }
-        .btn-primary { background: var(--gradient); color: white; }
-        .btn-secondary { background: rgba(102,126,234,0.15); color: var(--accent); }
-        .btn-gold { background: rgba(255,215,0,0.15); color: var(--gold); border: 1px solid rgba(255,215,0,0.3); }
-        .actions { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 32px; }
-        .reservations-list { max-height: 300px; overflow-y: auto; }
-        .reservation-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid var(--border); }
-        .reservation-item:last-child { border: none; }
-        .reservation-name { font-weight: 600; }
-        .reservation-service { font-size: 13px; color: var(--text2); }
-        .reservation-date { font-size: 12px; color: var(--accent); }
-        .status-badge { padding: 3px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; }
-        .status-pending { background: rgba(251,191,36,0.2); color: #fbbf24; }
-        .status-confirmed { background: rgba(74,222,128,0.2); color: #4ade80; }
-        .empty { text-align: center; color: var(--text2); padding: 40px; font-size: 14px; }
-        @media (max-width: 768px) {
-            .stats-grid { grid-template-columns: repeat(2, 1fr); }
-            .grid-2 { grid-template-columns: 1fr; }
-            .topbar { flex-direction: column; gap: 12px; }
-        }
-    </style>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#6366f1">
+    <meta name="theme-color" content="#818cf8">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -69,119 +14,1452 @@
     <link rel="apple-touch-icon" href="/icons/icon-192x192.svg">
     <link rel="icon" type="image/svg+xml" href="/logo-animated.svg">
     <script src="/pwa.js"></script>
+    <style>
+        :root{--bg:#0a0a1a;--bg2:#0e0e24;--card:#15152a;--card2:#1a1a35;--border:#252545;--accent:#818cf8;--accent2:#6366f1;--accent3:#a5b4fc;--text:#f1f5f9;--text2:#94a3b8;--muted:#64748b;--gradient:linear-gradient(135deg,#818cf8,#c084fc);--gold:#fbbf24;--success:#34d399;--danger:#f87171;--warning:#fbbf24;--info:#38bdf8;--sidebar-bg:#0f0f20;--sidebar-hover:#1a1a35;--sidebar-active:linear-gradient(135deg,rgba(129,140,248,.15),rgba(192,132,252,.1));--radius:10px;--radius-lg:14px;--shadow:0 4px 24px rgba(0,0,0,.3);--transition:all .2s ease}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+        ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+        .layout{display:flex;min-height:100vh}
+
+        /* Sidebar */
+        .sidebar{width:260px;background:var(--sidebar-bg);border-right:1px solid var(--border);padding:20px 12px;display:flex;flex-direction:column;position:fixed;height:100vh;overflow-y:auto;z-index:200;transition:transform .3s cubic-bezier(.4,0,.2,1)}
+        .sidebar-logo{display:flex;align-items:center;gap:12px;padding:4px 10px;margin-bottom:28px}
+        .sidebar-logo svg{width:36px;height:36px;flex-shrink:0}
+        .sidebar-logo h2{font-size:22px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .nav-section{margin-bottom:20px}
+        .nav-section-title{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);padding:0 12px;margin-bottom:6px;font-weight:600}
+        .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius);color:var(--text2);cursor:pointer;transition:var(--transition);font-size:13px;font-weight:500;text-decoration:none;position:relative}
+        .nav-item:hover{background:var(--sidebar-hover);color:var(--text)}
+        .nav-item.active{background:var(--sidebar-active);color:var(--accent);font-weight:600}
+        .nav-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--gradient);border-radius:0 3px 3px 0}
+        .nav-item svg{width:18px;height:18px;flex-shrink:0;opacity:.7}
+        .nav-item.active svg{opacity:1}
+        .nav-badge{margin-left:auto;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;background:rgba(129,140,248,.15);color:var(--accent)}
+        .sidebar-footer{margin-top:auto;padding-top:16px;border-top:1px solid var(--border)}
+        .sidebar-user{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius);background:rgba(129,140,248,.05);margin-bottom:8px}
+        .sidebar-avatar{width:36px;height:36px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;color:#fff}
+        .sidebar-user-info{flex:1;min-width:0}
+        .sidebar-user-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .sidebar-user-email{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .logout-btn{display:flex;align-items:center;gap:8px;width:100%;padding:10px 12px;border:none;border-radius:var(--radius);background:rgba(248,113,113,.08);color:var(--danger);font-size:13px;font-weight:600;cursor:pointer;transition:var(--transition);font-family:inherit}
+        .logout-btn:hover{background:rgba(248,113,113,.15)}
+        .logout-btn svg{width:18px;height:18px}
+
+        .main{flex:1;margin-left:260px;padding:24px 28px;min-height:100vh;transition:margin .3s cubic-bezier(.4,0,.2,1)}
+
+        /* Top Bar */
+        .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 0;margin-bottom:24px}
+        .topbar-left h1{font-size:24px;font-weight:800;margin-bottom:2px}
+        .topbar-left p{font-size:13px;color:var(--text2)}
+        .topbar-right{display:flex;align-items:center;gap:12px}
+        .plan-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+        .plan-free{background:rgba(148,163,184,.12);color:var(--text2)}
+        .plan-pro{background:rgba(129,140,248,.12);color:var(--accent)}
+        .plan-premium{background:rgba(251,191,36,.12);color:var(--gold)}
+        .plan-doree{background:linear-gradient(135deg,rgba(251,191,36,.15),rgba(245,158,11,.15));color:#f59e0b;border:1px solid rgba(251,191,36,.2)}
+        .plan-badge svg{width:14px;height:14px}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--radius);font-size:13px;font-weight:600;border:none;cursor:pointer;transition:var(--transition);font-family:inherit;text-decoration:none}
+        .btn-primary{background:var(--gradient);color:#fff;box-shadow:0 2px 12px rgba(129,140,248,.25)}
+        .btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(129,140,248,.35)}
+        .btn-secondary{background:rgba(129,140,248,.1);color:var(--accent);border:1px solid rgba(129,140,248,.2)}
+        .btn-secondary:hover{background:rgba(129,140,248,.18)}
+        .btn-danger{background:rgba(248,113,113,.1);color:var(--danger);border:1px solid rgba(248,113,113,.2)}
+        .btn-danger:hover{background:rgba(248,113,113,.18)}
+        .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+        .btn-ghost:hover{background:rgba(255,255,255,.05);color:var(--text)}
+        .btn-sm{padding:6px 12px;font-size:12px}
+        .btn-lg{padding:12px 28px;font-size:14px}
+        .btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important}
+
+        /* Mobile hamburger */
+        .hamburger{display:none;width:40px;height:40px;border-radius:var(--radius);background:var(--card);border:1px solid var(--border);cursor:pointer;align-items:center;justify-content:center;flex-direction:column;gap:4px;padding:10px}
+        .hamburger span{width:20px;height:2px;background:var(--text);border-radius:2px;transition:var(--transition)}
+        .hamburger.open span:nth-child(1){transform:rotate(45deg) translate(4px,4px)}
+        .hamburger.open span:nth-child(2){opacity:0}
+        .hamburger.open span:nth-child(3){transform:rotate(-45deg) translate(4px,-4px)}
+        .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199}
+
+        /* Stats Grid */
+        .stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:28px}
+        .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;transition:var(--transition);position:relative;overflow:hidden}
+        .stat-card:hover{border-color:rgba(129,140,248,.3);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.2)}
+        .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gradient);opacity:0;transition:var(--transition)}
+        .stat-card:hover::after{opacity:1}
+        .stat-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+        .stat-icon svg{width:20px;height:20px}
+        .stat-icon.purple{background:rgba(129,140,248,.12);color:var(--accent)}
+        .stat-icon.green{background:rgba(52,211,153,.12);color:var(--success)}
+        .stat-icon.gold{background:rgba(251,191,36,.12);color:var(--gold)}
+        .stat-icon.red{background:rgba(248,113,113,.12);color:var(--danger)}
+        .stat-icon.blue{background:rgba(56,189,248,.12);color:var(--info)}
+        .stat-icon.pink{background:rgba(236,72,153,.12);color:#ec4899}
+        .stat-label{font-size:12px;color:var(--text2);margin-bottom:4px;font-weight:500}
+        .stat-value{font-size:26px;font-weight:800;line-height:1.2}
+        .stat-change{font-size:11px;margin-top:6px;font-weight:600;display:flex;align-items:center;gap:4px}
+        .stat-change.up{color:var(--success)}
+        .stat-change.down{color:var(--danger)}
+
+        /* Cards */
+        .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:20px;transition:var(--transition)}
+        .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+        .card-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+        .card-title svg{width:20px;height:20px;color:var(--accent)}
+        .card-subtitle{font-size:12px;color:var(--text2);margin-top:2px}
+
+        /* Grid layouts */
+        .grid-2{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+        .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+        .grid-2-1{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+
+        /* Chart */
+        .chart-container{position:relative;height:220px;display:flex;align-items:flex-end;gap:6px;padding:10px 0}
+        .chart-bar{flex:1;background:var(--gradient);border-radius:4px 4px 0 0;min-height:4px;transition:height .6s cubic-bezier(.4,0,.2,1);cursor:pointer;position:relative;opacity:.85}
+        .chart-bar:hover{opacity:1}
+        .chart-bar .tooltip{display:none;position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);background:var(--card);border:1px solid var(--border);padding:6px 10px;border-radius:8px;font-size:11px;white-space:nowrap;z-index:10;box-shadow:var(--shadow);font-weight:600}
+        .chart-bar:hover .tooltip{display:block}
+        .chart-labels{display:flex;gap:6px;margin-top:8px}
+        .chart-labels span{flex:1;text-align:center;font-size:10px;color:var(--muted)}
+        .chart-legend{display:flex;gap:16px;margin-top:12px}
+        .chart-legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2)}
+        .chart-legend-dot{width:8px;height:8px;border-radius:50%}
+
+        /* Tables */
+        .table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border)}
+        table{width:100%;border-collapse:collapse}
+        th{background:var(--bg2);padding:12px 16px;text-align:left;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;border-bottom:1px solid var(--border)}
+        td{padding:12px 16px;font-size:13px;border-bottom:1px solid var(--border);white-space:nowrap}
+        tr:last-child td{border-bottom:none}
+        tr:hover td{background:rgba(129,140,248,.03)}
+        .table-empty{text-align:center;padding:48px 20px;color:var(--text2)}
+        .table-empty svg{width:48px;height:48px;margin-bottom:12px;opacity:.3}
+        .table-empty p{font-size:14px;margin-bottom:4px}
+        .table-empty span{font-size:12px;opacity:.6}
+
+        /* Badges */
+        .badge{display:inline-flex;align-items:center;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;gap:4px}
+        .badge-success{background:rgba(52,211,153,.12);color:var(--success)}
+        .badge-warning{background:rgba(251,191,36,.12);color:var(--warning)}
+        .badge-danger{background:rgba(248,113,113,.12);color:var(--danger)}
+        .badge-info{background:rgba(56,189,248,.12);color:var(--info)}
+        .badge-neutral{background:rgba(148,163,184,.1);color:var(--text2)}
+        .badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+
+        /* Toast */
+        .toast-container{position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:8px}
+        .toast{padding:14px 20px;border-radius:var(--radius);font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;min-width:280px;max-width:400px;animation:toastIn .3s cubic-bezier(.4,0,.2,1);box-shadow:var(--shadow);cursor:pointer;transition:var(--transition)}
+        .toast:hover{transform:translateX(-4px)}
+        .toast-success{background:#0f2a1f;border:1px solid rgba(52,211,153,.25);color:var(--success)}
+        .toast-error{background:#2a0f1a;border:1px solid rgba(248,113,113,.25);color:var(--danger)}
+        .toast-info{background:#0f1f2a;border:1px solid rgba(56,189,248,.25);color:var(--info)}
+        .toast-warning{background:#2a200f;border:1px solid rgba(251,191,36,.25);color:var(--warning)}
+        .toast-icon{width:20px;height:20px;flex-shrink:0}
+        .toast-msg{flex:1}
+        .toast-close{width:16px;height:16px;cursor:pointer;opacity:.6;transition:var(--transition)}
+        .toast-close:hover{opacity:1}
+        @keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+        @keyframes toastOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+
+        /* Modal */
+        .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:5000;display:none;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);animation:fadeIn .2s ease}
+        .modal-overlay.active{display:flex}
+        .modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);width:100%;max-width:560px;max-height:85vh;overflow:hidden;display:flex;flex-direction:column;animation:modalIn .3s cubic-bezier(.4,0,.2,1)}
+        .modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid var(--border)}
+        .modal-title{font-size:18px;font-weight:700}
+        .modal-close{width:32px;height:32px;border-radius:8px;background:transparent;border:none;color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+        .modal-close:hover{background:rgba(248,113,113,.1);color:var(--danger)}
+        .modal-body{padding:24px;overflow-y:auto;flex:1}
+        .modal-footer{padding:16px 24px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes modalIn{from{transform:translateY(20px) scale(.97);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+
+        /* Forms */
+        .form-group{margin-bottom:16px}
+        .form-group label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:6px}
+        .form-group label .required{color:var(--danger);margin-left:2px}
+        input[type="text"],input[type="email"],input[type="password"],input[type="number"],input[type="date"],input[type="url"],select,textarea{width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;font-family:inherit;transition:var(--transition)}
+        input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(129,140,248,.1)}
+        textarea{resize:vertical;min-height:80px}
+        .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+        .form-hint{font-size:11px;color:var(--muted);margin-top:4px}
+
+        /* Upgrade gate */
+        .upgrade-gate{position:relative;padding:40px 24px;text-align:center;border:1px dashed rgba(129,140,248,.25);border-radius:var(--radius-lg);background:rgba(129,140,248,.03)}
+        .upgrade-gate-icon{width:64px;height:64px;border-radius:16px;background:rgba(129,140,248,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+        .upgrade-gate-icon svg{width:32px;height:32px;color:var(--accent)}
+        .upgrade-gate h3{font-size:18px;font-weight:700;margin-bottom:8px}
+        .upgrade-gate p{font-size:13px;color:var(--text2);max-width:400px;margin:0 auto 20px;line-height:1.6}
+
+        /* Tab bar */
+        .tabs{display:flex;gap:4px;background:var(--card);padding:4px;border-radius:var(--radius);border:1px solid var(--border);width:fit-content;margin-bottom:20px;overflow-x:auto}
+        .tab{padding:8px 18px;border-radius:8px;cursor:pointer;font-weight:600;font-size:13px;color:var(--text2);transition:var(--transition);white-space:nowrap;border:none;background:none;font-family:inherit}
+        .tab.active{background:var(--gradient);color:#fff}
+        .tab:hover:not(.active){background:rgba(129,140,248,.08);color:var(--text)}
+
+        /* Page container */
+        .page{display:none;animation:pageIn .3s ease}
+        .page.active{display:block}
+        @keyframes pageIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+        /* Search */
+        .search-bar{display:flex;gap:8px;margin-bottom:20px}
+        .search-bar input{flex:1}
+        .search-bar .btn{flex-shrink:0}
+
+        /* AI Page */
+        .ai-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+        .ai-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;text-align:center;transition:var(--transition);cursor:pointer}
+        .ai-card:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 30px rgba(129,140,248,.15)}
+        .ai-card-icon{width:56px;height:56px;border-radius:14px;background:rgba(129,140,248,.1);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+        .ai-card-icon svg{width:28px;height:28px;color:var(--accent)}
+        .ai-card h3{font-size:15px;font-weight:700;margin-bottom:6px}
+        .ai-card p{font-size:12px;color:var(--text2);line-height:1.5}
+        .ai-output{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-top:16px;font-size:13px;line-height:1.7;white-space:pre-wrap;max-height:300px;overflow-y:auto;display:none}
+        .ai-output.visible{display:block}
+
+        /* Stock */
+        .stock-status{display:flex;align-items:center;gap:6px}
+        .stock-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+        .stock-in .stock-dot{background:var(--success)}
+        .stock-low .stock-dot{background:var(--warning)}
+        .stock-out .stock-dot{background:var(--danger)}
+
+        /* Responsive */
+        @media(max-width:1200px){.stats-grid{grid-template-columns:repeat(3,1fr)}}
+        @media(max-width:900px){
+            .sidebar{transform:translateX(-100%)}
+            .sidebar.open{transform:translateX(0)}
+            .sidebar-overlay.open{display:block}
+            .main{margin-left:0}
+            .hamburger{display:flex}
+            .stats-grid{grid-template-columns:repeat(2,1fr)}
+            .grid-2,.grid-3,.grid-2-1,.ai-grid{grid-template-columns:1fr}
+            .form-row{grid-template-columns:1fr}
+            .topbar-left h1{font-size:20px}
+        }
+        @media(max-width:480px){
+            .main{padding:16px}
+            .stats-grid{grid-template-columns:1fr}
+            .topbar{flex-direction:column;align-items:flex-start;gap:12px}
+            .topbar-right{width:100%;justify-content:flex-start}
+            .tabs{width:100%;overflow-x:auto}
+        }
+
+        /* Loading spinner */
+        .spinner{width:20px;height:20px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;display:inline-block}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .loading-state{display:flex;align-items:center;justify-content:center;padding:48px;color:var(--text2);gap:10px}
+
+        /* Skeleton */
+        .skeleton{background:linear-gradient(90deg,var(--border) 25%,rgba(129,140,248,.05) 50%,var(--border) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px;height:16px}
+        @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+        /* Print */
+        @media print{.sidebar,.hamburger,.topbar-right{display:none!important}.main{margin-left:0!important;padding:0!important}}
+    </style>
 </head>
 <body>
-    <div class="topbar">
-        <div class="topbar-brand">Flay</div>
-        <div class="topbar-nav">
-            <a href="/dashboard.html" class="active">Dashboard</a>
-            <a href="/editor.html">Editeur</a>
-            <a href="/studio.html">Studio</a>
-            <a href="/analytics.html">Analytics</a>
-            <a href="/payment.html">Upgrade</a>
-        </div>
-        <div class="topbar-user">
-            <span id="userName"></span>
-            <button class="logout-btn" onclick="localStorage.clear();window.location.href='/login.html'">Deconnexion</button>
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <svg viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="#818cf8"/><path d="M14 24h20M28 18l6 6-6 6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <h2>Flay</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">Main</div>
+                    <a class="nav-item active" data-page="overview" onclick="navigate('overview')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                        Overview
+                    </a>
+                    <a class="nav-item" data-page="analytics" onclick="navigate('analytics')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+                        Analytics
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Business</div>
+                    <a class="nav-item" data-page="products" onclick="navigate('products')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                        Products
+                        <span class="nav-badge" id="navProductsCount">0</span>
+                    </a>
+                    <a class="nav-item" data-page="orders" onclick="navigate('orders')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+                        Orders
+                    </a>
+                    <a class="nav-item" data-page="reservations" onclick="navigate('reservations')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        Reservations
+                    </a>
+                    <a class="nav-item" data-page="stock" onclick="navigate('stock')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                        Stocks
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Finance</div>
+                    <a class="nav-item" data-page="invoices" onclick="navigate('invoices')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                        Invoices
+                    </a>
+                    <a class="nav-item" data-page="receipts" onclick="navigate('receipts')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1.5L8 21l2-1.5L12 21l2-1.5L16 21l2-1.5L20 21V2l-2 1.5L16 2l-2 1.5L12 2l-2 1.5L8 2 6 3.5 4 2z"/></svg>
+                        Receipts
+                    </a>
+                    <a class="nav-item" data-page="coupons" onclick="navigate('coupons')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                        Coupons
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">Tools</div>
+                    <a class="nav-item" data-page="crm" onclick="navigate('crm')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+                        CRM
+                    </a>
+                    <a class="nav-item" data-page="ai" onclick="navigate('ai')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 014 4v2a4 4 0 01-8 0V6a4 4 0 014-4z"/><path d="M16 14h.01M8 14h.01M12 17v4M8 21h8"/></svg>
+                        AI Agent
+                    </a>
+                </div>
+                <div class="nav-section">
+                    <div class="nav-section-title">System</div>
+                    <a class="nav-item" data-page="settings" onclick="navigate('settings')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                        Settings
+                    </a>
+                </div>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-avatar" id="sidebarAvatar">U</div>
+                    <div class="sidebar-user-info">
+                        <div class="sidebar-user-name" id="sidebarUserName">User</div>
+                        <div class="sidebar-user-email" id="sidebarUserEmail">user@email.com</div>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                    Logout
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main" id="mainContent">
+            <!-- Mobile Header -->
+            <div style="display:none" id="mobileHeader" class="hamburger" onclick="toggleSidebar()">
+                <span></span><span></span><span></span>
+            </div>
+
+            <!-- ==================== OVERVIEW PAGE ==================== -->
+            <div class="page active" id="page-overview">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1 id="welcomeMsg">Dashboard</h1>
+                        <p id="welcomeSub">Welcome back! Here's your overview.</p>
+                    </div>
+                    <div class="topbar-right">
+                        <span class="plan-badge plan-free" id="planBadge">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                            Free
+                        </span>
+                        <a href="/payment.html" class="btn btn-primary btn-sm">Upgrade Plan</a>
+                    </div>
+                </div>
+
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+                        <div class="stat-label">Revenue</div>
+                        <div class="stat-value" id="statRevenue">$0.00</div>
+                        <div class="stat-change up" id="statRevenueChange">+0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg></div>
+                        <div class="stat-label">Orders</div>
+                        <div class="stat-value" id="statOrders">0</div>
+                        <div class="stat-change up" id="statOrdersChange">+0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
+                        <div class="stat-label">Reservations</div>
+                        <div class="stat-value" id="statReservations">0</div>
+                        <div class="stat-change up" id="statReservationsChange">+0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon gold"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
+                        <div class="stat-label">Products</div>
+                        <div class="stat-value" id="statProducts">0</div>
+                        <div class="stat-change up" id="statProductsChange">+0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon pink"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+                        <div class="stat-label">Contacts</div>
+                        <div class="stat-value" id="statContacts">0</div>
+                        <div class="stat-change up" id="statContactsChange">+0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div>
+                        <div class="stat-label">Invoices</div>
+                        <div class="stat-value" id="statInvoices">0</div>
+                        <div class="stat-change up" id="statInvoicesChange">+0%</div>
+                    </div>
+                </div>
+
+                <div class="actions" style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px">
+                    <a href="/editor.html" class="btn btn-primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Profile</a>
+                    <button class="btn btn-secondary" onclick="showQuickAction()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Quick Action</button>
+                    <a href="/analytics.html" class="btn btn-ghost"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Analytics</a>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg> Revenue</div>
+                                <div class="card-subtitle">Last 7 days</div>
+                            </div>
+                        </div>
+                        <div class="chart-container" id="chartContainer">
+                            <div class="loading-state"><div class="spinner"></div> Loading chart...</div>
+                        </div>
+                        <div class="chart-labels" id="chartLabels"></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Recent Reservations</div>
+                        </div>
+                        <div id="recentReservations" style="max-height:260px;overflow-y:auto">
+                            <div class="loading-state"><div class="spinner"></div> Loading...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg> Profile Link</div>
+                    </div>
+                    <div style="display:flex;gap:8px;align-items:center;background:var(--bg);border-radius:var(--radius);padding:8px 12px">
+                        <input type="text" id="profileLink" readonly style="flex:1;background:transparent;border:none;color:var(--accent);font-size:14px;font-family:monospace;padding:8px 0">
+                        <button class="btn btn-primary btn-sm" onclick="copyProfileLink()">Copy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== ANALYTICS PAGE ==================== -->
+            <div class="page" id="page-analytics">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Analytics</h1>
+                        <p>Track your performance metrics</p>
+                    </div>
+                </div>
+                <div class="card" id="analyticsContent">
+                    <div class="loading-state"><div class="spinner"></div> Loading analytics...</div>
+                </div>
+            </div>
+
+            <!-- ==================== PRODUCTS PAGE ==================== -->
+            <div class="page" id="page-products">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Products</h1>
+                        <p>Manage your product catalog</p>
+                    </div>
+                    <div class="topbar-right">
+                        <button class="btn btn-primary" onclick="openAddProductModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Product</button>
+                    </div>
+                </div>
+                <div class="search-bar">
+                    <input type="text" placeholder="Search products..." id="productSearch" oninput="filterProducts()">
+                    <button class="btn btn-ghost btn-sm" onclick="loadProducts()">Refresh</button>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Name</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="productsTable">
+                                <tr><td colspan="5" class="table-empty"><div class="loading-state"><div class="spinner"></div> Loading...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== ORDERS PAGE ==================== -->
+            <div class="page" id="page-orders">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Orders</h1>
+                        <p>View and manage customer orders</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Order ID</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+                            <tbody id="ordersTable">
+                                <tr><td colspan="6" class="table-empty"><div class="loading-state"><div class="spinner"></div> Loading...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== RESERVATIONS PAGE ==================== -->
+            <div class="page" id="page-reservations">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Reservations</h1>
+                        <p>Manage bookings and appointments</p>
+                    </div>
+                    <div class="topbar-right">
+                        <button class="btn btn-primary" onclick="openAddReservationModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Reservation</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Name</th><th>Service</th><th>Date</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="reservationsTable">
+                                <tr><td colspan="6" class="table-empty"><div class="loading-state"><div class="spinner"></div> Loading...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== INVOICES PAGE ==================== -->
+            <div class="page" id="page-invoices">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Invoices</h1>
+                        <p>Create and manage invoices</p>
+                    </div>
+                    <div class="topbar-right">
+                        <button class="btn btn-primary" onclick="openAddInvoiceModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Invoice</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Invoice #</th><th>Client</th><th>Amount</th><th>Status</th><th>Due Date</th><th>Actions</th></tr></thead>
+                            <tbody id="invoicesTable">
+                                <tr><td colspan="6" class="table-empty"><div class="loading-state"><div class="spinner"></div> Loading...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== RECEIPTS PAGE ==================== -->
+            <div class="page" id="page-receipts">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Receipts</h1>
+                        <p>Payment receipts and records</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Receipt #</th><th>Client</th><th>Amount</th><th>Date</th><th>Actions</th></tr></thead>
+                            <tbody id="receiptsTable">
+                                <tr><td colspan="5" class="table-empty"><div class="loading-state"><div class="spinner"></div> Loading...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== CRM PAGE ==================== -->
+            <div class="page" id="page-crm">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>CRM</h1>
+                        <p>Manage your contacts and relationships</p>
+                    </div>
+                    <div class="topbar-right">
+                        <button class="btn btn-primary" onclick="openAddContactModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Add Contact</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Status</th><th>Last Contact</th><th>Actions</th></tr></thead>
+                            <tbody id="crmTable">
+                                <tr><td colspan="6" class="table-empty"><div class="loading-state"><div class="spinner"></div> Loading...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== STOCK PAGE ==================== -->
+            <div class="page" id="page-stock">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Stock Management</h1>
+                        <p>Track and adjust inventory levels</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Product</th><th>SKU</th><th>Quantity</th><th>Status</th><th>Adjust</th><th>Actions</th></tr></thead>
+                            <tbody id="stockTable">
+                                <tr><td colspan="6" class="table-empty"><div class="loading-state"><div class="spinner"></div> Loading...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== AI PAGE ==================== -->
+            <div class="page" id="page-ai">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>AI Agent</h1>
+                        <p>AI-powered tools for your business</p>
+                    </div>
+                </div>
+                <div class="ai-grid" id="aiGrid">
+                    <div class="ai-card" onclick="aiAction('generate-bio')">
+                        <div class="ai-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
+                        <h3>Generate Bio</h3>
+                        <p>Generate a professional biography for your profile</p>
+                    </div>
+                    <div class="ai-card" onclick="aiAction('generate-services')">
+                        <div class="ai-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg></div>
+                        <h3>Generate Services</h3>
+                        <p>Create a list of services based on your business</p>
+                    </div>
+                    <div class="ai-card" onclick="aiAction('marketing')">
+                        <div class="ai-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+                        <h3>Marketing Content</h3>
+                        <p>Generate marketing posts and promotional content</p>
+                    </div>
+                    <div class="ai-card" onclick="aiAction('analyze-profile')">
+                        <div class="ai-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+                        <h3>Analyze Profile</h3>
+                        <p>Get AI insights and recommendations for your profile</p>
+                    </div>
+                </div>
+                <div class="ai-output" id="aiOutput"></div>
+            </div>
+
+            <!-- ==================== COUPONS PAGE ==================== -->
+            <div class="page" id="page-coupons">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Coupons</h1>
+                        <p>Create and manage discount coupons</p>
+                    </div>
+                    <div class="topbar-right">
+                        <button class="btn btn-primary" onclick="openAddCouponModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> New Coupon</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="table-wrap">
+                        <table>
+                            <thead><tr><th>Code</th><th>Discount</th><th>Type</th><th>Usage</th><th>Expires</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="couponsTable">
+                                <tr><td colspan="7" class="table-empty"><div class="loading-state"><div class="spinner"></div> Loading...</div></td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==================== SETTINGS PAGE ==================== -->
+            <div class="page" id="page-settings">
+                <div class="topbar">
+                    <div class="topbar-left">
+                        <h1>Settings</h1>
+                        <p>Configure your account and preferences</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-title" style="margin-bottom:20px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Profile Settings</div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Display Name</label><input type="text" id="settingsName" placeholder="Your name"></div>
+                        <div class="form-group"><label>Email</label><input type="email" id="settingsEmail" placeholder="your@email.com"></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Phone</label><input type="text" id="settingsPhone" placeholder="+1 234 567 890"></div>
+                        <div class="form-group"><label>Website</label><input type="url" id="settingsWebsite" placeholder="https://yoursite.com"></div>
+                    </div>
+                    <div class="form-group"><label>Bio</label><textarea id="settingsBio" rows="3" placeholder="Tell us about yourself..."></textarea></div>
+                    <div style="display:flex;gap:8px;margin-top:8px">
+                        <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
+                    </div>
+                </div>
+                <div class="card" style="border-color:rgba(248,113,113,.2)">
+                    <div class="card-title" style="margin-bottom:16px;color:var(--danger)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Danger Zone</div>
+                    <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Permanently delete your account and all associated data.</p>
+                    <button class="btn btn-danger" onclick="if(confirm('Are you sure? This action cannot be undone.'))deleteAccount()">Delete Account</button>
+                </div>
+            </div>
         </div>
     </div>
-    <div class="main">
-        <h1 class="welcome" id="welcomeMsg">Tableau de bord</h1>
-        <p class="welcome-sub">Gerez votre profil et suivez vos performances</p>
 
-        <div class="stats-grid">
-            <div class="stat-card"><div class="stat-label">Vues totales</div><div class="stat-value accent" id="statViews">0</div></div>
-            <div class="stat-card"><div class="stat-label">Clics</div><div class="stat-value" id="statClicks">0</div></div>
-            <div class="stat-card"><div class="stat-label">Reservations</div><div class="stat-value success" id="statReservations">0</div></div>
-            <div class="stat-card"><div class="stat-label">Partages</div><div class="stat-value gold" id="statShares">0</div></div>
-        </div>
-
-        <div class="actions">
-            <a href="/editor.html" class="btn btn-primary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editer mon profil</a>
-            <a href="/studio.html" class="btn btn-secondary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r="0.5" fill="currentColor"/><circle cx="17.5" cy="10.5" r="0.5" fill="currentColor"/><circle cx="8.5" cy="7.5" r="0.5" fill="currentColor"/><circle cx="6.5" cy="12.5" r="0.5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg> Studio Design</a>
-            <a href="/analytics.html" class="btn btn-secondary"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg> Analytics</a>
-            <a href="/payment.html" class="btn btn-gold">&#11088; Upgrade</a>
-        </div>
-
-        <div class="grid-2">
-            <div class="card">
-                <div class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> Mon lien de profil</div>
-                <div class="profile-link">
-                    <input type="text" id="profileLink" readonly>
-                    <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('profileLink').value)">Copier</button>
-                </div>
-                <div style="margin-top: 16px;">
-                    <div class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Plan actuel</div>
-                    <div id="planInfo"></div>
-                </div>
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Modal</h3>
+                <button class="modal-close" onclick="closeModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
             </div>
-            <div class="card">
-                <div class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg> QR Code</div>
-                <div class="qr-section">
-                    <img id="qrCode" alt="QR Code">
-                    <p style="margin-top:12px;font-size:13px;color:var(--text2)">Scannez pour acceder a votre profil</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="card" style="margin-bottom:32px;">
-            <div class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Dernieres reservations</div>
-            <div class="reservations-list" id="reservationsList">
-                <div class="empty">Aucune reservation pour le moment</div>
-            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer" id="modalFooter"></div>
         </div>
     </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        const token = localStorage.getItem('flay_token');
-        const user = JSON.parse(localStorage.getItem('flay_user') || '{}');
+        /* ===========================
+           CONFIG & STATE
+        =========================== */
+        const PLAN_FEATURES = {
+            free:     { products: 5, invoices: 10, receipts: 10, coupons: 2, reservations: 20, contacts: 20, stock: true, ai: false, analytics: 'basic' },
+            pro:      { products: 50, invoices: 100, receipts: 100, coupons: 20, reservations: 200, contacts: 200, stock: true, ai: true, analytics: 'advanced' },
+            premium:  { products: Infinity, invoices: Infinity, receipts: Infinity, coupons: Infinity, reservations: Infinity, contacts: Infinity, stock: true, ai: true, analytics: 'full' },
+            doree:    { products: Infinity, invoices: Infinity, receipts: Infinity, coupons: Infinity, reservations: Infinity, contacts: Infinity, stock: true, ai: true, analytics: 'full' }
+        };
+        const PLAN_COLORS = { free: 'plan-free', pro: 'plan-pro', premium: 'plan-premium', doree: 'plan-doree' };
+        const PLAN_LABELS = { free: 'Free', pro: 'Pro', premium: 'Premium', doree: 'Doree' };
+
+        let state = { plan: 'free', stats: {}, products: [], orders: [], reservations: [], invoices: [], receipts: [], contacts: [], stock: [], coupons: [], currentPage: 'overview' };
+        let token = localStorage.getItem('flay_token');
+        let user = {};
+        try { user = JSON.parse(localStorage.getItem('flay_user') || '{}'); } catch(e) { user = {}; }
+
         if (!token) window.location.href = '/login.html';
 
-        document.getElementById('userName').textContent = user.name || '';
-        document.getElementById('welcomeMsg').textContent = `Bonjour, ${user.name || 'Utilisateur'}`;
-        document.getElementById('profileLink').value = `${window.location.origin}/p/${user.username || ''}`;
-        document.getElementById('qrCode').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + '/p/' + (user.username || ''))}`;
+        /* ===========================
+           HELPERS
+        =========================== */
+        function esc(s) { const d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
 
-        const planClass = user.plan === 'premium' ? 'plan-premium' : user.plan === 'pro' ? 'plan-pro' : 'plan-free';
-        const planName = user.plan === 'premium' ? 'Premium' : user.plan === 'pro' ? 'Pro' : 'Gratuit';
-        document.getElementById('planInfo').innerHTML = `<span class="plan-badge ${planClass}">${planName}</span>`;
-
-        async function loadData() {
-            try {
-                const [profileRes, analyticsRes, reservationsRes] = await Promise.all([
-                    fetch(`/api/profile/${user.username}`, { headers: { 'Authorization': 'Bearer ' + token } }),
-                    fetch('/api/analytics', { headers: { 'Authorization': 'Bearer ' + token } }),
-                    fetch('/api/reservations', { headers: { 'Authorization': 'Bearer ' + token } })
-                ]);
-
-                if (analyticsRes.ok) {
-                    const analytics = await analyticsRes.json();
-                    document.getElementById('statViews').textContent = analytics.stats.totalViews || 0;
-                    document.getElementById('statClicks').textContent = analytics.stats.totalClicks || 0;
-                    document.getElementById('statReservations').textContent = analytics.stats.totalReservations || 0;
-                    document.getElementById('statShares').textContent = analytics.stats.totalShares || 0;
-                }
-
-                if (reservationsRes.ok) {
-                    const { reservations } = await reservationsRes.json();
-                    const list = document.getElementById('reservationsList');
-                    if (reservations.length === 0) {
-                        list.innerHTML = '<div class="empty">Aucune reservation pour le moment</div>';
-                    } else {
-                        list.innerHTML = reservations.slice(0, 10).map(r => `
-                            <div class="reservation-item">
-                                <div>
-                                    <div class="reservation-name">${r.name}</div>
-                                    <div class="reservation-service">${r.service} - ${r.date} ${r.time}</div>
-                                </div>
-                                <span class="status-badge status-${r.status}">${r.status === 'confirmed' ? 'Confirme' : 'En attente'}</span>
-                            </div>
-                        `).join('');
-                    }
-                }
-            } catch(e) { console.error(e); }
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
         }
-        loadData();
+
+        function formatDate(str) {
+            if (!str) return '-';
+            const d = new Date(str);
+            if (isNaN(d)) return esc(str);
+            return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function formatDateTime(str) {
+            if (!str) return '-';
+            const d = new Date(str);
+            if (isNaN(d)) return esc(str);
+            return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+        }
+
+        async function api(url, opts = {}) {
+            try {
+                const headers = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...(opts.headers || {}) };
+                const res = await fetch(url, { ...opts, headers });
+                if (res.status === 401) { toast('Session expired. Please login again.', 'error'); setTimeout(() => { localStorage.clear(); window.location.href = '/login.html'; }, 1500); return null; }
+                const text = await res.text();
+                let data;
+                try { data = JSON.parse(text); } catch(e) { data = text; }
+                if (!res.ok) { toast(data.message || data.error || 'Request failed', 'error'); return null; }
+                return data;
+            } catch(e) { console.error('API error:', e); toast('Network error. Please try again.', 'error'); return null; }
+        }
+
+        /* ===========================
+           TOAST
+        =========================== */
+        function toast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const icons = {
+                success: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+                error: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+                info: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+                warning: '<svg class="toast-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>'
+            };
+            const el = document.createElement('div');
+            el.className = 'toast toast-' + type;
+            el.innerHTML = (icons[type] || icons.info) + '<span class="toast-msg">' + esc(msg) + '</span><svg class="toast-close" onclick="this.parentElement.remove()" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+            container.appendChild(el);
+            setTimeout(() => { el.style.animation = 'toastOut .3s forwards'; setTimeout(() => el.remove(), 300); }, 4000);
+        }
+
+        /* ===========================
+           MODAL
+        =========================== */
+        function showModal(title, body, footer) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalBody').innerHTML = typeof body === 'string' ? body : '';
+            document.getElementById('modalFooter').innerHTML = footer || '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Close</button>';
+            document.getElementById('modalOverlay').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+        /* ===========================
+           NAVIGATION
+        =========================== */
+        function navigate(page) {
+            state.currentPage = page;
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            const pageEl = document.getElementById('page-' + page);
+            const navEl = document.querySelector('.nav-item[data-page="' + page + '"]');
+            if (pageEl) pageEl.classList.add('active');
+            if (navEl) navEl.classList.add('active');
+            // Close sidebar on mobile
+            document.getElementById('sidebar').classList.remove('open');
+            document.getElementById('sidebarOverlay').classList.remove('open');
+            // Load page data
+            if (page === 'products') loadProducts();
+            if (page === 'orders') loadOrders();
+            if (page === 'reservations') loadReservations();
+            if (page === 'invoices') loadInvoices();
+            if (page === 'receipts') loadReceipts();
+            if (page === 'crm') loadContacts();
+            if (page === 'stock') loadStock();
+            if (page === 'coupons') loadCoupons();
+            if (page === 'settings') loadSettings();
+            if (page === 'analytics') loadAnalytics();
+            window.scrollTo(0, 0);
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebarOverlay').classList.toggle('open');
+        }
+
+        /* ===========================
+           FEATURE GATING
+        =========================== */
+        function canUseFeature(feature) {
+            const pf = PLAN_FEATURES[state.plan] || PLAN_FEATURES.free;
+            if (feature === 'analytics') return pf.analytics !== 'basic';
+            if (feature === 'ai') return pf.ai;
+            return pf[feature] !== undefined;
+        }
+
+        function getFeatureLimit(feature) {
+            const pf = PLAN_FEATURES[state.plan] || PLAN_FEATURES.free;
+            return pf[feature];
+        }
+
+        function showUpgradeGate(feature) {
+            const descriptions = {
+                analytics: 'Advanced analytics require Pro plan or higher.',
+                ai: 'AI Agent features require Pro plan or higher.',
+                products: 'You\'ve reached the product limit for the Free plan.',
+                invoices: 'You\'ve reached the invoice limit for the Free plan.',
+                coupons: 'You\'ve reached the coupon limit for the Free plan.',
+                reservations: 'You\'ve reached the reservation limit for the Free plan.',
+                contacts: 'You\'ve reached the contact limit for the Free plan.',
+                receipts: 'You\'ve reached the receipt limit for the Free plan.'
+            };
+            return '<div class="upgrade-gate"><div class="upgrade-gate-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><h3>Upgrade Required</h3><p>' + esc(descriptions[feature] || 'This feature requires a higher plan.') + '</p><a href="/payment.html" class="btn btn-primary">Upgrade to Pro</a></div>';
+        }
+
+        /* ===========================
+           PLAN BADGE
+        =========================== */
+        function updatePlanBadge() {
+            const badge = document.getElementById('planBadge');
+            if (!badge) return;
+            const cls = PLAN_COLORS[state.plan] || 'plan-free';
+            const label = PLAN_LABELS[state.plan] || 'Free';
+            badge.className = 'plan-badge ' + cls;
+            badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ' + esc(label);
+        }
+
+        /* ===========================
+           SIDEBAR USER INFO
+        =========================== */
+        function updateSidebarUser() {
+            const initial = (user.name || 'U')[0].toUpperCase();
+            document.getElementById('sidebarAvatar').textContent = initial;
+            document.getElementById('sidebarUserName').textContent = user.name || 'User';
+            document.getElementById('sidebarUserEmail').textContent = user.email || '';
+            document.getElementById('welcomeMsg').textContent = 'Bonjour, ' + (user.name || 'Utilisateur');
+            document.getElementById('welcomeSub').textContent = 'Here\'s your business overview.';
+            document.getElementById('profileLink').value = window.location.origin + '/p/' + (user.username || '');
+        }
+
+        /* ===========================
+           COPY PROFILE LINK
+        =========================== */
+        function copyProfileLink() {
+            const input = document.getElementById('profileLink');
+            navigator.clipboard.writeText(input.value).then(() => toast('Profile link copied!', 'success'));
+        }
+
+        /* ===========================
+           LOGOUT
+        =========================== */
+        function logout() {
+            localStorage.clear();
+            window.location.href = '/login.html';
+        }
+
+        /* ===========================
+           LOAD PLAN
+        =========================== */
+        async function loadPlan() {
+            const data = await api('/api/premium/plan');
+            if (data && data.plan) {
+                state.plan = data.plan;
+                updatePlanBadge();
+            }
+        }
+
+        /* ===========================
+           LOAD DASHBOARD
+        =========================== */
+        async function loadDashboard() {
+            const data = await api('/api/premium/dashboard');
+            if (!data) return;
+            state.stats = data.stats || data;
+            const s = state.stats;
+            document.getElementById('statRevenue').textContent = formatMoney(s.revenue || s.totalRevenue || 0);
+            document.getElementById('statOrders').textContent = s.orders || s.totalOrders || 0;
+            document.getElementById('statReservations').textContent = s.reservations || s.totalReservations || 0;
+            document.getElementById('statProducts').textContent = s.products || s.totalProducts || 0;
+            document.getElementById('statContacts').textContent = s.contacts || s.totalContacts || 0;
+            document.getElementById('statInvoices').textContent = s.invoices || s.totalInvoices || 0;
+
+            if (s.products != null) document.getElementById('navProductsCount').textContent = s.products;
+            if (s.productsChange != null) document.getElementById('statProductsChange').textContent = (s.productsChange >= 0 ? '+' : '') + s.productsChange + '%';
+
+            // Chart
+            if (s.chart || s.revenueChart || s.dailyRevenue) {
+                renderChart(s.chart || s.revenueChart || s.dailyRevenue || []);
+            }
+        }
+
+        function renderChart(data) {
+            const container = document.getElementById('chartContainer');
+            const labels = document.getElementById('chartLabels');
+            if (!data || data.length === 0) {
+                // Generate placeholder data
+                data = Array.from({length: 7}, (_, i) => ({
+                    label: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i],
+                    value: Math.floor(Math.random() * 500) + 100
+                }));
+            }
+            const max = Math.max(...data.map(d => d.value || 0), 1);
+            container.innerHTML = data.map(d => {
+                const h = Math.max(4, (d.value / max) * 200);
+                return '<div class="chart-bar" style="height:' + h + 'px"><span class="tooltip">' + esc(d.label || '') + ': ' + formatMoney(d.value || 0) + '</span></div>';
+            }).join('');
+            labels.innerHTML = data.map(d => '<span>' + esc(d.label || '') + '</span>').join('');
+        }
+
+        /* ===========================
+           LOAD RESERVATIONS (overview)
+        =========================== */
+        async function loadRecentReservations() {
+            const container = document.getElementById('recentReservations');
+            const data = await api('/api/reservations');
+            if (!data) { container.innerHTML = '<div class="table-empty"><p>Failed to load</p></div>'; return; }
+            const reservations = data.reservations || data || [];
+            if (reservations.length === 0) {
+                container.innerHTML = '<div class="table-empty"><p>No reservations yet</p></div>';
+                return;
+            }
+            container.innerHTML = reservations.slice(0, 8).map(r => {
+                const statusCls = r.status === 'confirmed' ? 'badge-success' : r.status === 'cancelled' ? 'badge-danger' : 'badge-warning';
+                return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">' + esc(r.name || r.clientName || 'Client') + '</div><div style="font-size:12px;color:var(--text2)">' + esc(r.service || '') + ' &middot; ' + esc(r.date || '') + ' ' + esc(r.time || '') + '</div></div><span class="badge ' + statusCls + '"><span class="badge-dot"></span> ' + esc(r.status || 'pending') + '</span></div>';
+            }).join('');
+        }
+
+        /* ===========================
+           PRODUCTS
+        =========================== */
+        async function loadProducts() {
+            const data = await api('/api/products');
+            if (!data) { document.getElementById('productsTable').innerHTML = '<tr><td colspan="5" class="table-empty"><p>Failed to load products</p></td></tr>'; return; }
+            state.products = data.products || data || [];
+            document.getElementById('navProductsCount').textContent = state.products.length;
+            renderProducts();
+        }
+
+        function renderProducts() {
+            const tbody = document.getElementById('productsTable');
+            const search = (document.getElementById('productSearch').value || '').toLowerCase();
+            let items = state.products;
+            if (search) items = items.filter(p => (p.name || '').toLowerCase().includes(search) || (p.sku || '').toLowerCase().includes(search));
+            if (items.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="table-empty"><p>No products found</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = items.map(p => {
+                const stock = p.stock || p.quantity || 0;
+                const statusCls = stock === 0 ? 'badge-danger' : stock <= 5 ? 'badge-warning' : 'badge-success';
+                const statusText = stock === 0 ? 'Out of Stock' : stock <= 5 ? 'Low Stock' : 'In Stock';
+                return '<tr><td><strong>' + esc(p.name || 'Product') + '</strong></td><td>' + formatMoney(p.price || 0) + '</td><td>' + stock + '</td><td><span class="badge ' + statusCls + '">' + statusText + '</span></td><td><button class="btn btn-ghost btn-sm" onclick="editProduct(' + esc(p.id || p._id || 0) + ')">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteProduct(' + esc(p.id || p._id || 0) + ')">Delete</button></td></tr>';
+            }).join('');
+        }
+
+        function filterProducts() { renderProducts(); }
+
+        function openAddProductModal() {
+            const limit = getFeatureLimit('products');
+            if (state.plan === 'free' && state.products.length >= limit) {
+                showModal('Upgrade Required', showUpgradeGate('products'));
+                return;
+            }
+            showModal('Add Product', '<div class="form-row"><div class="form-group"><label>Name <span class="required">*</span></label><input type="text" id="productName" placeholder="Product name"></div><div class="form-group"><label>SKU</label><input type="text" id="productSku" placeholder="SKU-001"></div></div><div class="form-row"><div class="form-group"><label>Price <span class="required">*</span></label><input type="number" id="productPrice" step="0.01" min="0" placeholder="0.00"></div><div class="form-group"><label>Stock</label><input type="number" id="productStock" min="0" placeholder="0"></div></div><div class="form-group"><label>Description</label><textarea id="productDesc" rows="3" placeholder="Product description..."></textarea></div>',
+                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveProduct()">Save Product</button>');
+        }
+
+        async function saveProduct() {
+            const name = document.getElementById('productName').value.trim();
+            const price = parseFloat(document.getElementById('productPrice').value);
+            if (!name) { toast('Product name is required', 'error'); return; }
+            if (isNaN(price) || price < 0) { toast('Please enter a valid price', 'error'); return; }
+            const body = { name, price, sku: document.getElementById('productSku').value.trim(), stock: parseInt(document.getElementById('productStock').value) || 0, description: document.getElementById('productDesc').value.trim() };
+            const data = await api('/api/products', { method: 'POST', body: JSON.stringify(body) });
+            if (data) { toast('Product added successfully!', 'success'); closeModal(); loadProducts(); loadDashboard(); }
+        }
+
+        function editProduct(id) {
+            const p = state.products.find(x => (x.id || x._id) == id);
+            if (!p) return;
+            showModal('Edit Product', '<div class="form-row"><div class="form-group"><label>Name</label><input type="text" id="editProdName" value="' + esc(p.name || '') + '"></div><div class="form-group"><label>SKU</label><input type="text" id="editProdSku" value="' + esc(p.sku || '') + '"></div></div><div class="form-row"><div class="form-group"><label>Price</label><input type="number" id="editProdPrice" step="0.01" value="' + (p.price || 0) + '"></div><div class="form-group"><label>Stock</label><input type="number" id="editProdStock" value="' + (p.stock || p.quantity || 0) + '"></div></div><div class="form-group"><label>Description</label><textarea id="editProdDesc" rows="3">' + esc(p.description || '') + '</textarea></div>',
+                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="updateProduct(' + id + ')">Update</button>');
+        }
+
+        async function updateProduct(id) {
+            const body = { name: document.getElementById('editProdName').value.trim(), price: parseFloat(document.getElementById('editProdPrice').value), sku: document.getElementById('editProdSku').value.trim(), stock: parseInt(document.getElementById('editProdStock').value) || 0, description: document.getElementById('editProdDesc').value.trim() };
+            const data = await api('/api/products/' + id, { method: 'PUT', body: JSON.stringify(body) });
+            if (data) { toast('Product updated!', 'success'); closeModal(); loadProducts(); }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Delete this product?')) return;
+            const data = await api('/api/products/' + id, { method: 'DELETE' });
+            if (data !== null) { toast('Product deleted', 'success'); loadProducts(); loadDashboard(); }
+        }
+
+        /* ===========================
+           ORDERS
+        =========================== */
+        async function loadOrders() {
+            const data = await api('/api/orders');
+            if (!data) { document.getElementById('ordersTable').innerHTML = '<tr><td colspan="6" class="table-empty"><p>Failed to load orders</p></td></tr>'; return; }
+            state.orders = data.orders || data || [];
+            const tbody = document.getElementById('ordersTable');
+            if (state.orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="table-empty"><p>No orders yet</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = state.orders.map(o => {
+                const statusCls = o.status === 'completed' ? 'badge-success' : o.status === 'cancelled' ? 'badge-danger' : o.status === 'shipped' ? 'badge-info' : 'badge-warning';
+                return '<tr><td><strong>#' + esc(o.id || o._id || '') + '</strong></td><td>' + esc(o.customer || o.customerName || 'Customer') + '</td><td>' + formatMoney(o.amount || o.total || 0) + '</td><td><span class="badge ' + statusCls + '">' + esc(o.status || 'pending') + '</span></td><td>' + formatDate(o.date || o.createdAt) + '</td><td><button class="btn btn-ghost btn-sm" onclick="viewOrder(' + esc(o.id || o._id || 0) + ')">View</button></td></tr>';
+            }).join('');
+        }
+
+        function viewOrder(id) {
+            const o = state.orders.find(x => (x.id || x._id) == id);
+            if (!o) return;
+            showModal('Order #' + esc(o.id || o._id), '<div style="display:grid;gap:12px"><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Customer</span><strong>' + esc(o.customer || o.customerName || '-') + '</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Amount</span><strong>' + formatMoney(o.amount || o.total || 0) + '</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Status</span><span class="badge badge-info">' + esc(o.status || '-') + '</span></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Date</span><span>' + formatDate(o.date || o.createdAt) + '</span></div></div>');
+        }
+
+        /* ===========================
+           RESERVATIONS
+        =========================== */
+        async function loadReservations() {
+            const data = await api('/api/reservations');
+            if (!data) { document.getElementById('reservationsTable').innerHTML = '<tr><td colspan="6" class="table-empty"><p>Failed to load reservations</p></td></tr>'; return; }
+            state.reservations = data.reservations || data || [];
+            const tbody = document.getElementById('reservationsTable');
+            if (state.reservations.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="table-empty"><p>No reservations yet</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = state.reservations.map(r => {
+                const statusCls = r.status === 'confirmed' ? 'badge-success' : r.status === 'cancelled' ? 'badge-danger' : 'badge-warning';
+                return '<tr><td><strong>' + esc(r.name || r.clientName || '-') + '</strong></td><td>' + esc(r.service || '-') + '</td><td>' + esc(r.date || '-') + '</td><td>' + esc(r.time || '-') + '</td><td><span class="badge ' + statusCls + '">' + esc(r.status || 'pending') + '</span></td><td><button class="btn btn-ghost btn-sm" onclick="updateReservationStatus(' + esc(r.id || r._id || 0) + ')">Update</button></td></tr>';
+            }).join('');
+        }
+
+        function openAddReservationModal() {
+            const limit = getFeatureLimit('reservations');
+            if (state.plan === 'free' && state.reservations.length >= limit) {
+                showModal('Upgrade Required', showUpgradeGate('reservations'));
+                return;
+            }
+            showModal('New Reservation', '<div class="form-row"><div class="form-group"><label>Name <span class="required">*</span></label><input type="text" id="resName" placeholder="Client name"></div><div class="form-group"><label>Service <span class="required">*</span></label><input type="text" id="resService" placeholder="Service name"></div></div><div class="form-row"><div class="form-group"><label>Date <span class="required">*</span></label><input type="date" id="resDate"></div><div class="form-group"><label>Time <span class="required">*</span></label><input type="time" id="resTime"></div></div><div class="form-group"><label>Notes</label><textarea id="resNotes" rows="2" placeholder="Additional notes..."></textarea></div>',
+                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveReservation()">Save</button>');
+        }
+
+        async function saveReservation() {
+            const name = document.getElementById('resName').value.trim();
+            const service = document.getElementById('resService').value.trim();
+            const date = document.getElementById('resDate').value;
+            const time = document.getElementById('resTime').value;
+            if (!name || !service || !date || !time) { toast('All fields are required', 'error'); return; }
+            const body = { name, service, date, time, notes: document.getElementById('resNotes').value.trim() };
+            const data = await api('/api/reservations', { method: 'POST', body: JSON.stringify(body) });
+            if (data) { toast('Reservation created!', 'success'); closeModal(); loadReservations(); loadDashboard(); loadRecentReservations(); }
+        }
+
+        async function updateReservationStatus(id) {
+            const r = state.reservations.find(x => (x.id || x._id) == id);
+            if (!r) return;
+            const newStatus = r.status === 'confirmed' ? 'cancelled' : 'confirmed';
+            const data = await api('/api/reservations/' + id, { method: 'PUT', body: JSON.stringify({ status: newStatus }) });
+            if (data) { toast('Reservation updated!', 'success'); loadReservations(); }
+        }
+
+        /* ===========================
+           INVOICES
+        =========================== */
+        async function loadInvoices() {
+            const data = await api('/api/invoices');
+            if (!data) { document.getElementById('invoicesTable').innerHTML = '<tr><td colspan="6" class="table-empty"><p>Failed to load invoices</p></td></tr>'; return; }
+            state.invoices = data.invoices || data || [];
+            const tbody = document.getElementById('invoicesTable');
+            if (state.invoices.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="table-empty"><p>No invoices yet</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = state.invoices.map(inv => {
+                const statusCls = inv.status === 'paid' ? 'badge-success' : inv.status === 'overdue' ? 'badge-danger' : inv.status === 'cancelled' ? 'badge-neutral' : 'badge-warning';
+                return '<tr><td><strong>#' + esc(inv.number || inv.id || '') + '</strong></td><td>' + esc(inv.client || inv.clientName || '-') + '</td><td>' + formatMoney(inv.amount || inv.total || 0) + '</td><td><span class="badge ' + statusCls + '">' + esc(inv.status || 'draft') + '</span></td><td>' + formatDate(inv.dueDate) + '</td><td><button class="btn btn-ghost btn-sm" onclick="viewInvoice(' + esc(inv.id || inv._id || 0) + ')">View</button></td></tr>';
+            }).join('');
+        }
+
+        function openAddInvoiceModal() {
+            const limit = getFeatureLimit('invoices');
+            if (state.plan === 'free' && state.invoices.length >= limit) {
+                showModal('Upgrade Required', showUpgradeGate('invoices'));
+                return;
+            }
+            showModal('New Invoice', '<div class="form-row"><div class="form-group"><label>Client <span class="required">*</span></label><input type="text" id="invClient" placeholder="Client name"></div><div class="form-group"><label>Amount <span class="required">*</span></label><input type="number" id="invAmount" step="0.01" min="0" placeholder="0.00"></div></div><div class="form-row"><div class="form-group"><label>Due Date</label><input type="date" id="invDueDate"></div><div class="form-group"><label>Status</label><select id="invStatus"><option value="draft">Draft</option><option value="pending">Pending</option><option value="paid">Paid</option></select></div></div><div class="form-group"><label>Description</label><textarea id="invDesc" rows="2" placeholder="Invoice description..."></textarea></div>',
+                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveInvoice()">Create</button>');
+        }
+
+        async function saveInvoice() {
+            const client = document.getElementById('invClient').value.trim();
+            const amount = parseFloat(document.getElementById('invAmount').value);
+            if (!client || isNaN(amount)) { toast('Client and amount are required', 'error'); return; }
+            const body = { client, amount, dueDate: document.getElementById('invDueDate').value, status: document.getElementById('invStatus').value, description: document.getElementById('invDesc').value.trim() };
+            const data = await api('/api/invoices', { method: 'POST', body: JSON.stringify(body) });
+            if (data) { toast('Invoice created!', 'success'); closeModal(); loadInvoices(); loadDashboard(); }
+        }
+
+        function viewInvoice(id) {
+            const inv = state.invoices.find(x => (x.id || x._id) == id);
+            if (!inv) return;
+            showModal('Invoice #' + esc(inv.number || inv.id), '<div style="display:grid;gap:12px"><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Client</span><strong>' + esc(inv.client || inv.clientName || '-') + '</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Amount</span><strong>' + formatMoney(inv.amount || inv.total || 0) + '</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Status</span><span class="badge badge-info">' + esc(inv.status || '-') + '</span></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Due Date</span><span>' + formatDate(inv.dueDate) + '</span></div></div>');
+        }
+
+        /* ===========================
+           RECEIPTS
+        =========================== */
+        async function loadReceipts() {
+            const data = await api('/api/accounting/receipts');
+            if (!data) { document.getElementById('receiptsTable').innerHTML = '<tr><td colspan="5" class="table-empty"><p>Failed to load receipts</p></td></tr>'; return; }
+            state.receipts = data.receipts || data || [];
+            const tbody = document.getElementById('receiptsTable');
+            if (state.receipts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="table-empty"><p>No receipts yet</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = state.receipts.map(r => {
+                return '<tr><td><strong>#' + esc(r.number || r.id || '') + '</strong></td><td>' + esc(r.client || r.clientName || '-') + '</td><td>' + formatMoney(r.amount || 0) + '</td><td>' + formatDate(r.date || r.createdAt) + '</td><td><button class="btn btn-ghost btn-sm" onclick="viewReceipt(\'' + esc(r.id || r._id || '') + '\')">View</button></td></tr>';
+            }).join('');
+        }
+
+        function viewReceipt(id) {
+            const r = state.receipts.find(x => (x.id || x._id) == id);
+            if (!r) return;
+            showModal('Receipt #' + esc(r.number || r.id), '<div style="display:grid;gap:12px"><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Client</span><strong>' + esc(r.client || r.clientName || '-') + '</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Amount</span><strong>' + formatMoney(r.amount || 0) + '</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Date</span><span>' + formatDate(r.date || r.createdAt) + '</span></div></div>');
+        }
+
+        /* ===========================
+           CRM
+        =========================== */
+        async function loadContacts() {
+            const data = await api('/api/contacts');
+            if (!data) { document.getElementById('crmTable').innerHTML = '<tr><td colspan="6" class="table-empty"><p>Failed to load contacts</p></td></tr>'; return; }
+            state.contacts = data.contacts || data || [];
+            const tbody = document.getElementById('crmTable');
+            if (state.contacts.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="table-empty"><p>No contacts yet</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = state.contacts.map(c => {
+                const statusCls = c.status === 'client' ? 'badge-success' : c.status === 'lead' ? 'badge-info' : c.status === 'prospect' ? 'badge-warning' : 'badge-neutral';
+                const initial = (c.name || 'C')[0].toUpperCase();
+                return '<tr><td><div style="display:flex;align-items:center;gap:10px"><div style="width:32px;height:32px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;flex-shrink:0">' + esc(initial) + '</div><strong>' + esc(c.name || '-') + '</strong></div></td><td>' + esc(c.email || '-') + '</td><td>' + esc(c.phone || '-') + '</td><td><span class="badge ' + statusCls + '">' + esc(c.status || 'lead') + '</span></td><td>' + formatDate(c.lastContact) + '</td><td><button class="btn btn-ghost btn-sm" onclick="editContact(' + esc(c.id || c._id || 0) + ')">Edit</button></td></tr>';
+            }).join('');
+        }
+
+        function openAddContactModal() {
+            const limit = getFeatureLimit('contacts');
+            if (state.plan === 'free' && state.contacts.length >= limit) {
+                showModal('Upgrade Required', showUpgradeGate('contacts'));
+                return;
+            }
+            showModal('Add Contact', '<div class="form-row"><div class="form-group"><label>Name <span class="required">*</span></label><input type="text" id="crmName" placeholder="Full name"></div><div class="form-group"><label>Email</label><input type="email" id="crmEmail" placeholder="email@example.com"></div></div><div class="form-row"><div class="form-group"><label>Phone</label><input type="text" id="crmPhone" placeholder="+1 234 567 890"></div><div class="form-group"><label>Status</label><select id="crmStatus"><option value="lead">Lead</option><option value="prospect">Prospect</option><option value="client">Client</option></select></div></div><div class="form-group"><label>Notes</label><textarea id="crmNotes" rows="2" placeholder="Notes..."></textarea></div>',
+                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveContact()">Save</button>');
+        }
+
+        async function saveContact() {
+            const name = document.getElementById('crmName').value.trim();
+            if (!name) { toast('Name is required', 'error'); return; }
+            const body = { name, email: document.getElementById('crmEmail').value.trim(), phone: document.getElementById('crmPhone').value.trim(), status: document.getElementById('crmStatus').value, notes: document.getElementById('crmNotes').value.trim() };
+            const data = await api('/api/contacts', { method: 'POST', body: JSON.stringify(body) });
+            if (data) { toast('Contact added!', 'success'); closeModal(); loadContacts(); loadDashboard(); }
+        }
+
+        function editContact(id) {
+            const c = state.contacts.find(x => (x.id || x._id) == id);
+            if (!c) return;
+            showModal('Edit Contact', '<div class="form-row"><div class="form-group"><label>Name</label><input type="text" id="editCrmName" value="' + esc(c.name || '') + '"></div><div class="form-group"><label>Email</label><input type="email" id="editCrmEmail" value="' + esc(c.email || '') + '"></div></div><div class="form-row"><div class="form-group"><label>Phone</label><input type="text" id="editCrmPhone" value="' + esc(c.phone || '') + '"></div><div class="form-group"><label>Status</label><select id="editCrmStatus"><option value="lead"' + (c.status === 'lead' ? ' selected' : '') + '>Lead</option><option value="prospect"' + (c.status === 'prospect' ? ' selected' : '') + '>Prospect</option><option value="client"' + (c.status === 'client' ? ' selected' : '') + '>Client</option></select></div></div><div class="form-group"><label>Notes</label><textarea id="editCrmNotes" rows="2">' + esc(c.notes || '') + '</textarea></div>',
+                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="updateContact(' + id + ')">Update</button>');
+        }
+
+        async function updateContact(id) {
+            const body = { name: document.getElementById('editCrmName').value.trim(), email: document.getElementById('editCrmEmail').value.trim(), phone: document.getElementById('editCrmPhone').value.trim(), status: document.getElementById('editCrmStatus').value, notes: document.getElementById('editCrmNotes').value.trim() };
+            const data = await api('/api/contacts/' + id, { method: 'PUT', body: JSON.stringify(body) });
+            if (data) { toast('Contact updated!', 'success'); closeModal(); loadContacts(); }
+        }
+
+        /* ===========================
+           STOCK
+        =========================== */
+        async function loadStock() {
+            let data = await api('/api/accounting/stock');
+            if (!data) data = await api('/api/stock');
+            if (!data) { document.getElementById('stockTable').innerHTML = '<tr><td colspan="6" class="table-empty"><p>Failed to load stock data</p></td></tr>'; return; }
+            state.stock = data.stock || data.products || data || [];
+            const tbody = document.getElementById('stockTable');
+            if (state.stock.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="table-empty"><p>No stock data available</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = state.stock.map(s => {
+                const qty = s.quantity || s.stock || 0;
+                const statusCls = qty === 0 ? 'stock-out' : qty <= 5 ? 'stock-low' : 'stock-in';
+                const badgeCls = qty === 0 ? 'badge-danger' : qty <= 5 ? 'badge-warning' : 'badge-success';
+                const statusText = qty === 0 ? 'Out of Stock' : qty <= 5 ? 'Low Stock' : 'In Stock';
+                return '<tr><td><strong>' + esc(s.name || s.productName || '-') + '</strong></td><td style="font-family:monospace;font-size:12px;color:var(--text2)">' + esc(s.sku || '-') + '</td><td>' + qty + '</td><td><div class="stock-status ' + statusCls + '"><span class="stock-dot"></span><span class="badge ' + badgeCls + '">' + statusText + '</span></div></td><td><div style="display:flex;gap:4px;align-items:center"><input type="number" id="stockAdj_' + esc(s.id || s._id || '') + '" value="0" style="width:70px;padding:6px 8px;font-size:12px;text-align:center" min="0"><button class="btn btn-primary btn-sm" onclick="adjustStock(\'' + esc(s.id || s._id || '') + '\')">Set</button></div></td><td><button class="btn btn-ghost btn-sm" onclick="viewStockDetail(' + esc(s.id || s._id || 0) + ')">Info</button></td></tr>';
+            }).join('');
+        }
+
+        async function adjustStock(id) {
+            const input = document.getElementById('stockAdj_' + id);
+            const qty = parseInt(input.value);
+            if (isNaN(qty) || qty < 0) { toast('Enter a valid quantity', 'error'); return; }
+            const data = await api('/api/stock/' + id, { method: 'PUT', body: JSON.stringify({ quantity: qty }) });
+            if (!data) {
+                const data2 = await api('/api/accounting/stock/' + id, { method: 'PUT', body: JSON.stringify({ quantity: qty }) });
+                if (data2) { toast('Stock updated!', 'success'); loadStock(); }
+            } else {
+                toast('Stock updated!', 'success');
+                loadStock();
+            }
+        }
+
+        function viewStockDetail(id) {
+            const s = state.stock.find(x => (x.id || x._id) == id);
+            if (!s) return;
+            const qty = s.quantity || s.stock || 0;
+            const statusText = qty === 0 ? 'Out of Stock' : qty <= 5 ? 'Low Stock' : 'In Stock';
+            showModal('Stock Details', '<div style="display:grid;gap:12px"><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Product</span><strong>' + esc(s.name || s.productName || '-') + '</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">SKU</span><span style="font-family:monospace">' + esc(s.sku || '-') + '</span></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Quantity</span><strong>' + qty + '</strong></div><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">Status</span><span>' + statusText + '</span></div><div style="display:flex;justify-content:space-between;padding:8px 0"><span style="color:var(--text2)">Price</span><strong>' + formatMoney(s.price || 0) + '</strong></div></div>');
+        }
+
+        /* ===========================
+           COUPONS
+        =========================== */
+        async function loadCoupons() {
+            const data = await api('/api/coupons');
+            if (!data) { document.getElementById('couponsTable').innerHTML = '<tr><td colspan="7" class="table-empty"><p>Failed to load coupons</p></td></tr>'; return; }
+            state.coupons = data.coupons || data || [];
+            const tbody = document.getElementById('couponsTable');
+            if (state.coupons.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="table-empty"><p>No coupons yet</p></td></tr>';
+                return;
+            }
+            tbody.innerHTML = state.coupons.map(c => {
+                const statusCls = c.active === false || c.status === 'expired' ? 'badge-neutral' : 'badge-success';
+                const statusText = c.active === false || c.status === 'expired' ? 'Inactive' : 'Active';
+                return '<tr><td><strong style="font-family:monospace">' + esc(c.code || '-') + '</strong></td><td>' + esc(c.discount || c.value || '-') + (c.type === 'percent' ? '%' : '') + '</td><td>' + esc(c.type || 'fixed') + '</td><td>' + (c.usageCount || c.used || 0) + '/' + (c.usageLimit || c.maxUses || '∞') + '</td><td>' + formatDate(c.expiresAt || c.endDate) + '</td><td><span class="badge ' + statusCls + '">' + statusText + '</span></td><td><button class="btn btn-ghost btn-sm" onclick="deleteCoupon(\'' + esc(c.id || c._id || '') + '\')">Delete</button></td></tr>';
+            }).join('');
+        }
+
+        function openAddCouponModal() {
+            const limit = getFeatureLimit('coupons');
+            if (state.plan === 'free' && state.coupons.length >= limit) {
+                showModal('Upgrade Required', showUpgradeGate('coupons'));
+                return;
+            }
+            showModal('New Coupon', '<div class="form-row"><div class="form-group"><label>Code <span class="required">*</span></label><input type="text" id="couponCode" placeholder="e.g. SAVE20" style="text-transform:uppercase"></div><div class="form-group"><label>Discount <span class="required">*</span></label><input type="number" id="couponDiscount" step="0.01" min="0" placeholder="0"></div></div><div class="form-row"><div class="form-group"><label>Type</label><select id="couponType"><option value="fixed">Fixed Amount</option><option value="percent">Percentage</option></select></div><div class="form-group"><label>Max Uses</label><input type="number" id="couponMaxUses" min="1" placeholder="Unlimited"></div></div><div class="form-row"><div class="form-group"><label>Expires</label><input type="date" id="couponExpires"></div><div class="form-group"><label>Min Order</label><input type="number" id="couponMinOrder" step="0.01" min="0" placeholder="0.00"></div></div>',
+                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveCoupon()">Create</button>');
+        }
+
+        async function saveCoupon() {
+            const code = document.getElementById('couponCode').value.trim().toUpperCase();
+            const discount = parseFloat(document.getElementById('couponDiscount').value);
+            if (!code || isNaN(discount)) { toast('Code and discount are required', 'error'); return; }
+            const body = { code, discount, type: document.getElementById('couponType').value, usageLimit: parseInt(document.getElementById('couponMaxUses').value) || null, expiresAt: document.getElementById('couponExpires').value || null, minOrder: parseFloat(document.getElementById('couponMinOrder').value) || 0 };
+            const data = await api('/api/coupons', { method: 'POST', body: JSON.stringify(body) });
+            if (data) { toast('Coupon created!', 'success'); closeModal(); loadCoupons(); }
+        }
+
+        async function deleteCoupon(id) {
+            if (!confirm('Delete this coupon?')) return;
+            const data = await api('/api/coupons/' + id, { method: 'DELETE' });
+            if (data !== null) { toast('Coupon deleted', 'success'); loadCoupons(); }
+        }
+
+        /* ===========================
+           SETTINGS
+        =========================== */
+        function loadSettings() {
+            document.getElementById('settingsName').value = user.name || '';
+            document.getElementById('settingsEmail').value = user.email || '';
+            document.getElementById('settingsPhone').value = user.phone || '';
+            document.getElementById('settingsWebsite').value = user.website || '';
+            document.getElementById('settingsBio').value = user.bio || '';
+        }
+
+        async function saveSettings() {
+            const body = { name: document.getElementById('settingsName').value.trim(), email: document.getElementById('settingsEmail').value.trim(), phone: document.getElementById('settingsPhone').value.trim(), website: document.getElementById('settingsWebsite').value.trim(), bio: document.getElementById('settingsBio').value.trim() };
+            const data = await api('/api/account/profile', { method: 'PUT', body: JSON.stringify(body) });
+            if (!data) {
+                const data2 = await api('/api/settings', { method: 'PUT', body: JSON.stringify(body) });
+                if (data2) { toast('Settings saved!', 'success'); user = { ...user, ...body }; localStorage.setItem('flay_user', JSON.stringify(user)); updateSidebarUser(); }
+            } else {
+                toast('Settings saved!', 'success');
+                user = { ...user, ...body };
+                localStorage.setItem('flay_user', JSON.stringify(user));
+                updateSidebarUser();
+            }
+        }
+
+        async function deleteAccount() {
+            const data = await api('/api/account', { method: 'DELETE' });
+            if (data !== null) { toast('Account deleted', 'success'); localStorage.clear(); window.location.href = '/'; }
+        }
+
+        /* ===========================
+           AI ACTIONS
+        =========================== */
+        async function aiAction(action) {
+            const output = document.getElementById('aiOutput');
+            if (!canUseFeature('ai')) {
+                output.className = 'ai-output visible';
+                output.innerHTML = showUpgradeGate('ai');
+                return;
+            }
+            const endpoints = {
+                'generate-bio': '/api/accounting/ai/generate-bio',
+                'generate-services': '/api/accounting/ai/generate-services',
+                'marketing': '/api/accounting/ai/marketing',
+                'analyze-profile': '/api/accounting/ai/analyze-profile'
+            };
+            const labels = { 'generate-bio': 'Generate Bio', 'generate-services': 'Generate Services', 'marketing': 'Marketing Content', 'analyze-profile': 'Analyze Profile' };
+            output.className = 'ai-output visible';
+            output.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:8px 0"><div class="spinner"></div> Generating ' + esc(labels[action] || '') + '...</div>';
+            const data = await api(endpoints[action], { method: 'POST', body: JSON.stringify({ username: user.username, name: user.name, business: user.business || user.name }) });
+            if (data) {
+                const text = data.result || data.content || data.text || data.bio || data.services || data.analysis || data.marketing || JSON.stringify(data, null, 2);
+                output.textContent = text;
+                toast(labels[action] + ' generated!', 'success');
+            } else {
+                output.innerHTML = '<div style="color:var(--danger)">Failed to generate. Please try again.</div>';
+            }
+        }
+
+        /* ===========================
+           ANALYTICS
+        =========================== */
+        async function loadAnalytics() {
+            const container = document.getElementById('analyticsContent');
+            if (!canUseFeature('analytics')) {
+                container.innerHTML = showUpgradeGate('analytics');
+                return;
+            }
+            const data = await api('/api/analytics');
+            if (!data) { container.innerHTML = '<p style="text-align:center;padding:40px;color:var(--text2)">Failed to load analytics data</p>'; return; }
+            const stats = data.stats || data;
+            container.innerHTML = '<div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">' +
+                '<div class="stat-card"><div class="stat-label">Total Views</div><div class="stat-value">' + (stats.totalViews || stats.views || 0) + '</div></div>' +
+                '<div class="stat-card"><div class="stat-label">Total Clicks</div><div class="stat-value">' + (stats.totalClicks || stats.clicks || 0) + '</div></div>' +
+                '<div class="stat-card"><div class="stat-label">Reservations</div><div class="stat-value">' + (stats.totalReservations || stats.reservations || 0) + '</div></div>' +
+                '<div class="stat-card"><div class="stat-label">Shares</div><div class="stat-value">' + (stats.totalShares || stats.shares || 0) + '</div></div>' +
+                '</div><div class="grid-2"><div class="card"><div class="card-title">Performance Overview</div><p style="color:var(--text2);font-size:13px">Analytics data will be displayed here as it becomes available.</p></div><div class="card"><div class="card-title">Insights</div><p style="color:var(--text2);font-size:13px">AI-powered insights about your performance.</p></div></div>';
+        }
+
+        /* ===========================
+           QUICK ACTION
+        =========================== */
+        function showQuickAction() {
+            showModal('Quick Actions', '<div style="display:grid;gap:8px">' +
+                '<a href="/editor.html" class="btn btn-primary" style="justify-content:flex-start"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Edit Profile</a>' +
+                '<button class="btn btn-secondary" style="justify-content:flex-start;width:100%" onclick="closeModal();openAddProductModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> Add Product</button>' +
+                '<button class="btn btn-secondary" style="justify-content:flex-start;width:100%" onclick="closeModal();openAddReservationModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg> New Reservation</button>' +
+                '<button class="btn btn-secondary" style="justify-content:flex-start;width:100%" onclick="closeModal();openAddInvoiceModal()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg> New Invoice</button>' +
+                '<a href="/analytics.html" class="btn btn-ghost" style="justify-content:flex-start">View Full Analytics</a>' +
+                '</div>');
+        }
+
+        /* ===========================
+           MOBILE HEADER
+        =========================== */
+        function checkMobile() {
+            const mh = document.getElementById('mobileHeader');
+            if (window.innerWidth <= 900) {
+                mh.style.display = 'flex';
+            } else {
+                mh.style.display = 'none';
+                document.getElementById('sidebar').classList.remove('open');
+                document.getElementById('sidebarOverlay').classList.remove('open');
+            }
+        }
+        window.addEventListener('resize', checkMobile);
+
+        /* ===========================
+           INIT
+        =========================== */
+        async function init() {
+            checkMobile();
+            updateSidebarUser();
+            updatePlanBadge();
+
+            await Promise.all([
+                loadPlan(),
+                loadDashboard(),
+                loadRecentReservations()
+            ]);
+
+            document.getElementById('profileLink').value = window.location.origin + '/p/' + (user.username || '');
+        }
+
+        init();
     </script>
 </body>
 </html>
