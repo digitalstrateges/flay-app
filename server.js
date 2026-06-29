@@ -2,7 +2,7 @@ const { app, broadcast } = require('./app');
 const http = require('http');
 const config = require('./config');
 const demoSetup = require('./demo-setup');
-const db = require('./database');
+const crmDb = require('./database');
 
 const PORT = process.env.PORT || config.PORT || 4000;
 
@@ -32,9 +32,18 @@ server.listen(PORT, '0.0.0.0', async () => {
     console.log('╚══════════════════════════════════════════════════╝');
     console.log('');
     
-    // Initialize database
-    await db.init();
+    try {
+        await crmDb.init();
+        console.log('  CRM Database ........ Init OK');
+    } catch (e) {
+        console.log('  CRM Database ........ Skipped (' + e.message + ')');
+    }
     
-    // Initialize demo account
-    await demoSetup.init();
+    try {
+        await demoSetup.init();
+    } catch (e) {
+        console.log('  Demo account ........ Skipped (' + e.message + ')');
+    }
+    
+    console.log('  Server ready ......... OK');
 });

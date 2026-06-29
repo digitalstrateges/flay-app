@@ -463,6 +463,10 @@ class DesignStudio {
         `;
     }
 
+    getThemeIds() {
+        return ['dark', 'midnight', 'ocean', 'emerald', 'sunset', 'electric', 'rose', 'forest', 'gold', 'aurora', 'noir', 'light', 'daylight', 'ivory', 'cloud', 'snow', 'cotedivoire', 'france', 'senegal', 'cameroun', 'mali', 'burkina', 'ghana', 'nigeria', 'togo', 'benin', 'congo', 'gabon', 'guinee', 'niger', 'togo_sunset', 'afrique', 'noel', 'halloween', 'love', 'royal', 'nature', 'cyber', 'pastel', 'mandy', 'ocean_light', 'sunset_light'];
+    }
+
     getThemeColors(theme) {
         const themes = {
             // === DARK MODES ===

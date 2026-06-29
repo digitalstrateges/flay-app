@@ -2166,6 +2166,8 @@
             event.currentTarget?.classList.add('active');
             toast('Theme applique : ' + THEMES.find(t => t.id === themeId)?.name, 'success');
             setTimeout(closeThemePicker, 300);
+            const t = localStorage.getItem('flay_token');
+            if (t) fetch('/api/profile/theme', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + t }, body: JSON.stringify({ theme: themeId }) }).catch(() => {});
         }
 
         /* ===========================

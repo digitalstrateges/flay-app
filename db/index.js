@@ -31,6 +31,7 @@ class Database {
                     this.db.run('PRAGMA foreign_keys=ON');
                     this.createTables();
                     this.seed();
+                    this.ensureDefaultProfile();
                     this.ready = true;
                     console.log('  Database ............. SQLite (sql.js)');
                 } catch (e) {
@@ -50,7 +51,55 @@ class Database {
     useJSONFallback() {
         this.db = null;
         this.loadFromJSON();
+        this.ensureDefaultProfile();
         this.ready = true;
+    }
+
+    ensureDefaultProfile() {
+        const users = this.getAll('users');
+        for (const user of users) {
+            this.ensureProfile(user.id, user.username);
+        }
+    }
+
+    ensureProfile(userId, username) {
+        const profile = this.findBy('profiles', 'userId', userId);
+        if (!profile) {
+            this.insert('profiles', {
+                id: userId,
+                userId: userId,
+                slug: username,
+                title: '',
+                bio: '',
+                avatar: '',
+                phone: '',
+                email: '',
+                location: '',
+                website: '',
+                socials: JSON.stringify({
+                    facebook: '',
+                    instagram: '',
+                    linkedin: '',
+                    whatsapp: '',
+                    twitter: '',
+                    tiktok: '',
+                    youtube: ''
+                }),
+                services: '[]',
+                theme: 'dark',
+                customColors: null,
+                language: 'fr',
+                views: 0,
+                clicks: 0,
+                shares: 0,
+                qrCode: '',
+                shareLink: '',
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            });
+            return true;
+        }
+        return false;
     }
 
     createTables() {
@@ -76,34 +125,35 @@ class Database {
                 createdAt TEXT DEFAULT (datetime('now')),
                 updatedAt TEXT DEFAULT (datetime('now'))
             );
-            CREATE TABLE IF NOT EXISTS profiles (
+CREATE TABLE IF NOT EXISTS profiles (
                 id TEXT PRIMARY KEY,
                 userId TEXT UNIQUE NOT NULL,
                 slug TEXT UNIQUE NOT NULL,
-                theme TEXT DEFAULT 'dark',
-                template TEXT DEFAULT 'minimal',
-                bio TEXT DEFAULT '',
                 title TEXT DEFAULT '',
-                location TEXT DEFAULT '',
+                bio TEXT DEFAULT '',
+                avatar TEXT DEFAULT '',
                 phone TEXT DEFAULT '',
                 email TEXT DEFAULT '',
-                avatar TEXT DEFAULT '',
-                logo TEXT DEFAULT '',
-                signature TEXT DEFAULT '',
-                banner TEXT DEFAULT '',
-                services TEXT DEFAULT '[]',
-                socials TEXT DEFAULT '{}',
-                geoLocation TEXT,
-                gallery TEXT DEFAULT '[]',
+                location TEXT DEFAULT '',
                 website TEXT DEFAULT '',
+                socials TEXT DEFAULT '{}',
+                services TEXT DEFAULT '[]',
+                theme TEXT DEFAULT 'dark',
+                template TEXT DEFAULT 'minimal',
+                customColors TEXT,
                 analytics TEXT DEFAULT '{}',
                 seo TEXT DEFAULT '{}',
-                customCss TEXT DEFAULT '',
-                customJs TEXT DEFAULT '',
-                wavePaymentLink TEXT DEFAULT '',
-                isPublished INTEGER DEFAULT 1,
+                gallery TEXT DEFAULT '[]',
+                geoLocation TEXT,
                 settings TEXT DEFAULT '{}',
+                tags TEXT DEFAULT '[]',
                 plan TEXT DEFAULT 'free',
+                language TEXT DEFAULT 'fr',
+                views INTEGER DEFAULT 0,
+                clicks INTEGER DEFAULT 0,
+                shares INTEGER DEFAULT 0,
+                qrCode TEXT DEFAULT '',
+                shareLink TEXT DEFAULT '',
                 createdAt TEXT DEFAULT (datetime('now')),
                 updatedAt TEXT DEFAULT (datetime('now'))
             );

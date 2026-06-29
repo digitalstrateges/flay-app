@@ -144,18 +144,21 @@
         if (!token) window.location.href = '/login.html';
         document.getElementById('previewLink').href = '/p/' + user.username;
 
-        const themes = ['dark','light','midnight','emerald','ocean','sunset','electric','rose','forest','gold','aurora'];
+        const THEMES_BG = { dark:'#1a1a2e', light:'#ffffff', midnight:'#0a0a23', daylight:'#fafbfc', ivory:'#fffff0', cloud:'#f0f4f8', snow:'#f8fafc', emerald:'#0d2818', ocean:'#0a192f', sunset:'#1a0a0a', electric:'#0a0a1a', rose:'#1a0a15', forest:'#0a1a0a', gold:'#1a150a', aurora:'#0a0a2a', noir:'#0a0a0a', cotedivoire:'#f8f400', france:'#002395', senegal:'#00853f', cameroun:'#007a5e', mali:'#14b53a', burkina:'#ef2b2d', ghana:'#006b3f', nigeria:'#008751', togo:'#006a1c', benin:'#008800', congo:'#009543', guinee:'#ce1126', niger:'#e05206', afrique:'#000000', noel:'#1a3a1a', halloween:'#1a0a00', love:'#2a0a15', royal:'#1a0a2a', cyber:'#0a0a1a', pastel:'#fdf2f8', nature:'#0a1a0a', mandy:'#e83e6c', ocean_light:'#e8f4f8', sunset_light:'#fdf0ed' };
+        const THEMES_FG = { dark:'#fff', light:'#1a1a2e', midnight:'#fff', daylight:'#1a1a2e', ivory:'#2d2d2d', cloud:'#1a202c', snow:'#1a202c', emerald:'#fff', ocean:'#fff', sunset:'#fff', electric:'#fff', rose:'#fff', forest:'#fff', gold:'#fff', aurora:'#fff', noir:'#fff', cotedivoire:'#1a1a2e', france:'#fff', senegal:'#fff', cameroun:'#fff', mali:'#fff', burkina:'#fff', ghana:'#fff', nigeria:'#fff', togo:'#fff', benin:'#fff', congo:'#fff', guinee:'#fff', niger:'#fff', afrique:'#fff', noel:'#fff', halloween:'#fff', love:'#fff', royal:'#fff', cyber:'#00ff88', pastel:'#831843', nature:'#fff', mandy:'#fff', ocean_light:'#1a202c', sunset_light:'#1a1a2e' };
+        const THEMES_LABEL = { dark:'Dark', light:'Light', midnight:'Midnight', daylight:'Daylight', ivory:'Ivory', cloud:'Cloud', snow:'Snow', emerald:'Emerald', ocean:'Ocean', sunset:'Sunset', electric:'Electric', rose:'Rose', forest:'Forest', gold:'Gold', aurora:'Aurora', noir:'Noir', cotedivoire:"Cote d'Ivoire", france:'France', senegal:'Senegal', cameroun:'Cameroun', mali:'Mali', burkina:'Burkina', ghana:'Ghana', nigeria:'Nigeria', togo:'Togo', benin:'Benin', congo:'Congo', guinee:'Guinee', niger:'Niger', afrique:'Afrique', noel:'Noel', halloween:'Halloween', love:'Love', royal:'Royal', cyber:'Cyber', pastel:'Pastel', nature:'Nature', mandy:'Mandy', ocean_light:'Ocean Light', sunset_light:'Sunset Light' };
         let selectedTheme = 'dark';
         let services = [];
 
         function initThemes() {
             const grid = document.getElementById('themeGrid');
-            themes.forEach(t => {
+            const allThemes = Object.keys(THEMES_BG);
+            allThemes.forEach(t => {
                 const div = document.createElement('div');
                 div.className = `theme-btn ${t === selectedTheme ? 'selected' : ''}`;
-                div.style.background = { dark:'#1a1a2e', light:'#ffffff', midnight:'#0a0a23', emerald:'#0d2818', ocean:'#0a192f', sunset:'#1a0a0a', electric:'#0a0a1a', rose:'#1a0a15', forest:'#0a1a0a', gold:'#1a150a', aurora:'#0a0a2a' }[t];
-                div.style.color = { dark:'#fff', light:'#000', midnight:'#fff', emerald:'#fff', ocean:'#fff', sunset:'#fff', electric:'#fff', rose:'#fff', forest:'#fff', gold:'#fff', aurora:'#fff' }[t];
-                div.textContent = t;
+                div.style.background = THEMES_BG[t];
+                div.style.color = THEMES_FG[t];
+                div.textContent = THEMES_LABEL[t] || t;
                 div.onclick = () => { selectedTheme = t; document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected')); div.classList.add('selected'); };
                 grid.appendChild(div);
             });
