@@ -1,5 +1,5 @@
-const CACHE = 'flay-v19';
-const PRECACHE = 'flay-precache-v19';
+const CACHE = 'flay-v20';
+const PRECACHE = 'flay-precache-v20';
 
 self.addEventListener('install', e => {
     e.waitUntil(
@@ -9,7 +9,9 @@ self.addEventListener('install', e => {
             '/login.html',
             '/register.html',
             '/dashboard.html',
-            '/pwa.js'
+            '/pwa.js',
+            '/logo-animated.svg',
+            '/manifest.json'
         ])).then(() => self.skipWaiting())
     );
 });
@@ -21,6 +23,7 @@ self.addEventListener('activate', e => {
                 ks.filter(k => k !== CACHE && k !== PRECACHE).map(k => caches.delete(k))
             ))
             .then(() => self.clients.claim())
+            .then(() => self.clients.matchAll())
             .then(clients => {
                 clients.forEach(c => c.postMessage({ type: 'SW_UPDATED' }));
             })
