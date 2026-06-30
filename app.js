@@ -106,6 +106,10 @@ app.get('/manifest.json', (req, res) => {
     res.setHeader('Cache-Control', 'public, max-age=3600');
     res.sendFile(path.join(__dirname, 'public', 'manifest.json'));
 });
+app.get('/favicon.ico', (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(path.join(__dirname, 'public', 'favicon.svg'));
+});
 app.get('/sw.js', (req, res) => {
     res.setHeader('Content-Type', 'application/javascript');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
