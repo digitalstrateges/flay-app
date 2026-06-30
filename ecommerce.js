@@ -107,6 +107,10 @@ class ECommerce {
         if (filters.minPrice) products = products.filter(p => p.price >= filters.minPrice);
         if (filters.maxPrice) products = products.filter(p => p.price <= filters.maxPrice);
         if (filters.featured) products = products.filter(p => p.featured);
+        if (filters.sort === 'price_asc') products.sort((a, b) => a.price - b.price);
+        else if (filters.sort === 'price_desc') products.sort((a, b) => b.price - a.price);
+        else if (filters.sort === 'popular') products.sort((a, b) => { const sa = typeof a.stats === 'string' ? JSON.parse(a.stats) : (a.stats||{}); const sb = typeof b.stats === 'string' ? JSON.parse(b.stats) : (b.stats||{}); return (sb.sales||0) - (sa.sales||0); });
+        else products.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
         const total = products.length;
         const start = (page - 1) * perPage;

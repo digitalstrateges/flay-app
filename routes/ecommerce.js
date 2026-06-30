@@ -41,7 +41,12 @@ router.get('/products/:userId', (req, res) => {
     if (req.query.category) filters.category = req.query.category;
     if (req.query.search) filters.search = req.query.search;
     if (req.query.featured) filters.featured = true;
-    res.json(ecommerce.getPublicProducts(req.params.userId, page, 20, filters));
+    if (req.query.sort) filters.sort = req.query.sort;
+    const result = ecommerce.getPublicProducts(req.params.userId, page, 20, filters);
+    const user = db.get('users', req.params.userId);
+    result.storeName = user?.name || 'Boutique';
+    result.storeDescription = user?.bio || '';
+    res.json(result);
 });
 
 router.get('/products/:userId/:productId', (req, res) => {
@@ -77,17 +82,35 @@ router.get('/my-products', authenticate, (req, res) => {
     res.json({ products: ecommerce.getUserProducts(req.user.id, filter) });
 });
 
-// --- Public product page (HTML) ---
-router.get('/product/:id', (req, res) => {
+// --- Public product JSON (for SPA) ---
+router.get('/products/public/:id', (req, res) => {
     const product = ecommerce.getProduct(req.params.id);
-    if (!product) return res.status(404).send('Produit non trouve');
-    const user = db.get('users', product.userId);
-    const storeInfo = { storeName: user?.name || 'Boutique' };
+    if (!product) return res.status(404).json({ error: 'Produit non trouve' });
     const stats = typeof product.stats === 'string' ? JSON.parse(product.stats) : (product.stats || {});
     stats.views = (stats.views || 0) + 1;
     db.update('products', product.id, { stats: JSON.stringify(stats) });
-    const html = ecommerce.generateProductPage(product, storeInfo);
-    res.send(html);
+    res.json({ product });
+});
+
+// --- Public product page (HTML) ---
+router.get('/product/:id', (req, res) => {
+    if (req.accepts('html')) {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        if (token) return res.redirect('/product.html?pid=' + req.params.id);
+        const product = ecommerce.getProduct(req.params.id);
+        if (!product) return res.status(404).send('Produit non trouve');
+        const user = db.get('users', product.userId);
+        const storeInfo = { storeName: user?.name || 'Boutique' };
+        const stats = typeof product.stats === 'string' ? JSON.parse(product.stats) : (product.stats || {});
+        stats.views = (stats.views || 0) + 1;
+        db.update('products', product.id, { stats: JSON.stringify(stats) });
+        const html = ecommerce.generateProductPage(product, storeInfo);
+        res.send(html);
+    } else {
+        const product = ecommerce.getProduct(req.params.id);
+        if (!product) return res.status(404).json({ error: 'Produit non trouve' });
+        res.json({ product });
+    }
 });
 
 // === STORE STATS ===
