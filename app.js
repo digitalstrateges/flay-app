@@ -19,7 +19,7 @@ app.set('trust proxy', 1);
 
 // Security headers
 app.use((req, res, next) => {
-    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https: https://*.tile.openstreetmap.org; font-src 'self' https:; connect-src 'self' https: https://nominatim.openstreetmap.org; frame-src 'none'; object-src 'none'");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https: https://*.tile.openstreetmap.org; font-src 'self' data: https:; connect-src 'self' https: https://nominatim.openstreetmap.org; frame-src 'none'; object-src 'none'");
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
