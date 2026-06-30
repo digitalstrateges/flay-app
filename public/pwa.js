@@ -1,4 +1,4 @@
-// Flay v14.0 - PWA Manager
+// Flay v22.0 - PWA Manager
 // Gere l'installation, le service worker et les notifications
 
 const FlayPWA = {

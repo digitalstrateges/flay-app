@@ -1,5 +1,5 @@
-const CACHE = 'flay-v21';
-const PRECACHE = 'flay-precache-v21';
+const CACHE = 'flay-v22';
+const PRECACHE = 'flay-precache-v22';
 const OFFLINE_URL = '/offline.html';
 
 self.addEventListener('install', e => {
