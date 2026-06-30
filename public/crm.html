@@ -92,10 +92,10 @@
         <p class="subtitle">Gerez vos contacts, deals et pipeline de vente</p>
 
         <div class="tabs">
-            <div class="tab active" onclick="showTab('contacts')">Contacts</div>
-            <div class="tab" onclick="showTab('deals')">Deals</div>
-            <div class="tab" onclick="showTab('pipeline')">Pipeline</div>
-            <div class="tab" onclick="showTab('invoices')">Factures</div>
+            <div class="tab active" onclick="showTab('contacts', event)">Contacts</div>
+            <div class="tab" onclick="showTab('deals', event)">Deals</div>
+            <div class="tab" onclick="showTab('pipeline', event)">Pipeline</div>
+            <div class="tab" onclick="showTab('invoices', event)">Factures</div>
         </div>
 
         <div id="contacts" class="tab-content active">
@@ -148,11 +148,13 @@
         const token = localStorage.getItem('flay_token');
         if (!token) window.location.href = '/login.html';
 
-        function showTab(id) {
+        function esc(s) { const d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
+
+        function showTab(id, event) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            event.target.classList.add('active');
+            event?.target?.classList?.add('active');
             if (id === 'contacts') loadContacts();
             if (id === 'deals') loadDeals();
             if (id === 'pipeline') loadPipeline();
@@ -220,7 +222,7 @@
             if (statsRes.ok) { const { stats } = await statsRes.json(); document.getElementById('crmTotal').textContent = stats.totalContacts; document.getElementById('crmLeads').textContent = stats.leads; document.getElementById('crmClients').textContent = stats.clients; document.getElementById('crmValue').textContent = stats.totalDealValue.toLocaleString() + ' FCFA'; }
             const list = document.getElementById('contactList');
             if (!contacts.length) { list.innerHTML = '<div style="text-align:center;color:var(--text2);padding:40px;">Aucun contact</div>'; return; }
-            list.innerHTML = contacts.map(c => `<div class="contact-item"><div class="contact-avatar">${(c.name||'?')[0].toUpperCase()}</div><div class="contact-info"><div class="contact-name">${c.name}</div><div class="contact-email">${c.email || c.phone || ''}</div></div><span class="contact-status status-${c.status}">${c.status}</span><button class="btn btn-danger btn-sm" onclick="deleteContact('${c.id}')">X</button></div>`).join('');
+            list.innerHTML = contacts.map(c => `<div class="contact-item"><div class="contact-avatar">${esc((c.name||'?')[0].toUpperCase())}</div><div class="contact-info"><div class="contact-name">${esc(c.name)}</div><div class="contact-email">${esc(c.email || c.phone || '')}</div></div><span class="contact-status status-${esc(c.status)}">${esc(c.status)}</span><button class="btn btn-danger btn-sm" onclick="deleteContact('${esc(c.id)}')">X</button></div>`).join('');
         }
 
         async function deleteContact(id) { await fetch('/api/crm/contacts/' + id, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } }); loadContacts(); }
@@ -236,7 +238,7 @@
             const { deals } = await res.json();
             const list = document.getElementById('dealList');
             if (!deals.length) { list.innerHTML = '<div style="text-align:center;color:var(--text2);padding:40px;">Aucun deal</div>'; return; }
-            list.innerHTML = deals.map(d => `<div class="deal-item"><div class="deal-name">${d.name}</div><div class="deal-value">${d.value.toLocaleString()} FCFA</div><span class="deal-stage">${d.stage}</span></div>`).join('');
+            list.innerHTML = deals.map(d => `<div class="deal-item"><div class="deal-name">${esc(d.name)}</div><div class="deal-value">${esc(d.value.toLocaleString())} FCFA</div><span class="deal-stage">${esc(d.stage)}</span></div>`).join('');
         }
 
         async function loadPipeline() {
@@ -245,7 +247,7 @@
             const { pipeline } = await res.json();
             const stages = ['lead', 'qualified', 'proposal', 'negotiation', 'closed_won', 'closed_lost'];
             const labels = { lead: 'Lead', qualified: 'Qualifie', proposal: 'Proposition', negotiation: 'Negociation', closed_won: 'Gagne', closed_lost: 'Perdu' };
-            document.getElementById('pipelineGrid').innerHTML = stages.map(s => `<div class="pipeline-col"><div class="pipeline-header">${labels[s]}</div><div class="pipeline-count">${pipeline[s]?.deals?.length || 0}</div>${(pipeline[s]?.deals || []).map(d => `<div style="margin-top:8px;padding:8px;background:var(--card);border-radius:6px;font-size:13px;"><div style="font-weight:600;">${d.name}</div><div style="color:var(--gold);font-size:12px;">${d.value.toLocaleString()} FCFA</div></div>`).join('')}</div>`).join('');
+            document.getElementById('pipelineGrid').innerHTML = stages.map(s => `<div class="pipeline-col"><div class="pipeline-header">${esc(labels[s])}</div><div class="pipeline-count">${pipeline[s]?.deals?.length || 0}</div>${(pipeline[s]?.deals || []).map(d => `<div style="margin-top:8px;padding:8px;background:var(--card);border-radius:6px;font-size:13px;"><div style="font-weight:600;">${esc(d.name)}</div><div style="color:var(--gold);font-size:12px;">${esc(d.value.toLocaleString())} FCFA</div></div>`).join('')}</div>`).join('');
         }
 
         async function loadInvoices() {
@@ -256,7 +258,7 @@
             if (statsRes.ok) { const { stats } = await statsRes.json(); document.getElementById('invTotal').textContent = stats.total; document.getElementById('invPaid').textContent = stats.paid; document.getElementById('invPending').textContent = stats.pending; document.getElementById('invAmount').textContent = stats.totalAmount.toLocaleString() + ' FCFA'; }
             const list = document.getElementById('invoiceList');
             if (!invoices.length) { list.innerHTML = '<div style="text-align:center;color:var(--text2);padding:40px;">Aucune facture</div>'; return; }
-            list.innerHTML = invoices.map(inv => `<div class="deal-item"><div class="deal-name">${inv.number} - ${inv.client?.name || ''}</div><div class="deal-value">${inv.total?.toLocaleString()} ${inv.currency}</div><span class="deal-stage">${inv.status}</span><button class="btn btn-secondary btn-sm" onclick="window.open('/api/invoices/${inv.id}/html','_blank')">Voir</button></div>`).join('');
+            list.innerHTML = invoices.map(inv => `<div class="deal-item"><div class="deal-name">${esc(inv.number)} - ${esc(inv.client?.name || '')}</div><div class="deal-value">${esc(inv.total?.toLocaleString())} ${esc(inv.currency)}</div><span class="deal-stage">${esc(inv.status)}</span><button class="btn btn-secondary btn-sm" onclick="window.open('/api/invoices/${esc(inv.id)}/html','_blank')">Voir</button></div>`).join('');
         }
 
         function exportContacts() { window.open('/api/crm/export?format=csv', '_blank'); }

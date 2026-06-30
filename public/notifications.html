@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Flay - Notifications</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#818cf8">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Flay">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.svg">
+    <link rel="icon" type="image/svg+xml" href="/logo-animated.svg">
+    <script src="/pwa.js"></script>
+    <style>
+        :root{--bg:#0a0a1a;--bg2:#0e0e24;--card:#15152a;--card2:#1a1a35;--border:#252545;--accent:#818cf8;--accent2:#6366f1;--accent3:#a5b4fc;--text:#f1f5f9;--text2:#94a3b8;--muted:#64748b;--gradient:linear-gradient(135deg,#818cf8,#c084fc);--success:#34d399;--danger:#f87171;--radius:10px;--radius-lg:14px;--shadow:0 4px 24px rgba(0,0,0,.3);--transition:all .2s ease}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent;height:100%}
+        body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+        ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+        .topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 24px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100}
+        .topbar-left{display:flex;align-items:center;gap:12px}
+        .topbar-back{width:36px;height:36px;border-radius:8px;background:var(--bg);border:1px solid var(--border);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);text-decoration:none}
+        .topbar-back:hover{background:var(--card2);color:var(--text)}
+        .topbar-back svg{width:18px;height:18px}
+        .topbar-title{font-size:18px;font-weight:800}
+        .topbar-right{display:flex;align-items:center;gap:8px}
+        .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--radius);font-size:13px;font-weight:600;border:none;cursor:pointer;transition:var(--transition);font-family:inherit;text-decoration:none}
+        .btn-primary{background:var(--gradient);color:#fff}
+        .btn-primary:hover{opacity:.9}
+        .btn-ghost{background:transparent;color:var(--text2);border:1px solid var(--border)}
+        .btn-ghost:hover{background:rgba(255,255,255,.05);color:var(--text)}
+        .btn-sm{padding:6px 12px;font-size:12px}
+        .container{max-width:640px;margin:0 auto;padding:16px}
+        .notif-card{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:var(--radius-lg);border:1px solid var(--border);margin-bottom:10px;transition:var(--transition);cursor:pointer;position:relative}
+        .notif-card:hover{border-color:rgba(129,140,248,.3);background:rgba(129,140,248,.02)}
+        .notif-card.unread{background:rgba(129,140,248,.06);border-color:rgba(129,140,248,.2)}
+        .notif-card.unread::before{content:'';position:absolute;top:16px;left:-1px;width:3px;height:16px;background:var(--accent);border-radius:0 3px 3px 0}
+        .notif-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .notif-icon svg{width:20px;height:20px}
+        .notif-icon.info{background:rgba(56,189,248,.12);color:var(--info)}
+        .notif-icon.reservation{background:rgba(129,140,248,.12);color:var(--accent)}
+        .notif-icon.payment{background:rgba(52,211,153,.12);color:var(--success)}
+        .notif-icon.warning{background:rgba(251,191,36,.12);color:#fbbf24}
+        .notif-icon.danger{background:rgba(248,113,113,.12);color:var(--danger)}
+        .notif-body{flex:1;min-width:0}
+        .notif-title{font-size:14px;font-weight:600;margin-bottom:2px;line-height:1.3}
+        .notif-body.unread .notif-title{color:var(--text)}
+        .notif-body.read .notif-title{color:var(--text2)}
+        .notif-message{font-size:13px;color:var(--text2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+        .notif-time{font-size:11px;color:var(--muted);margin-top:4px}
+        .notif-actions{display:flex;gap:4px;flex-shrink:0;margin-left:4px}
+        .notif-mark-btn{width:28px;height:28px;border-radius:6px;border:none;background:transparent;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:var(--transition)}
+        .notif-mark-btn:hover{background:rgba(129,140,248,.1);color:var(--accent)}
+        .notif-mark-btn svg{width:14px;height:14px}
+        .empty-state{text-align:center;padding:80px 20px}
+        .empty-state svg{width:64px;height:64px;color:var(--muted);opacity:.3;margin-bottom:16px}
+        .empty-state h3{font-size:18px;font-weight:700;margin-bottom:6px;color:var(--text2)}
+        .empty-state p{font-size:13px;color:var(--muted)}
+        .loading-state{text-align:center;padding:60px 20px}
+        .spinner{display:inline-block;width:24px;height:24px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        .pull-indicator{text-align:center;padding:12px;color:var(--muted);font-size:12px;transition:opacity .2s;opacity:0}
+        .pull-indicator.visible{opacity:1}
+        .header-count{font-size:13px;font-weight:500;color:var(--text2)}
+        @keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+        .notif-card{animation:slideDown .3s ease both}
+        @media(max-width:480px){
+            .topbar{padding:12px 16px}
+            .container{padding:12px;padding-bottom:80px}
+            .notif-card{padding:12px}
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="topbar-left">
+            <a href="/dashboard.html" class="topbar-back">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </a>
+            <span class="topbar-title">Notifications</span>
+            <span class="header-count" id="headerCount"></span>
+        </div>
+        <div class="topbar-right">
+            <button class="btn btn-ghost btn-sm" id="markAllBtn" onclick="markAllRead()" style="display:none">Tout lire</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="pull-indicator" id="pullIndicator">Tirez pour actualiser</div>
+        <div id="notifList">
+            <div class="loading-state"><div class="spinner"></div></div>
+        </div>
+    </div>
+
+    <script>
+        const token = localStorage.getItem('flay_token');
+        const user = JSON.parse(localStorage.getItem('flay_user') || '{}');
+        if (!token) window.location.href = '/login.html';
+
+        let notifications = [];
+        let touchStartY = 0;
+
+        function esc(s) {
+            const div = document.createElement('div');
+            div.textContent = s || '';
+            return div.innerHTML;
+        }
+
+        function timeAgo(dateStr) {
+            const now = Date.now();
+            const d = new Date(dateStr).getTime();
+            const diff = now - d;
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'a l\'instant';
+            if (mins < 60) return `il y a ${mins} min`;
+            const hours = Math.floor(mins / 60);
+            if (hours < 24) return `il y a ${hours}h`;
+            const days = Math.floor(hours / 24);
+            if (days < 7) return `il y a ${days}j`;
+            return new Date(dateStr).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+        }
+
+        function getIcon(type) {
+            switch (type) {
+                case 'reservation': return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>';
+                case 'payment': return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>';
+                case 'warning': return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+                case 'danger': return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+                default: return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>';
+            }
+        }
+
+        function render() {
+            const list = document.getElementById('notifList');
+            const markAll = document.getElementById('markAllBtn');
+            const headerCount = document.getElementById('headerCount');
+
+            if (!notifications.length) {
+                list.innerHTML = '<div class="empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg><h3>Aucune notification</h3><p>Vous recevrez ici les alertes de reservations, paiements et autres evenements.</p></div>';
+                markAll.style.display = 'none';
+                headerCount.textContent = '';
+                document.title = 'Flay - Notifications';
+                return;
+            }
+
+            const unread = notifications.filter(n => !n.read).length;
+            document.title = unread ? `(${unread}) Flay - Notifications` : 'Flay - Notifications';
+            headerCount.textContent = `${notifications.length} notification${notifications.length > 1 ? 's' : ''}` + (unread ? ` · ${unread} non ${unread > 1 ? 'lues' : 'lue'}` : '');
+            markAll.style.display = unread ? 'inline-flex' : 'none';
+
+            list.innerHTML = notifications.map(n => {
+                const iconType = ['reservation', 'payment', 'warning', 'danger'].includes(n.type) ? n.type : 'info';
+                const title = n.title || '';
+                const body = n.body || n.message || '';
+                return `<div class="notif-card ${n.read ? '' : 'unread'}" data-id="${esc(n.id)}">
+                    <div class="notif-icon ${iconType}">${getIcon(n.type)}</div>
+                    <div class="notif-body ${n.read ? 'read' : 'unread'}">
+                        <div class="notif-title">${esc(title)}</div>
+                        <div class="notif-message">${esc(body)}</div>
+                        <div class="notif-time">${timeAgo(n.createdAt)}</div>
+                    </div>
+                    <div class="notif-actions">
+                        ${n.read ? '' : `<button class="notif-mark-btn" onclick="event.stopPropagation();markRead('${esc(n.id)}')" title="Marquer comme lu">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        </button>`}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        async function loadNotifications() {
+            try {
+                const res = await fetch('/api/push?limit=50', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    notifications = data.notifications || [];
+                    render();
+                }
+            } catch (e) {
+                document.getElementById('notifList').innerHTML = '<div class="empty-state"><h3>Erreur de chargement</h3><p>Impossible de charger les notifications.</p></div>';
+            }
+        }
+
+        async function markRead(id) {
+            try {
+                await fetch('/api/push/' + encodeURIComponent(id) + '/read', {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const n = notifications.find(x => x.id === id);
+                if (n) n.read = true;
+                render();
+            } catch (e) {}
+        }
+
+        async function markAllRead() {
+            try {
+                await fetch('/api/push/read-all', {
+                    method: 'PUT',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                notifications.forEach(n => n.read = true);
+                render();
+            } catch (e) {}
+        }
+
+        // SSE real-time updates
+        function connectSSE() {
+            const evtSource = new EventSource('/api/push/stream/' + encodeURIComponent(user.id) + '?token=' + encodeURIComponent(token));
+            evtSource.onmessage = function(e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'notification') {
+                        notifications.unshift({
+                            id: data.id || 'notif_' + Date.now(),
+                            type: data.type || 'info',
+                            title: data.title || '',
+                            body: data.body || data.message || '',
+                            read: false,
+                            createdAt: data.createdAt || new Date().toISOString()
+                        });
+                        render();
+                    }
+                } catch (err) {}
+            };
+            evtSource.onerror = function() {
+                evtSource.close();
+                setTimeout(connectSSE, 5000);
+            };
+        }
+
+        // Pull-to-refresh
+        document.addEventListener('touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        document.addEventListener('touchmove', function(e) {
+            if (window.scrollY > 0) return;
+            const dy = e.touches[0].clientY - touchStartY;
+            const indicator = document.getElementById('pullIndicator');
+            if (dy > 40) {
+                indicator.textContent = 'Relachez pour actualiser';
+                indicator.classList.add('visible');
+            } else if (dy > 0) {
+                indicator.textContent = 'Tirez pour actualiser';
+                indicator.classList.add('visible');
+            } else {
+                indicator.classList.remove('visible');
+            }
+        }, { passive: true });
+
+        document.addEventListener('touchend', function(e) {
+            const dy = e.changedTouches[0].clientY - touchStartY;
+            const indicator = document.getElementById('pullIndicator');
+            indicator.classList.remove('visible');
+            if (dy > 40 && window.scrollY === 0) {
+                loadNotifications();
+                indicator.textContent = 'Actualisation...';
+                indicator.classList.add('visible');
+                setTimeout(() => indicator.classList.remove('visible'), 1000);
+            }
+        }, { passive: true });
+
+        loadNotifications();
+        connectSSE();
+    </script>
+</body>
+</html>

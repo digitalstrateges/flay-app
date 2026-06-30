@@ -12,10 +12,12 @@ router.get('/health', (req, res) => {
 });
 
 router.get('/plans', (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=3600');
     res.json({ plans: config.PLANS });
 });
 
 router.get('/config', (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=3600');
     res.json({
         wavePaymentUrl: config.WAVE_PAYMENT_URL,
         waveMerchant: config.WAVE_MERCHANT,
@@ -25,6 +27,7 @@ router.get('/config', (req, res) => {
 });
 
 router.get('/themes', (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=3600');
     res.json({ themes: [
         'dark', 'midnight', 'ocean', 'emerald', 'sunset', 'electric', 'rose', 'forest', 'gold', 'aurora', 'noir',
         'light', 'daylight', 'ivory', 'cloud', 'snow',
@@ -35,6 +38,7 @@ router.get('/themes', (req, res) => {
 });
 
 router.get('/templates', (req, res) => {
+    res.setHeader('Cache-Control', 'public, max-age=3600');
     res.json({ templates: ['minimal', 'creatif', 'business', 'portfolio'] });
 });
 

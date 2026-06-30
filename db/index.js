@@ -83,7 +83,12 @@ class Database {
                     whatsapp: '',
                     twitter: '',
                     tiktok: '',
-                    youtube: ''
+                    youtube: '',
+                    telegram: '',
+                    snapchat: '',
+                    pinterest: '',
+                    threads: '',
+                    discord: ''
                 }),
                 services: '[]',
                 theme: 'dark',
@@ -237,9 +242,17 @@ CREATE TABLE IF NOT EXISTS profiles (
                 userId TEXT NOT NULL,
                 type TEXT NOT NULL,
                 title TEXT NOT NULL,
+                body TEXT DEFAULT '',
                 message TEXT NOT NULL,
                 read INTEGER DEFAULT 0,
                 data TEXT DEFAULT '{}',
+                createdAt TEXT DEFAULT (datetime('now'))
+            );
+            CREATE TABLE IF NOT EXISTS push_subscriptions (
+                id TEXT PRIMARY KEY,
+                userId TEXT NOT NULL,
+                endpoint TEXT UNIQUE NOT NULL,
+                keys TEXT DEFAULT '{}',
                 createdAt TEXT DEFAULT (datetime('now'))
             );
             CREATE TABLE IF NOT EXISTS sessions (
@@ -366,6 +379,12 @@ CREATE TABLE IF NOT EXISTS profiles (
                 comment TEXT DEFAULT '',
                 createdAt TEXT DEFAULT (datetime('now'))
             );
+            CREATE TABLE IF NOT EXISTS carts (
+                id TEXT PRIMARY KEY,
+                userId TEXT UNIQUE NOT NULL,
+                items TEXT NOT NULL DEFAULT '[]',
+                updatedAt TEXT DEFAULT (datetime('now'))
+            );
             CREATE TABLE IF NOT EXISTS coupons (
                 id TEXT PRIMARY KEY,
                 userId TEXT NOT NULL,
@@ -439,6 +458,38 @@ CREATE TABLE IF NOT EXISTS profiles (
             CREATE INDEX IF NOT EXISTS idx_products_user ON products(userId);
             CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(userId);
             CREATE INDEX IF NOT EXISTS idx_parcels_tracking ON parcels(trackingNumber);
+            CREATE INDEX IF NOT EXISTS idx_orders_userId_status ON orders(userId, status);
+            CREATE INDEX IF NOT EXISTS idx_products_userId_status ON products(userId, status);
+            CREATE INDEX IF NOT EXISTS idx_reviews_productId ON reviews(productId);
+            CREATE INDEX IF NOT EXISTS idx_coupons_code ON coupons(code);
+            CREATE INDEX IF NOT EXISTS idx_analytics_eventType_createdAt ON analytics(eventType, createdAt);
+            CREATE TABLE IF NOT EXISTS followers (
+                id TEXT,
+                userId TEXT,
+                followerId TEXT,
+                createdAt TEXT,
+                UNIQUE(userId, followerId)
+            );
+            CREATE INDEX IF NOT EXISTS idx_followers_userId ON followers(userId);
+            CREATE INDEX IF NOT EXISTS idx_followers_followerId ON followers(followerId);
+            CREATE TABLE IF NOT EXISTS loyalty_history (
+                id TEXT PRIMARY KEY,
+                userId TEXT NOT NULL,
+                type TEXT NOT NULL,
+                points INTEGER NOT NULL,
+                reason TEXT DEFAULT '',
+                reward TEXT DEFAULT '',
+                createdAt TEXT DEFAULT (datetime('now'))
+            );
+            CREATE INDEX IF NOT EXISTS idx_loyalty_userId ON loyalty_history(userId);
+            CREATE TABLE IF NOT EXISTS wishlist (
+                id TEXT PRIMARY KEY,
+                userId TEXT NOT NULL,
+                productId TEXT NOT NULL,
+                createdAt TEXT DEFAULT (datetime('now')),
+                UNIQUE(userId, productId)
+            );
+            CREATE INDEX IF NOT EXISTS idx_wishlist_userId ON wishlist(userId);
         `;
         this.db.run(schema);
     }
@@ -457,7 +508,8 @@ CREATE TABLE IF NOT EXISTS profiles (
         webhooks: ['events'],
         analytics: ['data'],
         deals: ['notes'],
-        coupons: ['metadata']
+        coupons: ['metadata'],
+        carts: ['items']
     };
 
     _parseRow(table, row) {
@@ -552,7 +604,7 @@ CREATE TABLE IF NOT EXISTS profiles (
         return result || null;
     }
 
-    getAll(table, filter = {}) {
+    getAll(table, filter = {}, where = '', params = []) {
         if (!this.db) {
             const store = this._store(table);
             let results = Array.from(store.values());
@@ -563,6 +615,12 @@ CREATE TABLE IF NOT EXISTS profiles (
         }
         const conditions = Object.keys(filter).map(k => `${k} = ?`).join(' AND ');
         const values = Object.values(filter);
+        if (where) {
+            const sql = conditions
+                ? `SELECT * FROM ${table} WHERE ${conditions} AND ${where}`
+                : `SELECT * FROM ${table} WHERE ${where}`;
+            return this._query(sql, [...values, ...params]);
+        }
         if (conditions) return this._query(`SELECT * FROM ${table} WHERE ${conditions}`, values);
         return this._query(`SELECT * FROM ${table}`);
     }

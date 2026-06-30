@@ -15,6 +15,7 @@
     <meta name="apple-mobile-web-app-title" content="Flay">
     <link rel="apple-touch-icon" href="/icons/icon-192x192.svg">
     <link rel="icon" type="image/svg+xml" href="/logo-animated.svg">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{--bg:#0a0a1a;--card:#12121f;--card2:#1a1a2e;--border:#1e1e33;--accent:#818cf8;--accent2:#a78bfa;--text:#f1f5f9;--muted:#64748b;--radius:16px}
@@ -60,6 +61,9 @@
         .stat-num{font-size:1.2rem;font-weight:700}
         .stat-label{font-size:0.7rem;opacity:0.5;text-transform:uppercase;letter-spacing:0.5px}
 
+        .follow-bar{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+        .follow-btn{width:100%;padding:10px;border-radius:12px;border:none;font-weight:700;font-size:15px;cursor:pointer;transition:all 0.2s}
+        .follow-btn:hover{opacity:0.9;transform:translateY(-1px)}
         /* ===== QUICK ACTIONS ===== */
         .quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 16px 0}
         .quick-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:12px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:13px;font-weight:600;color:var(--text);transition:all 0.2s}
@@ -81,6 +85,12 @@
         .contact-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
         .contact-text{font-size:14px;font-weight:500}
         .contact-label{font-size:11px;opacity:0.5}
+
+        /* ===== MAP ===== */
+        .map-section{padding:0 16px;animation:fadeUp 0.6s ease-out both;animation-delay:0.45s}
+        .map-container{background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;padding:12px}
+        .map-container #profileMap{height:200px;border-radius:12px;z-index:1}
+        .map-address{font-size:12px;color:var(--muted);padding:8px 4px 0;text-align:center}
 
         /* ===== SOCIAL ===== */
         .social-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 16px}
@@ -159,7 +169,7 @@
                         <div class="title" id="pTitle"></div>
                         <div class="bio" id="pBio"></div>
                         <div class="location" id="pLocation"></div>
-                        <div class="stats"><div class="stat"><div class="stat-num" id="statViews">0</div><div class="stat-label">Vues</div></div><div class="stat"><div class="stat-num" id="statClicks">0</div><div class="stat-label">Clics</div></div></div>
+                        <div class="stats"><div class="stat"><div class="stat-num" id="statViews">0</div><div class="stat-label">Vues</div></div><div class="stat"><div class="stat-num" id="statClicks">0</div><div class="stat-label">Clics</div></div><div class="stat"><div class="stat-num" id="statFollowers">0</div><div class="stat-label">Abonnes</div></div></div><div class="follow-bar" id="followBar" style="display:none"><button class="follow-btn" id="followBtn">Suivre</button></div>
                     </div>
                 </div>
             </div>
@@ -188,6 +198,14 @@
         <div class="section" id="webSection" style="display:none">
             <div class="label">Site web</div>
             <div class="contact-list" id="webList"></div>
+        </div>
+
+        <div class="section map-section" id="mapSection" style="display:none">
+            <div class="label">Localisation</div>
+            <div class="map-container">
+                <div id="profileMap"></div>
+                <div class="map-address" id="mapAddress"></div>
+            </div>
         </div>
 
         <div class="section" id="resSection" style="display:none">
@@ -221,6 +239,7 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         const THEMES={dark:{bg:'#0a0a1a',card:'#12121f',card2:'#1a1a2e',accent:'#818cf8',accent2:'#a78bfa',text:'#f1f5f9'},light:{bg:'#f8f9fa',card:'#fff',card2:'#f1f5f9',accent:'#6366f1',accent2:'#818cf8',text:'#1a1a2e'},midnight:{bg:'#0a0a23',card:'#111133',card2:'#1a1a40',accent:'#4a90d9',accent2:'#60a5fa',text:'#e2e8f0'},ocean:{bg:'#0a192f',card:'#112240',card2:'#1a3050',accent:'#64ffda',accent2:'#00d4ff',text:'#e2e8f0'},emerald:{bg:'#0d2818',card:'#1a3a2a',card2:'#224a35',accent:'#2ecc71',accent2:'#4ade80',text:'#e2e8f0'},cotedivoire:{bg:'#f8f400',card:'#fff',card2:'#f5f0e0',accent:'#f77f00',accent2:'#e67300',text:'#1a1a2e'},france:{bg:'#002395',card:'#001d6e',card2:'#002a8a',accent:'#ed2939',accent2:'#ff4d4d',text:'#e2e8f0'},senegal:{bg:'#00853f',card:'#006b32',card2:'#007a38',accent:'#fdef42',accent2:'#fcd116',text:'#e2e8f0'}};
 
@@ -233,6 +252,7 @@
         function closeQR(){document.getElementById('qrModal').classList.remove('show')}
         document.getElementById('qrModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeQR()});
 
+        function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
         async function loadProfile(){
             slug=window.location.pathname.split('/p/')[1];
             if(!slug){document.getElementById('card-3d-section').innerHTML='<div class="not-found"><h2>Lien invalide</h2></div>';return}
@@ -250,7 +270,7 @@
 
                 // Card
                 document.getElementById('avatar').textContent=name[0].toUpperCase();
-                if(p.avatar)document.getElementById('avatar').innerHTML='<img src="'+p.avatar+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">';
+                if(p.avatar&&/^https?:\/\//i.test(p.avatar))document.getElementById('avatar').innerHTML='<img src="'+p.avatar.replace(/"/g,'&quot;')+'" style="width:100%;height:100%;border-radius:50%;object-fit:cover">';
                 document.getElementById('cardHeader').style.background='linear-gradient(135deg,'+t.accent+',transparent 70%)';
                 document.getElementById('cardBody').style.background=t.card;
                 document.getElementById('pName').textContent=name;
@@ -258,9 +278,40 @@
                 if(d.isVerified){const v=document.getElementById('pVerified');v.style.display='inline-flex';v.style.background=t.accent+'20';v.style.color=t.accent}
                 if(p.title){document.getElementById('pTitle').textContent=p.title;document.getElementById('pTitle').style.color=t.accent}
                 if(p.bio)document.getElementById('pBio').textContent=p.bio;
-                if(p.location)document.getElementById('pLocation').innerHTML='&#128205; '+p.location;
+                if(p.location)document.getElementById('pLocation').textContent='📍 '+p.location;
+                if(p.locationData&&p.locationData.lat&&p.locationData.lng){
+                    renderMap(p.locationData.lat,p.locationData.lng,p.locationData.address||p.location||'');
+                }
                 document.getElementById('statViews').textContent=p.views||0;
                 document.getElementById('statClicks').textContent=p.clicks||0;
+
+                // Followers
+                const profileOwnerId=p.userId;
+                fetch('/api/followers/'+profileOwnerId).then(r=>r.json()).then(d=>{document.getElementById('statFollowers').textContent=d.count||0}).catch(()=>{});
+                const token=localStorage.getItem('flay_token');
+                if(token){
+                    try{
+                        const payload=JSON.parse(atob(token.split('.')[1]));
+                        if(payload.userId!==profileOwnerId){
+                            const fb=document.getElementById('followBar');fb.style.display='block';
+                            const btn=document.getElementById('followBtn');
+                            fetch('/api/followers/'+profileOwnerId+'/check',{headers:{'Authorization':'Bearer '+token}}).then(r=>r.json()).then(d=>{
+                                if(d.following){btn.textContent='Abonne';btn.style.background='var(--accent)';btn.style.color='#fff'}
+                                else{btn.textContent='Suivre';btn.style.background='var(--accent2)';btn.style.color='#fff'}
+                                btn.onclick=async()=>{
+                                    if(d.following){
+                                        await fetch('/api/followers/unfollow',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({userId:profileOwnerId})});
+                                        d.following=false;btn.textContent='Suivre';btn.style.background='var(--accent2)';btn.style.color='#fff'
+                                    }else{
+                                        await fetch('/api/followers/follow',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({userId:profileOwnerId})});
+                                        d.following=true;btn.textContent='Abonne';btn.style.background='var(--accent)';btn.style.color='#fff'
+                                    }
+                                    fetch('/api/followers/'+profileOwnerId).then(r=>r.json()).then(d2=>{document.getElementById('statFollowers').textContent=d2.count||0}).catch(()=>{});
+                                };
+                            }).catch(()=>{});
+                        }
+                    }catch(e){}
+                }
 
                 // Actions
                 document.getElementById('actionBtns').style.display='grid';
@@ -268,35 +319,36 @@
                 // Services
                 if(p.services&&p.services.length){
                     document.getElementById('svcSection').style.display='block';
-                    document.getElementById('svcList').innerHTML=p.services.map(s=>'<div class="service-item" style="background:'+t.card+';border-color:'+t.border+'"><span class="service-name">'+s.name+'</span>'+(s.price?'<span class="service-price" style="background:'+t.accent+'20;color:'+t.accent+'">'+s.price+'</span>':'')+'</div>').join('');
+                    document.getElementById('svcList').innerHTML=p.services.map(s=>'<div class="service-item" style="background:'+t.card+';border-color:'+t.border+'"><span class="service-name">'+esc(s.name)+'</span>'+(s.price?'<span class="service-price" style="background:'+t.accent+'20;color:'+t.accent+'">'+esc(s.price)+'</span>':'')+'</div>').join('');
                 }
 
                 // Contact
                 let contactHTML='';
-                if(p.phone)contactHTML+='<a href="tel:'+p.phone+'" class="contact-item" style="background:'+t.card+';border-color:'+t.border+'"><div class="contact-icon" style="background:'+t.accent+'20;color:'+t.accent+'">&#128222;</div><div><div class="contact-text">'+p.phone+'</div><div class="contact-label">Telephone</div></div></a>';
-                if(p.email)contactHTML+='<a href="mailto:'+p.email+'" class="contact-item" style="background:'+t.card+';border-color:'+t.border+'"><div class="contact-icon" style="background:'+t.accent+'20;color:'+t.accent+'">&#9993;</div><div><div class="contact-text">'+p.email+'</div><div class="contact-label">Email</div></div></a>';
+                if(p.phone)contactHTML+='<a href="tel:'+esc(p.phone)+'" class="contact-item" style="background:'+t.card+';border-color:'+t.border+'"><div class="contact-icon" style="background:'+t.accent+'20;color:'+t.accent+'">&#128222;</div><div><div class="contact-text">'+esc(p.phone)+'</div><div class="contact-label">Telephone</div></div></a>';
+                if(p.email)contactHTML+='<a href="mailto:'+esc(p.email)+'" class="contact-item" style="background:'+t.card+';border-color:'+t.border+'"><div class="contact-icon" style="background:'+t.accent+'20;color:'+t.accent+'">&#9993;</div><div><div class="contact-text">'+esc(p.email)+'</div><div class="contact-label">Email</div></div></a>';
                 if(contactHTML){document.getElementById('contactSection').style.display='block';document.getElementById('contactList').innerHTML=contactHTML}
 
                 // Website
                 if(p.website){
                     document.getElementById('webSection').style.display='block';
-                    document.getElementById('webList').innerHTML='<a href="'+p.website+'" target="_blank" class="contact-item" style="background:'+t.card+';border-color:'+t.border+'"><div class="contact-icon" style="background:'+t.accent+'20;color:'+t.accent+'">&#127760;</div><div><div class="contact-text">'+p.website+'</div><div class="contact-label">Site web</div></div></a>';
+                    document.getElementById('webList').innerHTML='<a href="'+esc(p.website)+'" target="_blank" class="contact-item" style="background:'+t.card+';border-color:'+t.border+'"><div class="contact-icon" style="background:'+t.accent+'20;color:'+t.accent+'">&#127760;</div><div><div class="contact-text">'+esc(p.website)+'</div><div class="contact-label">Site web</div></div></a>';
                 }
 
                 // Social
-                const socialMap={facebook:'Facebook',instagram:'Instagram',linkedin:'LinkedIn',whatsapp:'WhatsApp',tiktok:'TikTok',youtube:'YouTube'};
-                const socialIcons={facebook:'f',instagram:'&#128247;',linkedin:'in',whatsapp:'&#128172;',tiktok:'&#127916;',youtube:'&#128249;'};
+                const socialMap={facebook:'Facebook',instagram:'Instagram',twitter:'X / Twitter',linkedin:'LinkedIn',whatsapp:'WhatsApp',tiktok:'TikTok',youtube:'YouTube',telegram:'Telegram',snapchat:'Snapchat',pinterest:'Pinterest',threads:'Threads',discord:'Discord'};
+                const socialColors={facebook:'#1877F2',instagram:'#E4405F',twitter:'#000000',linkedin:'#0A66C2',whatsapp:'#25D366',tiktok:'#000000',youtube:'#FF0000',telegram:'#0088CC',snapchat:'#FFFC00',pinterest:'#BD081C',threads:'#000000',discord:'#5865F2'};
+                const socialIcons={facebook:'f',instagram:'&#128247;',twitter:'&#120143;',linkedin:'in',whatsapp:'&#128172;',tiktok:'&#127916;',youtube:'&#128249;',telegram:'&#9992;',snapchat:'&#128123;',pinterest:'&#128204;',threads:'&#129525;',discord:'&#128172;'};
                 if(p.socials){
                     const items=Object.keys(socialMap).filter(k=>p.socials[k]);
                     if(items.length){
                         document.getElementById('socialSection').style.display='block';
-                        document.getElementById('socialList').innerHTML=items.map(k=>'<a href="'+p.socials[k]+'" target="_blank" class="social-link" style="background:'+t.card+';border-color:'+t.border+'"><span class="social-icon">'+socialIcons[k]+'</span><span>'+socialMap[k]+'</span></a>').join('');
+                        document.getElementById('socialList').innerHTML=items.map(k=>'<a href="'+esc(p.socials[k])+'" target="_blank" class="social-link" style="background:'+socialColors[k]+';color:#fff;border-color:'+socialColors[k]+'"><span class="social-icon">'+socialIcons[k]+'</span><span>'+socialMap[k]+'</span></a>').join('');
                     }
                 }
 
                 // Reservation form
                 document.getElementById('resSection').style.display='block';
-                const svcOpts=p.services&&p.services.length?p.services.map(s=>'<option value="'+s.name+' '+(s.price||'')+'">'+s.name+(s.price?' - '+s.price:'')+'</option>').join(''):'';
+                const svcOpts=p.services&&p.services.length?p.services.map(s=>'<option value="'+esc(s.name+' '+(s.price||''))+'">'+esc(s.name)+(s.price?' - '+esc(s.price):'')+'</option>').join(''):'';
                 document.getElementById('resForm').innerHTML='<form onsubmit="submitRes(event)"><div class="form-group"><label>Nom</label><input type="text" id="rName" required></div><div class="form-group"><label>Email</label><input type="email" id="rEmail" required></div><div class="form-group"><label>Telephone</label><input type="text" id="rPhone"></div>'+(svcOpts?'<div class="form-group"><label>Service</label><select id="rService">'+svcOpts+'</select></div>':'')+'<div class="form-row"><div class="form-group"><label>Date</label><input type="date" id="rDate" required></div><div class="form-group"><label>Heure</label><input type="time" id="rTime" required></div></div><div class="form-group"><label>Message</label><textarea id="rMsg" rows="2" placeholder="Votre message..."></textarea></div><button type="submit" class="btn-submit" style="background:'+t.accent+'">&#128197; Envoyer la reservation</button></form>';
 
                 // QR code
@@ -323,6 +375,18 @@
                 wrap.addEventListener('touchend',()=>{card.style.transform='rotateY(0deg) rotateX(0deg) translateZ(0px)'});
 
             }catch(e){document.getElementById('card-3d-section').innerHTML='<div class="not-found"><h2>Erreur</h2><p>Impossible de charger le profil</p></div>'}
+        }
+
+        function renderMap(lat,lng,addr){
+            var section=document.getElementById('mapSection');
+            section.style.display='block';
+            document.getElementById('mapAddress').textContent=addr;
+            setTimeout(function(){
+                var map=L.map('profileMap',{scrollWheelZoom:false,zoomControl:false}).setView([lat,lng],15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap',maxZoom:19}).addTo(map);
+                L.marker([lat,lng]).addTo(map);
+                setTimeout(function(){map.invalidateSize()},300);
+            },200);
         }
 
         async function submitRes(e){
@@ -386,7 +450,7 @@
                 const d=await r.json();
                 if(d.messages&&d.messages.length){
                     const container=document.getElementById('chatMessages');
-                    container.innerHTML=d.messages.map(m=>'<div class="chat-msg '+(m.role==='owner'?'owner':'visitor')+'">'+(m.role==='owner'?'<strong>Proprietaire</strong>: ':'')+m.content+'<span class="time">'+new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span></div>').join('');
+                    container.innerHTML=d.messages.map(m=>'<div class="chat-msg '+(m.role==='owner'?'owner':'visitor')+'">'+(m.role==='owner'?'<strong>Proprietaire</strong>: ':'')+esc(m.content)+'<span class="time">'+new Date(m.timestamp).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+'</span></div>').join('');
                     container.scrollTop=container.scrollHeight;
                 }
             }catch(e){}

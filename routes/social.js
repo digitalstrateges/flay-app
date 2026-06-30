@@ -72,11 +72,15 @@ router.post('/utm', (req, res) => {
 
 // Generate short link
 router.post('/short-link', async (req, res) => {
-    const { url } = req.body;
-    if (!url) return res.status(400).json({ error: 'url requis' });
+    try {
+        const { url } = req.body;
+        if (!url) return res.status(400).json({ error: 'url requis' });
 
-    const shortUrl = await social.generateShortLink(url);
-    res.json({ shortUrl, original: url });
+        const shortUrl = await social.generateShortLink(url);
+        res.json({ shortUrl, original: url });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 // Track share

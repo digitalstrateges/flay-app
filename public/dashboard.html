@@ -82,7 +82,7 @@
         .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:199}
 
         /* Stats Grid */
-        .stats-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:28px}
+        .stats-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:14px;margin-bottom:28px}
         .stat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;transition:var(--transition);position:relative;overflow:hidden}
         .stat-card:hover{border-color:rgba(129,140,248,.3);transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,.2)}
         .stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--gradient);opacity:0;transition:var(--transition)}
@@ -260,10 +260,6 @@
         .bottom-nav-item .bnav-badge{position:absolute;top:2px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid var(--sidebar-bg)}
         @media(max-width:900px){.bottom-nav{display:flex}}
 
-        /* === PAGE TRANSITIONS === */
-        .page{animation:pageIn .3s ease}
-        @keyframes pageIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-
         /* === THEME PICKER === */
         .theme-picker-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9000;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
         .theme-picker-overlay.active{display:flex}
@@ -308,10 +304,6 @@
         .skeleton{background:linear-gradient(90deg,var(--border) 25%,rgba(129,140,248,.05) 50%,var(--border) 75%);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:6px}
         @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-        /* === IMPROVED TOAST === */
-        .toast{padding:14px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:0 8px 30px rgba(0,0,0,.3);animation:toastIn .3s ease;backdrop-filter:blur(10px);max-width:360px}
-        @keyframes toastIn{from{opacity:0;transform:translateX(40px) scale(.95)}to{opacity:1;transform:translateX(0) scale(1)}}
-
         /* === HAPTIC FEEDBACK (mobile) === */
         @media(hover:none){
             .btn:active,.nav-item:active,.card:active{transform:scale(.97);transition-duration:80ms}
@@ -345,8 +337,6 @@
         .chart-bar:nth-child(8){animation-delay:.35s}
         .chart-bar:nth-child(9){animation-delay:.4s}
         .chart-bar:nth-child(10){animation-delay:.45s}
-        .skeleton{background:linear-gradient(90deg,var(--border) 25%,rgba(129,140,248,.08) 50%,var(--border) 75%);background-size:200% 100%;animation:shimmer 1.8s ease-in-out infinite;border-radius:8px}
-        @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
         .fab{transition:all .3s cubic-bezier(.4,0,.2,1)}
         .fab:hover{transform:scale(1.1) rotate(90deg)}
         .fab:active{transform:scale(.9)}
@@ -463,6 +453,11 @@
                 </div>
                 <div class="nav-section">
                     <div class="nav-section-title">System</div>
+                    <a class="nav-item" href="/notifications.html" style="position:relative">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                        Notifications
+                        <span class="nav-badge" id="sidebarNotifBadge" style="display:none">0</span>
+                    </a>
                     <a class="nav-item" data-page="settings" onclick="navigate('settings')">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
                         Settings
@@ -525,6 +520,10 @@
                         <p id="welcomeSub">Welcome back! Here's your overview.</p>
                     </div>
                     <div class="topbar-right">
+                        <a href="/notifications.html" class="notif-bell" id="notifBell" title="Notifications" style="position:relative;width:36px;height:36px;border-radius:8px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--text2);text-decoration:none;transition:var(--transition)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                            <span id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--danger);color:#fff;font-size:10px;font-weight:700;line-height:18px;text-align:center;padding:0 4px;border:2px solid var(--bg)"></span>
+                        </a>
                         <span class="plan-badge plan-free" id="planBadge">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                             Free
@@ -569,6 +568,12 @@
                         <div class="stat-label">Invoices</div>
                         <div class="stat-value" id="statInvoices">0</div>
                         <div class="stat-change up" id="statInvoicesChange">+0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+                        <div class="stat-label">Abonnes</div>
+                        <div class="stat-value" id="statFollowers">0</div>
+                        <div class="stat-change up" id="statFollowersChange">+0%</div>
                     </div>
                 </div>
 
@@ -649,6 +654,28 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+
+                <div class="card" id="usageSection" style="display:none">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                            Utilisation
+                        </div>
+                        <div class="card-subtitle">Votre consommation par plan</div>
+                    </div>
+                    <div id="usageBars"></div>
+                </div>
+
+                <div class="card" id="recommendationsCard" style="display:none">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                            Recommandations
+                        </div>
+                        <div class="card-subtitle">Produits suggeres a mettre en avant</div>
+                    </div>
+                    <div id="recommendationsList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
                 </div>
             </div>
 
@@ -1091,6 +1118,11 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             <span>Reserv.</span>
         </a>
+        <a class="bottom-nav-item" href="/notifications.html" style="position:relative">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <span>Notifs</span>
+            <span class="bnav-badge" id="bnavNotifBadge" style="display:none"></span>
+        </a>
         <a class="bottom-nav-item" data-page="settings" onclick="navigate('settings')">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
             <span>Plus</span>
@@ -1353,6 +1385,14 @@
             document.getElementById('statContacts').textContent = s.contacts || s.totalContacts || 0;
             document.getElementById('statInvoices').textContent = s.invoices || s.totalInvoices || 0;
 
+            // Load followers
+            api('/api/followers/' + user.id).then(d => {
+                if (d) {
+                    document.getElementById('statFollowers').textContent = d.count || 0;
+                    state.stats.followers = d.count || 0;
+                }
+            }).catch(() => {});
+
             if (s.products != null) document.getElementById('navProductsCount').textContent = s.products;
             if (s.productsChange != null) document.getElementById('statProductsChange').textContent = (s.productsChange >= 0 ? '+' : '') + s.productsChange + '%';
 
@@ -1402,11 +1442,12 @@
            PRODUCTS
         =========================== */
         async function loadProducts() {
-            const data = await api('/api/products');
+            const data = await api('/api/ecommerce/my-products');
             if (!data) { document.getElementById('productsTable').innerHTML = '<tr><td colspan="5" class="table-empty"><p>Failed to load products</p></td></tr>'; return; }
             state.products = data.products || data || [];
             document.getElementById('navProductsCount').textContent = state.products.length;
             renderProducts();
+            loadDashboardRecommendations();
         }
 
         function renderProducts() {
@@ -1426,7 +1467,8 @@
             }).join('');
         }
 
-        function filterProducts() { renderProducts(); }
+        function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+        const filterProducts = debounce(() => renderProducts(), 300);
 
         function openAddProductModal() {
             const limit = getFeatureLimit('products');
@@ -1467,8 +1509,29 @@
             if (data !== null) { toast('Product deleted', 'success'); loadProducts(); loadDashboard(); }
         }
 
+        async function loadDashboardRecommendations() {
+            const card = document.getElementById('recommendationsCard');
+            const list = document.getElementById('recommendationsList');
+            const data = await api('/api/products/popular/' + user.id + '?limit=8');
+            if (!data || !data.recommendations || !data.recommendations.length) {
+                card.style.display = 'none';
+                return;
+            }
+            card.style.display = 'block';
+            list.innerHTML = data.recommendations.map(p => `
+                <div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:var(--transition)" onclick="window.open('/product/${esc(p.id)}','_blank')">
+                    <img src="${esc(p.thumbnail||'/placeholder.png')}" alt="${esc(p.name)}" style="width:100%;aspect-ratio:1;object-fit:cover;background:var(--card2)">
+                    <div style="padding:10px">
+                        <div style="font-size:13px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(p.name)}</div>
+                        <div style="font-size:14px;font-weight:700;color:var(--accent)">${Number(p.price).toLocaleString()}</div>
+                        <div style="font-size:11px;color:var(--muted);margin-top:4px">${p.sales||0} vendus &middot; &#9733; ${(p.rating||0).toFixed(1)}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
         /* ===========================
-           ORDERS
+            ORDERS
         =========================== */
         async function loadOrders() {
             const data = await api('/api/orders');
@@ -1534,7 +1597,7 @@
             const r = state.reservations.find(x => (x.id || x._id) == id);
             if (!r) return;
             const newStatus = r.status === 'confirmed' ? 'cancelled' : 'confirmed';
-            const data = await api('/api/reservations/' + id, { method: 'PUT', body: JSON.stringify({ status: newStatus }) });
+            const data = await api('/api/reservations/' + id + '/status', { method: 'PUT', body: JSON.stringify({ status: newStatus }) });
             if (data) { toast('Reservation updated!', 'success'); loadReservations(); }
         }
 
@@ -1608,7 +1671,7 @@
            CRM
         =========================== */
         async function loadContacts() {
-            const data = await api('/api/contacts');
+            const data = await api('/api/crm/contacts');
             if (!data) { document.getElementById('crmTable').innerHTML = '<tr><td colspan="6" class="table-empty"><p>Failed to load contacts</p></td></tr>'; return; }
             state.contacts = data.contacts || data || [];
             const tbody = document.getElementById('crmTable');
@@ -1637,7 +1700,7 @@
             const name = document.getElementById('crmName').value.trim();
             if (!name) { toast('Name is required', 'error'); return; }
             const body = { name, email: document.getElementById('crmEmail').value.trim(), phone: document.getElementById('crmPhone').value.trim(), status: document.getElementById('crmStatus').value, notes: document.getElementById('crmNotes').value.trim() };
-            const data = await api('/api/contacts', { method: 'POST', body: JSON.stringify(body) });
+            const data = await api('/api/crm/contacts', { method: 'POST', body: JSON.stringify(body) });
             if (data) { toast('Contact added!', 'success'); closeModal(); loadContacts(); loadDashboard(); }
         }
 
@@ -1650,7 +1713,7 @@
 
         async function updateContact(id) {
             const body = { name: document.getElementById('editCrmName').value.trim(), email: document.getElementById('editCrmEmail').value.trim(), phone: document.getElementById('editCrmPhone').value.trim(), status: document.getElementById('editCrmStatus').value, notes: document.getElementById('editCrmNotes').value.trim() };
-            const data = await api('/api/contacts/' + id, { method: 'PUT', body: JSON.stringify(body) });
+            const data = await api('/api/crm/contacts/' + id, { method: 'PUT', body: JSON.stringify(body) });
             if (data) { toast('Contact updated!', 'success'); closeModal(); loadContacts(); }
         }
 
@@ -1755,11 +1818,8 @@
 
         async function saveSettings() {
             const body = { name: document.getElementById('settingsName').value.trim(), email: document.getElementById('settingsEmail').value.trim(), phone: document.getElementById('settingsPhone').value.trim(), website: document.getElementById('settingsWebsite').value.trim(), bio: document.getElementById('settingsBio').value.trim() };
-            const data = await api('/api/account/profile', { method: 'PUT', body: JSON.stringify(body) });
-            if (!data) {
-                const data2 = await api('/api/settings', { method: 'PUT', body: JSON.stringify(body) });
-                if (data2) { toast('Settings saved!', 'success'); user = { ...user, ...body }; localStorage.setItem('flay_user', JSON.stringify(user)); updateSidebarUser(); }
-            } else {
+            const data = await api('/api/profile', { method: 'PUT', body: JSON.stringify(body) });
+            if (data) {
                 toast('Settings saved!', 'success');
                 user = { ...user, ...body };
                 localStorage.setItem('flay_user', JSON.stringify(user));
@@ -1768,7 +1828,7 @@
         }
 
         async function deleteAccount() {
-            const data = await api('/api/account', { method: 'DELETE' });
+            const data = await api('/api/auth/account', { method: 'DELETE' });
             if (data !== null) { toast('Account deleted', 'success'); localStorage.clear(); window.location.href = '/'; }
         }
 
@@ -1938,7 +1998,7 @@
             const format = prompt('Format: csv, html, or json?', 'csv');
             if (!format || !['csv', 'html', 'json'].includes(format)) return;
             toast(`Exporting ${type} as ${format.toUpperCase()}...`, 'info');
-            window.open(`/api/export/${type}/${user.id}?format=${format}`, '_blank');
+            window.open(`/api/export/${type}?format=${format}`, '_blank');
             toast('Export started!', 'success');
         }
 
@@ -2357,7 +2417,8 @@
                 statReservations: s.reservations || s.totalReservations || 0,
                 statProducts: s.products || s.totalProducts || 0,
                 statContacts: s.contacts || s.totalContacts || 0,
-                statInvoices: s.invoices || s.totalInvoices || 0
+                statInvoices: s.invoices || s.totalInvoices || 0,
+                statFollowers: s.followers || 0
             };
             Object.entries(targets).forEach(([id, val]) => {
                 const el = document.getElementById(id);
@@ -2386,6 +2447,49 @@
         }
 
         /* ===========================
+           NOTIFICATION BADGE
+        =========================== */
+        function updateNotifBadge(count) {
+            const badge = document.getElementById('notifBadge');
+            const sideBadge = document.getElementById('sidebarNotifBadge');
+            const bnavBadge = document.getElementById('bnavNotifBadge');
+            if (!badge) return;
+            if (count > 0) {
+                badge.style.display = 'block';
+                badge.textContent = count > 99 ? '99+' : count;
+                if (sideBadge) { sideBadge.style.display = 'inline'; sideBadge.textContent = count; }
+                if (bnavBadge) { bnavBadge.style.display = 'block'; }
+            } else {
+                badge.style.display = 'none';
+                if (sideBadge) sideBadge.style.display = 'none';
+                if (bnavBadge) bnavBadge.style.display = 'none';
+            }
+        }
+
+        async function loadUnreadCount() {
+            try {
+                const res = await api('/api/push/unread-count');
+                if (res && typeof res.count === 'number') updateNotifBadge(res.count);
+            } catch (e) {}
+        }
+
+        function connectNotifSSE() {
+            const evtSource = new EventSource('/api/push/stream/' + encodeURIComponent(user.id) + '?token=' + encodeURIComponent(token));
+            evtSource.onmessage = function(e) {
+                try {
+                    const data = JSON.parse(e.data);
+                    if (data.type === 'notification') {
+                        loadUnreadCount();
+                    }
+                } catch (err) {}
+            };
+            evtSource.onerror = function() {
+                evtSource.close();
+                setTimeout(connectNotifSSE, 5000);
+            };
+        }
+
+        /* ===========================
            INIT
         =========================== */
         async function init() {
@@ -2403,6 +2507,41 @@
             animateStats();
 
             document.getElementById('profileLink').value = window.location.origin + '/p/' + (user.username || '');
+
+            loadUnreadCount();
+            connectNotifSSE();
+            loadUsageBars();
+        }
+
+        /* ===========================
+           USAGE BARS (Conversion)
+        =========================== */
+        async function loadUsageBars() {
+            if (state.plan === 'premium' || state.plan === 'doree') return;
+            try {
+                const data = await api('/api/premium/usage');
+                if (!data || !data.features) return;
+                const container = document.getElementById('usageBars');
+                if (!container) return;
+                let html = '';
+                const labels = { products: 'Produits', contacts: 'Contacts', invoices: 'Factures', reservations: 'Reservations' };
+                const icons = { products: '&#128230;', contacts: '&#128101;', invoices: '&#128196;', reservations: '&#128197;' };
+                for (const [key, info] of Object.entries(data.features)) {
+                    if (!labels[key]) continue;
+                    const pct = Math.min(info.percentage, 100);
+                    const color = pct >= 90 ? '#f87171' : pct >= 70 ? '#fbbf24' : 'var(--accent)';
+                    html += '<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><span style="font-size:13px;font-weight:600">' + icons[key] + ' ' + labels[key] + '</span><span style="font-size:12px;color:var(--text2)">' + info.current + ' / ' + info.limit + '</span></div><div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:3px;transition:width .5s ease"></div></div></div>';
+                }
+                const atRisk = Object.entries(data.features).filter(([, v]) => v.percentage >= 80);
+                if (atRisk.length > 0) {
+                    html += '<div style="margin-top:16px;padding:12px;border-radius:var(--radius);background:linear-gradient(135deg,rgba(251,191,36,.1),rgba(248,113,113,.1));border:1px solid rgba(251,191,36,.3)"><div style="font-size:13px;font-weight:700;margin-bottom:4px">&#9888;&#65039; Limite bientot atteinte</div><div style="font-size:12px;color:var(--text2);margin-bottom:8px">Passez au plan Pro pour debloquer des limites illimitees</div><button class="btn btn-primary btn-sm" onclick="window.location.href=\'/settings.html#plans\'" style="font-size:12px">Upgrade Pro &rarr;</button></div>';
+                }
+                container.innerHTML = html;
+                if (html) {
+                    const card = document.getElementById('usageSection');
+                    if (card) card.style.display = 'block';
+                }
+            } catch (e) {}
         }
 
         init();

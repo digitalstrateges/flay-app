@@ -19,12 +19,22 @@ app.set('trust proxy', 1);
 
 // Security headers
 app.use((req, res, next) => {
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; img-src 'self' data: https: https://*.tile.openstreetmap.org; font-src 'self' https:; connect-src 'self' https: https://nominatim.openstreetmap.org; frame-src 'none'; object-src 'none'");
+    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(self), payment=(self)');
-    res.setHeader('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+    const allowedOrigins = [config.SITE_URL, process.env.CORS_ORIGIN].filter(Boolean);
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.some(a => origin.startsWith(a))) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    } else if (origin) {
+        res.setHeader('Access-Control-Allow-Origin', config.SITE_URL || '');
+    } else {
+        res.setHeader('Access-Control-Allow-Origin', config.SITE_URL || '');
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-CSRF-Token');
     if (req.method === 'OPTIONS') return res.status(204).end();
@@ -37,9 +47,16 @@ app.use((req, res, next) => {
         const key = `global:${req.ip}`;
         const now = Date.now();
         if (!global._rateLimits) global._rateLimits = new Map();
-        if (!global._rateLimits.has(key)) global._rateLimits.set(key, []);
+        if (!global._rateLimits.has(key)) {
+            if (global._rateLimits.size >= 10000) {
+                const oldest = global._rateLimits.keys().next().value;
+                global._rateLimits.delete(oldest);
+            }
+            global._rateLimits.set(key, []);
+        }
         const hits = global._rateLimits.get(key).filter(t => t > now - 60000);
-        global._rateLimits.set(key, hits);
+        if (hits.length === 0) global._rateLimits.delete(key);
+        else global._rateLimits.set(key, hits);
         if (hits.length >= 100) return res.status(429).json({ error: 'Trop de requetes. Reessayez dans 1 minute.' });
         hits.push(now);
     }
@@ -47,7 +64,7 @@ app.use((req, res, next) => {
 });
 
 // Cleanup rate limits every 5 min
-setInterval(() => {
+const rateLimitInterval = setInterval(() => {
     if (global._rateLimits) {
         const now = Date.now();
         for (const [key, hits] of global._rateLimits) {
@@ -74,7 +91,7 @@ app.use('/api/auth', (req, res, next) => {
 });
 
 // Cleanup auth rate limits every 5 min
-setInterval(() => {
+const authRateLimitInterval = setInterval(() => {
     const now = Date.now();
     for (const [key, hits] of authRateLimits) {
         const valid = hits.filter(t => t > now - 60000);
@@ -148,6 +165,7 @@ app.use('/api/local-languages', require('./routes/local-languages'));
 app.use('/api/bidirectional', require('./routes/bidirectional'));
 app.use('/api/design-studio', require('./routes/enhanced-design-studio'));
 app.use('/api/social', require('./routes/social'));
+app.use('/api/followers', require('./routes/followers'));
 
 // === I18N MIDDLEWARE ===
 const I18n = require('./i18n');
@@ -273,9 +291,31 @@ function _buildEcomOptions(userId) {
     return items.length > 0 || ecommerce.getUserProducts(userId, {}).products?.length > 0 ? { hasStore: true, storeUrl: `/store/${userId}`, products: items } : { hasStore: false };
 }
 
+function _injectLocalBusinessSchema(html, profile, user) {
+    const locData = profile.locationData || {};
+    const geoLoc = profile.geoLocation || {};
+    const lat = locData.lat || geoLoc.latitude || null;
+    const lng = locData.lng || geoLoc.longitude || null;
+    const address = locData.address || (typeof profile.location === 'string' ? profile.location : '') || '';
+    if (!lat && !lng && !address) return html;
+    const schema = {
+        '@context': 'https://schema.org',
+        '@type': 'LocalBusiness',
+        name: user.name,
+        description: (profile.bio || '').substring(0, 200),
+        url: `${config.SITE_URL || ''}/${user.username || profile.slug}`,
+        telephone: profile.phone || ''
+    };
+    if (address) schema.address = { '@type': 'PostalAddress', addressLocality: address };
+    if (lat && lng) schema.geo = { '@type': 'GeoCoordinates', latitude: parseFloat(lat), longitude: parseFloat(lng) };
+    const json = JSON.stringify(schema, null, 2);
+    return html.replace('</head>', `<script type="application/ld+json">${json}\n</script>\n</head>`);
+}
+
 function _renderUnifiedSite(req, res, user, profile, options = {}) {
     const ecomOpts = _buildEcomOptions(user.id);
-    const html = designStudio.generateShowcaseSite(profile, user, { ...options, ecommerce: ecomOpts });
+    let html = designStudio.generateShowcaseSite(profile, user, { ...options, ecommerce: ecomOpts });
+    html = _injectLocalBusinessSchema(html, profile, user);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.send(html);
 }
@@ -415,7 +455,10 @@ app.get('/api/chat/stream', (req, res) => {
     });
     const userId = req.query.userId || 'anonymous';
     sseClients.set(userId, res);
-    req.on('close', () => sseClients.delete(userId));
+    const heartbeat = setInterval(() => {
+        try { res.write(':heartbeat\n\n'); } catch(e) { clearInterval(heartbeat); }
+    }, 30000);
+    req.on('close', () => { sseClients.delete(userId); clearInterval(heartbeat); });
     res.write('data: {"type":"connected"}\n\n');
 });
 
@@ -464,4 +507,10 @@ app.use((err, req, res, next) => {
     }
 });
 
-module.exports = { app, broadcast };
+function shutdown() {
+    clearInterval(rateLimitInterval);
+    clearInterval(authRateLimitInterval);
+    global._rateLimits = null;
+}
+
+module.exports = { app, broadcast, shutdown };

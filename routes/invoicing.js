@@ -9,6 +9,10 @@ router.get('/', authenticate, (req, res) => {
 });
 
 router.post('/', authenticate, (req, res) => {
+    const premiumFeatures = require('../premium-features');
+    const userInvoices = db.findAll('invoices', 'userId', req.user.id) || [];
+    const check = premiumFeatures.checkLimit(req.user.id, 'invoices', userInvoices.length);
+    if (!check.allowed) return res.status(403).json({ error: check.reason, code: 'PLAN_LIMIT', limit: check.limit, current: check.current });
     const invoice = invoicing.create(req.user.id, req.body);
     res.status(201).json({ invoice });
 });

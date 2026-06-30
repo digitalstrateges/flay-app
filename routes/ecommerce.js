@@ -34,6 +34,12 @@ router.get('/categories/:userId/public', (req, res) => {
     res.json({ categories: ecommerce.getActiveCategories(req.params.userId) });
 });
 
+// === MY PRODUCTS (dashboard) ===
+router.get('/my-products', authenticate, (req, res) => {
+    const result = ecommerce.getUserProducts(req.user.id, {});
+    res.json({ products: result.products || result || [] });
+});
+
 // === PRODUCTS ===
 router.get('/products/:userId', (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -46,6 +52,23 @@ router.get('/products/:userId', (req, res) => {
     const user = db.get('users', req.params.userId);
     result.storeName = user?.name || 'Boutique';
     result.storeDescription = user?.bio || '';
+    const profile = db.findBy('profiles', 'userId', req.params.userId);
+    if (profile) {
+        result.storeDescription = profile.bio || result.storeDescription;
+        const ld = typeof profile.locationData === 'string' ? JSON.parse(profile.locationData) : profile.locationData;
+        if (ld && ld.lat && ld.lng) {
+            result.profileLocation = { lat: ld.lat, lng: ld.lng, address: ld.address || profile.location || '' };
+        } else if (profile.geoLocation) {
+            const gl = typeof profile.geoLocation === 'string' ? JSON.parse(profile.geoLocation) : profile.geoLocation;
+            if (gl && (gl.latitude || gl.coordinates?.lat)) {
+                result.profileLocation = {
+                    lat: gl.latitude || gl.coordinates?.lat,
+                    lng: gl.longitude || gl.coordinates?.lng,
+                    address: gl.address || profile.location || ''
+                };
+            }
+        }
+    }
     res.json(result);
 });
 
@@ -59,6 +82,10 @@ router.get('/products/:userId/:productId', (req, res) => {
 });
 
 router.post('/products', authenticate, (req, res) => {
+    const premiumFeatures = require('../premium-features');
+    const userProducts = db.findAll('products', 'userId', req.user.id) || [];
+    const check = premiumFeatures.checkLimit(req.user.id, 'products', userProducts.length);
+    if (!check.allowed) return res.status(403).json({ error: check.reason, code: 'PLAN_LIMIT', limit: check.limit, current: check.current });
     const product = ecommerce.createProduct(req.user.id, req.body);
     if (product.error) return res.status(400).json({ error: product.error });
     res.status(201).json({ product });
@@ -111,6 +138,20 @@ router.get('/product/:id', (req, res) => {
         if (!product) return res.status(404).json({ error: 'Produit non trouve' });
         res.json({ product });
     }
+});
+
+// === RECOMMENDATIONS ===
+router.get('/products/recommendations/:productId', (req, res) => {
+    const userId = req.query.userId || null;
+    const limit = parseInt(req.query.limit) || 6;
+    const recommendations = ecommerce.getRecommendations(userId, req.params.productId, limit);
+    res.json({ recommendations });
+});
+
+router.get('/products/popular/:userId', (req, res) => {
+    const limit = parseInt(req.query.limit) || 12;
+    const popular = ecommerce.getPopularProducts(req.params.userId, limit);
+    res.json({ recommendations: popular });
 });
 
 // === STORE STATS ===
@@ -315,6 +356,40 @@ router.post('/referral/track', (req, res) => {
 
 router.get('/referral/stats', authenticate, (req, res) => {
     res.json(marketplace.getReferralStats(req.user.id));
+});
+
+// === WISHLIST ===
+router.get('/wishlist', authenticate, (req, res) => {
+    const items = db.findAll('wishlist', 'userId', req.user.id) || [];
+    const products = items.map(item => {
+        const product = db.get('products', item.productId);
+        return product ? { ...product, wishlistId: item.id, addedAt: item.createdAt } : null;
+    }).filter(Boolean);
+    res.json({ items: products, count: products.length });
+});
+
+router.post('/wishlist/:productId', authenticate, (req, res) => {
+    const premiumFeatures = require('../premium-features');
+    if (!premiumFeatures.hasFeature(req.user.id, 'wishlist')) {
+        return res.status(403).json({ error: 'Wishlist requires Premium plan', code: 'PLAN_REQUIRED' });
+    }
+    const existing = db.queryOne('SELECT * FROM wishlist WHERE userId = ? AND productId = ?', [req.user.id, req.params.productId]);
+    if (existing) return res.status(400).json({ error: 'Already in wishlist' });
+    const product = db.get('products', req.params.productId);
+    if (!product) return res.status(404).json({ error: 'Product not found' });
+    const item = db.insert('wishlist', {
+        userId: req.user.id,
+        productId: req.params.productId
+    });
+    res.status(201).json({ item, message: 'Added to wishlist' });
+});
+
+router.delete('/wishlist/:productId', authenticate, (req, res) => {
+    const items = db.findAll('wishlist', 'userId', req.user.id) || [];
+    const item = items.find(i => i.productId === req.params.productId);
+    if (!item) return res.status(404).json({ error: 'Not in wishlist' });
+    db.delete('wishlist', item.id);
+    res.json({ message: 'Removed from wishlist' });
 });
 
 module.exports = router;

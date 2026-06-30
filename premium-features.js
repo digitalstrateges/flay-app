@@ -162,9 +162,10 @@ class PremiumFeatures {
             return { error: 'Upgrade to Pro for advanced analytics' };
         }
 
-        const analytics = db.findBy('analytics', 'userId', userId);
+        const analytics = db.findAll('analytics', 'userId', userId) || [];
         const now = new Date();
-        const startDate = new Date(now - parseInt(period) * 24 * 60 * 60 * 1000);
+        const days = parseInt(period) || 30;
+        const startDate = new Date(now - days * 24 * 60 * 60 * 1000);
         
         const filtered = analytics.filter(a => new Date(a.createdAt) >= startDate);
         
@@ -187,8 +188,13 @@ class PremiumFeatures {
         const referrers = {};
         filtered.forEach(a => {
             if (a.referrer) {
-                const domain = new URL(a.referrer).hostname;
-                referrers[domain] = (referrers[domain] || 0) + 1;
+                try {
+                    const domain = new URL(a.referrer).hostname;
+                    referrers[domain] = (referrers[domain] || 0) + 1;
+                } catch(e) {
+                    const domain = (a.referrer || '').split('/')[2] || a.referrer;
+                    if (domain) referrers[domain] = (referrers[domain] || 0) + 1;
+                }
             }
         });
 
@@ -228,14 +234,13 @@ class PremiumFeatures {
         const features = this.getPlanFeatures(db.get('users', userId)?.plan || 'free');
         if (!features.abandonedCart) return [];
         
-        const carts = db.get('carts', 'userId', userId) || [];
+        const cart = db.findBy('carts', 'userId', userId);
+        if (!cart || !cart.items || !cart.items.length) return [];
         const now = new Date();
-        const threshold = new Date(now - 24 * 60 * 60 * 1000); // 24h
-        
-        return carts.filter(cart => {
-            const updated = new Date(cart.updatedAt || cart.createdAt);
-            return updated < threshold && cart.items?.length > 0 && !cart.converted;
-        });
+        const threshold = new Date(now - 24 * 60 * 60 * 1000);
+        const updated = new Date(cart.updatedAt || cart.createdAt);
+        if (updated < threshold && !cart.converted) return [cart];
+        return [];
     }
 
     // Loyalty Program
@@ -243,12 +248,12 @@ class PremiumFeatures {
         const features = this.getPlanFeatures(db.get('users', userId)?.plan || 'free');
         if (!features.loyalty) return { error: 'Loyalty program requires Premium plan' };
         
-        const orders = db.findBy('orders', 'userId', userId) || [];
+        const orders = db.findAll('orders', 'userId', userId) || [];
         let points = 0;
         
         orders.forEach(order => {
             if (order.status === 'completed' || order.status === 'delivered') {
-                points += Math.floor(order.total / 1000); // 1 point per 1000 FCFA
+                points += Math.floor((order.total || 0) / 1000);
             }
         });
 
@@ -275,12 +280,16 @@ class PremiumFeatures {
         const recommendations = [];
         let score = 100;
 
-        if (!profile?.title) { issues.push('Missing page title'); score -= 20; }
-        if (!profile?.bio || profile.bio.length < 50) { issues.push('Bio too short'); score -= 15; }
-        if (!profile?.seo?.description) { issues.push('Missing meta description'); score -= 15; }
-        if (!profile?.seo?.keywords) { issues.push('Missing keywords'); score -= 10; }
-        if (!profile?.avatar) { issues.push('No profile photo'); score -= 10; }
-        if (!profile?.gallery || JSON.parse(profile.gallery || '[]').length < 3) { issues.push('Gallery needs more images'); score -= 5; }
+        if (!profile) return { score: 0, issues: ['No profile found'], recommendations: ['Create a profile'], plan: features.seo };
+
+        if (!profile.title) { issues.push('Missing page title'); score -= 20; }
+        if (!profile.bio || profile.bio.length < 50) { issues.push('Bio too short'); score -= 15; }
+        const seoData = typeof profile.seo === 'string' ? JSON.parse(profile.seo || '{}') : (profile.seo || {});
+        if (!seoData.description) { issues.push('Missing meta description'); score -= 15; }
+        if (!seoData.keywords) { issues.push('Missing keywords'); score -= 10; }
+        if (!profile.avatar) { issues.push('No profile photo'); score -= 10; }
+        const gallery = typeof profile.gallery === 'string' ? JSON.parse(profile.gallery || '[]') : (profile.gallery || []);
+        if (!gallery.length || gallery.length < 3) { issues.push('Gallery needs more images'); score -= 5; }
 
         if (features.seo === 'advanced' || features.seo === 'enterprise') {
             recommendations.push('Add structured data (JSON-LD)');
@@ -304,7 +313,7 @@ class PremiumFeatures {
         const features = this.getPlanFeatures(db.get('users', userId)?.plan || 'free');
         if (!features.multiUser) return { error: 'Team management requires Dorée plan' };
         
-        const members = db.findBy('team_members', 'ownerId', userId) || [];
+        const members = db.findAll('team_members', 'ownerId', userId) || [];
         return {
             maxMembers: features.multiUser,
             members,

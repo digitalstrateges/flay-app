@@ -99,35 +99,43 @@ router.get('/gateway/status', (req, res) => {
 
 // --- Unified Payment Create ---
 router.post('/create', async (req, res) => {
-    const paymentGateway = require('../payment-gateway');
-    const { amount, description, customerName, customerPhone, customerEmail, gateway, type, metadata } = req.body;
-    if (!amount || amount < 100) return res.status(400).json({ error: 'Montant minimum: 100 FCFA' });
-    const result = await paymentGateway.createPayment({
-        amount: parseInt(amount), description: description || 'Paiement Flay',
-        customerName: customerName || '', customerPhone: customerPhone || '',
-        customerEmail: customerEmail || '', gateway: gateway || undefined,
-        type: type || 'one_time', metadata: metadata || {}
-    });
-    if (result.success) {
-        res.json({ success: true, payment: result.payment, paymentUrl: result.payment?.paymentUrl, isFallback: result.isFallback || false });
-    } else {
-        res.status(400).json({ success: false, error: result.error });
+    try {
+        const paymentGateway = require('../payment-gateway');
+        const { amount, description, customerName, customerPhone, customerEmail, gateway, type, metadata } = req.body;
+        if (!amount || amount < 100) return res.status(400).json({ error: 'Montant minimum: 100 FCFA' });
+        const result = await paymentGateway.createPayment({
+            amount: parseInt(amount), description: description || 'Paiement Flay',
+            customerName: customerName || '', customerPhone: customerPhone || '',
+            customerEmail: customerEmail || '', gateway: gateway || undefined,
+            type: type || 'one_time', metadata: metadata || {}
+        });
+        if (result.success) {
+            res.json({ success: true, payment: result.payment, paymentUrl: result.payment?.paymentUrl, isFallback: result.isFallback || false });
+        } else {
+            res.status(400).json({ success: false, error: result.error });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
 // --- Check payment status ---
 router.get('/:ref/status', async (req, res) => {
-    const paymentGateway = require('../payment-gateway');
-    const payment = paymentGateway.getPayment(req.params.ref);
-    if (!payment) {
-        const dbPayment = db.get('payments', req.params.ref);
-        return res.json({ payment: dbPayment });
+    try {
+        const paymentGateway = require('../payment-gateway');
+        const payment = paymentGateway.getPayment(req.params.ref);
+        if (!payment) {
+            const dbPayment = db.get('payments', req.params.ref);
+            return res.json({ payment: dbPayment });
+        }
+        if (payment.gateway === 'wave' && payment.id !== payment.ref) {
+            const status = await paymentGateway.checkStatus(payment.id);
+            return res.json({ payment, liveStatus: status });
+        }
+        res.json({ payment });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-    if (payment.gateway === 'wave' && payment.id !== payment.ref) {
-        const status = await paymentGateway.checkStatus(payment.id);
-        return res.json({ payment, liveStatus: status });
-    }
-    res.json({ payment });
 });
 
 module.exports = router;

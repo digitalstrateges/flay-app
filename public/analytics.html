@@ -76,9 +76,9 @@
         <p class="subtitle">Suivez les performances de votre profil en temps reel</p>
 
         <div class="period-tabs">
-            <div class="period-tab active" onclick="loadData('7d')">7 jours</div>
-            <div class="period-tab" onclick="loadData('30d')">30 jours</div>
-            <div class="period-tab" onclick="loadData('90d')">90 jours</div>
+            <div class="period-tab active" onclick="loadData('7d', event)">7 jours</div>
+            <div class="period-tab" onclick="loadData('30d', event)">30 jours</div>
+            <div class="period-tab" onclick="loadData('90d', event)">90 jours</div>
         </div>
 
         <div class="stats-grid">
@@ -117,7 +117,9 @@
         const token = localStorage.getItem('flay_token');
         if (!token) window.location.href = '/login.html';
 
-        async function loadData(period = '30d') {
+        function esc(s) { const d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
+
+        async function loadData(period = '30d', event) {
             document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
             event?.target?.classList?.add('active');
             try {
@@ -135,29 +137,29 @@
                 const maxVal = Math.max(...daily.map(d => d.views), 1);
                 const chart = document.getElementById('chart');
                 const labels = document.getElementById('chartLabels');
-                chart.innerHTML = daily.map(d => `<div class="chart-bar" style="height:${(d.views / maxVal) * 100}%"><div class="tooltip">${d.date}: ${d.views} vues</div></div>`).join('');
-                labels.innerHTML = daily.filter((_, i) => i % Math.ceil(daily.length / 7) === 0).map(d => `<span>${d.date.split('-').slice(1).join('/')}</span>`).join('');
+                chart.innerHTML = daily.map(d => `<div class="chart-bar" style="height:${(d.views / maxVal) * 100}%"><div class="tooltip">${esc(d.date)}: ${esc(d.views)} vues</div></div>`).join('');
+                labels.innerHTML = daily.filter((_, i) => i % Math.ceil(daily.length / 7) === 0).map(d => `<span>${esc(d.date).split('-').slice(1).join('/')}</span>`).join('');
 
                 // Insights
                 const insightsList = document.getElementById('insightsList');
                 if (data.insights?.length) {
-                    insightsList.innerHTML = data.insights.map(i => `<div class="insight-item ${i.type}"><div class="insight-icon">${i.icon}</div><div><div class="insight-title">${i.title}</div><div class="insight-msg">${i.message}</div></div></div>`).join('');
+                    insightsList.innerHTML = data.insights.map(i => `<div class="insight-item ${i.type}"><div class="insight-icon">${esc(i.icon)}</div><div><div class="insight-title">${esc(i.title)}</div><div class="insight-msg">${esc(i.message)}</div></div></div>`).join('');
                 }
 
                 // Referrers
                 const refList = document.getElementById('referrersList');
                 if (data.referrers?.length) {
-                    refList.innerHTML = data.referrers.map(r => `<li><span>${r.name}</span><strong>${r.count}</strong></li>`).join('');
+                    refList.innerHTML = data.referrers.map(r => `<li><span>${esc(r.name)}</span><strong>${esc(r.count)}</strong></li>`).join('');
                 }
 
                 // Devices
                 const devGrid = document.getElementById('devicesGrid');
                 const devices = data.devices || {};
                 devGrid.innerHTML = `
-                    <div class="device-card"><div class="device-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div><div class="device-value">${devices.mobile || 0}</div><div class="device-label">Mobile</div></div>
-                    <div class="device-card"><div class="device-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div class="device-value">${devices.desktop || 0}</div><div class="device-label">Desktop</div></div>
-                    <div class="device-card"><div class="device-icon">&#128218;</div><div class="device-value">${devices.tablet || 0}</div><div class="device-label">Tablette</div></div>
-                    <div class="device-card"><div class="device-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="1"/></svg></div><div class="device-value">${devices.other || 0}</div><div class="device-label">Autre</div></div>
+                    <div class="device-card"><div class="device-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div><div class="device-value">${esc(devices.mobile || 0)}</div><div class="device-label">Mobile</div></div>
+                    <div class="device-card"><div class="device-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div><div class="device-value">${esc(devices.desktop || 0)}</div><div class="device-label">Desktop</div></div>
+                    <div class="device-card"><div class="device-icon">&#128218;</div><div class="device-value">${esc(devices.tablet || 0)}</div><div class="device-label">Tablette</div></div>
+                    <div class="device-card"><div class="device-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4" rx="1"/></svg></div><div class="device-value">${esc(devices.other || 0)}</div><div class="device-label">Autre</div></div>
                 `;
             } catch(e) { console.error(e); }
         }

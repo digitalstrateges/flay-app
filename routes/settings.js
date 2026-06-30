@@ -74,8 +74,12 @@ router.get('/notifications/stream', authenticate, (req, res) => {
 
 // --- Email ---
 router.post('/email/send', authenticate, async (req, res) => {
-    const result = await emailSystem.send(req.body.to, req.body.template, req.body.data || {}, req.body.options || {});
-    res.json(result);
+    try {
+        const result = await emailSystem.send(req.body.to, req.body.template, req.body.data || {}, req.body.options || {});
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 router.get('/email/history', authenticate, (req, res) => {
@@ -84,8 +88,12 @@ router.get('/email/history', authenticate, (req, res) => {
 
 // --- SMS ---
 router.post('/sms/send', authenticate, async (req, res) => {
-    const result = await smsSystem.send(req.body.phone, req.body.template, req.body.variables || {});
-    res.json(result);
+    try {
+        const result = await smsSystem.send(req.body.phone, req.body.template, req.body.variables || {});
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 router.get('/sms/history', authenticate, (req, res) => {
@@ -128,6 +136,10 @@ router.put('/team/:teamId/member/:memberId/role', authenticate, (req, res) => {
 
 // --- Domains ---
 router.post('/domains', authenticate, (req, res) => {
+    const premiumFeatures = require('../premium-features');
+    if (!premiumFeatures.hasFeature(req.user.id, 'customDomain')) {
+        return res.status(403).json({ error: 'Custom domain requires Premium plan', code: 'PLAN_REQUIRED' });
+    }
     const domain = domainManager.addDomain(req.user.id, req.body);
     res.status(201).json({ domain, dns: domainManager.getDNSInstructions(domain) });
 });
@@ -202,29 +214,34 @@ router.get('/card/print-preview', authenticate, (req, res) => {
 
 // --- Upload ---
 router.post('/upload', authenticate, (req, res) => {
-    const fs = require('fs');
-    const path = require('path');
-    const contentType = req.headers['content-type'] || '';
-    if (!contentType.includes('multipart/form-data')) {
-        return res.status(400).json({ error: 'Format: multipart/form-data' });
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        let rawBody = '';
+        req.setEncoding('utf8');
+        req.on('data', chunk => { rawBody += chunk; });
+        req.on('end', () => {
+            const matches = rawBody.match(/data:([^;]+);base64,(.+)/);
+            if (!matches) return res.status(400).json({ error: 'Donnees invalides' });
+            const mimeType = matches[1];
+            const base64 = matches[2];
+            const buffer = Buffer.from(base64, 'base64');
+            if (buffer.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'Fichier trop volumineux (max 5 MB)' });
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(mimeType)) return res.status(400).json({ error: 'Type de fichier non autorise' });
+            if (buffer[0] !== 0xFF && buffer[0] !== 0x89 && buffer[0] !== 0x47 && buffer[0] !== 0x52) {
+                return res.status(400).json({ error: 'Contenu du fichier invalide' });
+            }
+            const ext = mimeType.split('/')[1] || 'jpg';
+            const filename = `${req.user.id}_${Date.now()}.${ext}`;
+            const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
+            if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+            fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+            res.json({ url: `/uploads/${filename}`, filename, mimeType, size: buffer.length });
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-    const matches = req.rawBody?.match(/data:([^;]+);base64,(.+)/);
-    if (!matches) return res.status(400).json({ error: 'Donnees invalides' });
-    const mimeType = matches[1];
-    const base64 = matches[2];
-    const buffer = Buffer.from(base64, 'base64');
-    if (buffer.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'Fichier trop volumineux (max 5 MB)' });
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (!allowedTypes.includes(mimeType)) return res.status(400).json({ error: 'Type de fichier non autorise' });
-    if (buffer[0] !== 0xFF && buffer[0] !== 0x89 && buffer[0] !== 0x47 && buffer[0] !== 0x52) {
-        return res.status(400).json({ error: 'Contenu du fichier invalide' });
-    }
-    const ext = mimeType.split('/')[1] || 'jpg';
-    const filename = `${req.user.id}_${Date.now()}.${ext}`;
-    const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
-    if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-    fs.writeFileSync(path.join(uploadsDir, filename), buffer);
-    res.json({ url: `/uploads/${filename}`, filename, mimeType, size: buffer.length });
 });
 
 module.exports = router;

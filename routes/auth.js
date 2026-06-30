@@ -3,6 +3,7 @@ const crypto = require('crypto');
 const authUtils = require('../auth-utils');
 const db = require('../db');
 const config = require('../config');
+const security = require('../security');
 const { rateLimit } = require('../middleware/auth');
 const router = express.Router();
 
@@ -12,6 +13,9 @@ router.post('/register', rateLimit(config.RATE_LIMITS?.auth?.window || 900000, c
         if (!email || !password || !name || !username) return res.status(400).json({ error: 'Champs requis manquants' });
         if (password.length < 6) return res.status(400).json({ error: 'Mot de passe trop court (min 6)' });
         if (!/^[a-zA-Z0-9_-]+$/.test(username) || username.length < 3) return res.status(400).json({ error: 'Nom d\'utilisateur invalide' });
+        if (!security.validateEmail(email)) return res.status(400).json({ error: 'Email invalide' });
+        const passwordErrors = security.validatePassword(password);
+        if (passwordErrors.length) return res.status(400).json({ error: 'Mot de passe: ' + passwordErrors.join(', ') });
 
         const existingEmail = db.findBy('users', 'email', email);
         if (existingEmail) return res.status(400).json({ error: 'Email deja utilise' });
@@ -41,6 +45,7 @@ router.post('/login', rateLimit(config.RATE_LIMITS?.auth?.window || 900000, conf
     try {
         const { email, password } = req.body;
         if (!email || !password) return res.status(400).json({ error: 'Email et mot de passe requis' });
+        if (!security.validateEmail(email)) return res.status(400).json({ error: 'Email invalide' });
 
         const user = db.findBy('users', 'email', email);
         if (!user || !authUtils.verifyPassword(password, user.password, user.salt)) {
@@ -77,7 +82,13 @@ router.post('/forgot-password', async (req, res) => {
         const user = db.findBy('users', 'email', req.body.email);
         if (user) {
             const resetToken = authUtils.generateToken({ userId: user.id, type: 'reset' }, '1h');
-            console.log(`[AUTH] Password reset link sent for ${req.body.email}`);
+            const tokenId = `reset_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+            db.insert('notifications', {
+                id: tokenId, userId: user.id, type: 'password_reset',
+                read: 0, title: 'Reinitialisation de mot de passe',
+                message: `Votre lien de reinitialisation: ${config.SITE_URL || 'http://localhost:4000'}/reset-password.html?token=${resetToken}`
+            });
+            console.log(`[AUTH] Password reset for ${req.body.email}: /reset-password.html?token=${resetToken}`);
         }
         res.json({ message: 'Si cet email existe, un lien a ete envoye' });
     } catch (err) {

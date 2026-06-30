@@ -68,7 +68,7 @@ router.put('/', async (req, res) => {
     const profile = db.findBy('profiles', 'userId', user.id);
     if (!profile) return res.status(404).json({ error: 'Profil non trouve' });
 
-    const allowed = ['bio', 'title', 'location', 'phone', 'email', 'avatar', 'logo', 'signature', 'banner', 'services', 'socials', 'theme', 'template', 'geoLocation', 'gallery', 'website', 'seo', 'customCss', 'customJs'];
+    const allowed = ['bio', 'title', 'location', 'locationData', 'phone', 'email', 'avatar', 'logo', 'signature', 'banner', 'services', 'socials', 'theme', 'template', 'geoLocation', 'gallery', 'website', 'seo', 'customCss', 'customJs'];
     const updates = {};
     for (const key of allowed) {
         if (req.body[key] !== undefined) updates[key] = req.body[key];

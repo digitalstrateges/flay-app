@@ -14,6 +14,65 @@ class PushNotifications {
         };
         this.notifications = new Map();
         this.sseClients = new Map(); // userId -> [res]
+        this.db = null;
+        this._initDb();
+        this._loadSubscriptions();
+    }
+
+    _initDb() {
+        try { this.db = require('./db/index'); } catch {}
+    }
+
+    _loadSubscriptions() {
+        if (!this.db) return;
+        try {
+            const rows = this.db.getAll('push_subscriptions');
+            for (const row of rows) {
+                const keys = typeof row.keys === 'string' ? JSON.parse(row.keys) : row.keys;
+                const sub = { endpoint: row.endpoint, keys };
+                if (!this.subscriptions.has(row.userId)) {
+                    this.subscriptions.set(row.userId, []);
+                }
+                this.subscriptions.get(row.userId).push(sub);
+            }
+            console.log(`[PUSH] Restored ${rows.length} subscriptions from DB`);
+        } catch (e) {
+            console.log('[PUSH] Could not load subscriptions from DB:', e.message);
+        }
+    }
+
+    async _loadFromDb(userId) {
+        if (!this.db) return;
+        try {
+            const rows = this.db.findAll('notifications', 'userId', userId);
+            const parsed = rows.map(r => ({
+                ...r,
+                data: typeof r.data === 'string' ? (() => { try { return JSON.parse(r.data); } catch { return {}; } })() : r.data,
+                read: !!r.read
+            })).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            this.notifications.set(userId, parsed);
+        } catch (e) {
+            console.log('[PUSH] Could not load notifications from DB:', e.message);
+        }
+    }
+
+    async _persistToDb(userId, notification) {
+        if (!this.db) return;
+        try {
+            this.db.insert('notifications', {
+                id: notification.id,
+                userId,
+                type: notification.type || 'info',
+                title: notification.title || '',
+                body: notification.body || '',
+                message: notification.message || notification.body || '',
+                read: 0,
+                data: typeof notification.data === 'object' ? JSON.stringify(notification.data) : notification.data,
+                createdAt: notification.createdAt || new Date().toISOString()
+            });
+        } catch (e) {
+            console.log('[PUSH] DB persist error:', e.message);
+        }
     }
 
     // Register push subscription from browser
@@ -27,6 +86,23 @@ class PushNotifications {
         if (idx >= 0) subs.splice(idx, 1);
         subs.push(subscription);
         console.log(`[PUSH] Registered subscription for user ${userId}`);
+
+        // Persist to DB
+        if (this.db) {
+            try {
+                this.db.deleteWhere('push_subscriptions', 'endpoint', subscription.endpoint);
+                this.db.insert('push_subscriptions', {
+                    id: `sub_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
+                    userId,
+                    endpoint: subscription.endpoint,
+                    keys: JSON.stringify(subscription.keys || {}),
+                    createdAt: new Date().toISOString()
+                });
+            } catch (e) {
+                console.log('[PUSH] DB subscription persist error:', e.message);
+            }
+        }
+
         return { success: true };
     }
 
@@ -34,6 +110,16 @@ class PushNotifications {
         const subs = this.subscriptions.get(userId) || [];
         const idx = subs.findIndex(s => s.endpoint === endpoint);
         if (idx >= 0) subs.splice(idx, 1);
+
+        // Remove from DB
+        if (this.db) {
+            try {
+                this.db.deleteWhere('push_subscriptions', 'endpoint', endpoint);
+            } catch (e) {
+                console.log('[PUSH] DB subscription remove error:', e.message);
+            }
+        }
+
         return { success: true };
     }
 
@@ -48,8 +134,6 @@ class PushNotifications {
 
         for (const sub of subs) {
             try {
-                // If web-push library available, use it
-                // Otherwise fall back to SSE
                 const sent = await this._sendWebPush(sub, notification);
                 if (sent) result.sent++;
                 else result.failed++;
@@ -69,8 +153,6 @@ class PushNotifications {
     }
 
     async _sendWebPush(subscription, notification) {
-        // Web Push protocol implementation
-        // In production, use web-push npm package
         try {
             const webpush = require('web-push');
             if (this.vapidKeys.publicKey && this.vapidKeys.privateKey) {
@@ -100,14 +182,18 @@ class PushNotifications {
             this.notifications.set(userId, []);
         }
         const notifs = this.notifications.get(userId);
-        notifs.unshift({
+        const notif = {
             id: `notif_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
             ...notification,
             read: false,
             createdAt: new Date().toISOString()
-        });
+        };
+        notifs.unshift(notif);
         // Keep last 100
         if (notifs.length > 100) notifs.length = 100;
+
+        // Persist to DB
+        this._persistToDb(userId, notif);
     }
 
     // Server-Sent Events for real-time notifications
@@ -155,13 +241,32 @@ class PushNotifications {
     markAsRead(userId, notificationId) {
         const notifs = this.notifications.get(userId) || [];
         const notif = notifs.find(n => n.id === notificationId);
-        if (notif) notif.read = true;
+        if (notif) {
+            notif.read = true;
+            if (this.db) {
+                try {
+                    this.db.update('notifications', notificationId, { read: 1 });
+                } catch (e) {
+                    console.log('[PUSH] DB mark read error:', e.message);
+                }
+            }
+        }
         return { success: true };
     }
 
     markAllAsRead(userId) {
         const notifs = this.notifications.get(userId) || [];
         notifs.forEach(n => n.read = true);
+        if (this.db) {
+            try {
+                const all = this.db.findAll('notifications', 'userId', userId);
+                for (const n of all) {
+                    this.db.update('notifications', n.id, { read: 1 });
+                }
+            } catch (e) {
+                console.log('[PUSH] DB mark all read error:', e.message);
+            }
+        }
         return { success: true };
     }
 

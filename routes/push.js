@@ -34,21 +34,28 @@ router.post('/unsubscribe', authenticate, (req, res) => {
 });
 
 // SSE endpoint for real-time notifications
-router.get('/stream/:userId', authenticate, (req, res) => {
-    if (req.params.userId !== req.user.id) {
-        return res.status(403).json({ error: 'Acces refuse' });
-    }
+router.get('/stream/:userId', (req, res) => {
+    // Support token from query param for EventSource (no custom headers)
+    const token = req.query.token || (req.headers.authorization || '').replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Token requis' });
 
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no');
-    res.flushHeaders();
+    req.headers.authorization = 'Bearer ' + token;
+    authenticate(req, res, () => {
+        if (req.params.userId !== req.user.id) {
+            return res.status(403).json({ error: 'Acces refuse' });
+        }
 
-    push.addSSEClient(req.user.id, res);
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+        res.setHeader('X-Accel-Buffering', 'no');
+        res.flushHeaders();
 
-    req.on('close', () => {
-        // Client disconnected
+        push.addSSEClient(req.user.id, res);
+
+        req.on('close', () => {
+            // Client disconnected
+        });
     });
 });
 

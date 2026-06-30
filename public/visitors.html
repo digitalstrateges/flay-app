@@ -100,9 +100,9 @@
         </div>
 
         <div class="period-tabs">
-            <div class="period-tab active" onclick="loadStats('7d')">7 jours</div>
-            <div class="period-tab" onclick="loadStats('30d')">30 jours</div>
-            <div class="period-tab" onclick="loadStats('90d')">90 jours</div>
+            <div class="period-tab active" onclick="loadStats('7d', event)">7 jours</div>
+            <div class="period-tab" onclick="loadStats('30d', event)">30 jours</div>
+            <div class="period-tab" onclick="loadStats('90d', event)">90 jours</div>
         </div>
 
         <div class="stats-grid">
@@ -162,9 +162,11 @@
         const user = JSON.parse(localStorage.getItem('flay_user') || '{}');
         if (!token) window.location.href = '/login.html';
 
+        function esc(s) { const d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
+
         let currentPeriod = '7d';
 
-        async function loadStats(period) {
+        async function loadStats(period, event) {
             currentPeriod = period;
             document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
             event?.target?.classList?.add('active');
@@ -181,7 +183,7 @@
                 // Top pages
                 const topEl = document.getElementById('topPages');
                 if (stats.topPages?.length) {
-                    topEl.innerHTML = stats.topPages.map(p => `<div class="ref-item"><span>${p.page}</span><strong>${p.views}</strong></div>`).join('');
+                    topEl.innerHTML = stats.topPages.map(p => `<div class="ref-item"><span>${esc(p.page)}</span><strong>${esc(p.views)}</strong></div>`).join('');
                 } else {
                     topEl.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;">Aucune donnee</div>';
                 }
@@ -191,15 +193,15 @@
                 const d = stats.devices || {};
                 const totalDev = (d.mobile||0)+(d.desktop||0)+(d.tablet||0)||1;
                 devEl.innerHTML = `
-                    <div class="device-item"><div class="device-value" style="color:var(--accent)">${d.mobile||0}</div><div class="device-label">Mobile ${Math.round(((d.mobile||0)/totalDev)*100)}%</div></div>
-                    <div class="device-item"><div class="device-value">${d.desktop||0}</div><div class="device-label">Desktop ${Math.round(((d.desktop||0)/totalDev)*100)}%</div></div>
-                    <div class="device-item"><div class="device-value" style="color:var(--gold)">${d.tablet||0}</div><div class="device-label">Tablette ${Math.round(((d.tablet||0)/totalDev)*100)}%</div></div>
+                    <div class="device-item"><div class="device-value" style="color:var(--accent)">${esc(d.mobile||0)}</div><div class="device-label">Mobile ${esc(Math.round(((d.mobile||0)/totalDev)*100))}%</div></div>
+                    <div class="device-item"><div class="device-value">${esc(d.desktop||0)}</div><div class="device-label">Desktop ${esc(Math.round(((d.desktop||0)/totalDev)*100))}%</div></div>
+                    <div class="device-item"><div class="device-value" style="color:var(--gold)">${esc(d.tablet||0)}</div><div class="device-label">Tablette ${esc(Math.round(((d.tablet||0)/totalDev)*100))}%</div></div>
                 `;
 
                 // Browsers
                 const brEl = document.getElementById('browsersList');
                 if (stats.browsers?.length) {
-                    brEl.innerHTML = stats.browsers.map(b => `<div class="ref-item"><span>${b.name}</span><strong>${b.count}</strong></div>`).join('');
+                    brEl.innerHTML = stats.browsers.map(b => `<div class="ref-item"><span>${esc(b.name)}</span><strong>${esc(b.count)}</strong></div>`).join('');
                 } else {
                     brEl.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;">Aucune donnee</div>';
                 }
@@ -207,7 +209,7 @@
                 // Referrers
                 const refEl = document.getElementById('referrersList');
                 if (stats.referrers?.length) {
-                    refEl.innerHTML = stats.referrers.map(r => `<div class="ref-item"><span>${r.name}</span><strong>${r.count}</strong></div>`).join('');
+                    refEl.innerHTML = stats.referrers.map(r => `<div class="ref-item"><span>${esc(r.name)}</span><strong>${esc(r.count)}</strong></div>`).join('');
                 } else {
                     refEl.innerHTML = '<div style="text-align:center;color:var(--text2);padding:20px;">Aucune donnee</div>';
                 }
@@ -216,13 +218,13 @@
                 const dailyEl = document.getElementById('dailyChart');
                 if (stats.daily?.length) {
                     const maxPV = Math.max(...stats.daily.map(d => d.pageviews), 1);
-                    dailyEl.innerHTML = stats.daily.map(d => `<div class="chart-bar" style="height:${(d.pageviews/maxPV)*100}%"><div class="tip">${d.date}: ${d.pageviews} vues</div></div>`).join('');
+                    dailyEl.innerHTML = stats.daily.map(d => `<div class="chart-bar" style="height:${(d.pageviews/maxPV)*100}%"><div class="tip">${esc(d.date)}: ${esc(d.pageviews)} vues</div></div>`).join('');
                 }
 
                 // Hourly chart
                 const hourlyEl = document.getElementById('hourlyChart');
                 const maxH = Math.max(...(stats.hourly || []), 1);
-                hourlyEl.innerHTML = (stats.hourly || []).map((v, i) => `<div class="chart-bar" style="height:${(v/maxH)*100}%"><div class="tip">${i}h: ${v} vues</div></div>`).join('');
+                hourlyEl.innerHTML = (stats.hourly || []).map((v, i) => `<div class="chart-bar" style="height:${(v/maxH)*100}%"><div class="tip">${esc(i)}h: ${esc(v)} vues</div></div>`).join('');
 
             } catch(e) { console.error(e); }
         }
@@ -239,12 +241,12 @@
                 } else {
                     list.innerHTML = visitors.map(v => `
                         <div class="visitor-item">
-                            <div class="visitor-avatar">${(v.visitorId||'?')[6]?.toUpperCase()||'V'}</div>
+                            <div class="visitor-avatar">${esc((v.visitorId||'?')[6]?.toUpperCase()||'V')}</div>
                             <div class="visitor-info">
-                                <div class="visitor-page">${v.page || '/'}</div>
-                                <div class="visitor-meta">${v.device} - ${v.browser} ${v.country ? '- ' + v.country : ''}</div>
+                                <div class="visitor-page">${esc(v.page || '/')}</div>
+                                <div class="visitor-meta">${esc(v.device)} - ${esc(v.browser)} ${v.country ? '- ' + esc(v.country) : ''}</div>
                             </div>
-                            <div class="visitor-duration">${v.duration}s</div>
+                            <div class="visitor-duration">${esc(v.duration)}s</div>
                         </div>
                     `).join('');
                 }
@@ -259,11 +261,12 @@
         }
 
         // Load embed code
-        document.getElementById('embedCode').innerHTML = `<span class="copy-hint">Cliquer pour copier</span>&lt;script src="${window.location.origin}/api/tracking/embed/${user.id}"&gt;&lt;/script&gt;`;
+        document.getElementById('embedCode').innerHTML = `<span class="copy-hint">Cliquer pour copier</span>&lt;script src="${esc(window.location.origin)}/api/tracking/embed/${esc(user.id)}"&gt;&lt;/script&gt;`;
 
         loadStats('30d');
         loadRealtime();
-        setInterval(loadRealtime, 5000);
+        const rtInterval = setInterval(loadRealtime, 5000);
+        window.addEventListener('beforeunload', () => clearInterval(rtInterval));
     </script>
 </body>
 </html>

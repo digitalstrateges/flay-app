@@ -7,6 +7,7 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0a0a1a">
     <link rel="icon" type="image/svg+xml" href="/logo-animated.svg">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         :root{--bg:#080816;--card:#111125;--card2:#1a1a33;--border:#1e1e38;--accent:#818cf8;--accent2:#a78bfa;--text:#f1f5f9;--muted:#64748b;--radius:12px;--shadow:0 4px 24px rgba(0,0,0,.3)}
@@ -29,6 +30,9 @@
 
         /* Store header */
         .store-header{padding:32px 16px 24px;text-align:center;animation:fadeUp .5s ease-out}
+        .store-map{max-height:200px;border-radius:12px;overflow:hidden;margin:0 0 16px;border:1px solid var(--border);animation:fadeUp .55s ease-out;display:none}
+        .store-map #storeProfileMap{height:200px;z-index:1}
+        .store-map .map-addr{font-size:12px;color:var(--muted);padding:8px 12px;text-align:center;background:var(--card)}
         .store-logo{width:72px;height:72px;border-radius:16px;background:var(--card);margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;border:1px solid var(--border)}
         .store-name{font-size:26px;font-weight:800;margin-bottom:6px}
         .store-desc{color:var(--muted);font-size:14px;max-width:500px;margin:0 auto;line-height:1.5}
@@ -134,6 +138,7 @@
             <div class="store-logo" id="storeLogo">F</div>
             <div class="store-name" id="storeName">Boutique</div>
             <div class="store-desc" id="storeDesc">Decouvrez nos produits</div>
+            <div class="store-map" id="storeMap"><div id="storeProfileMap"></div><div class="map-addr" id="storeMapAddr"></div></div>
         </div>
 
         <div class="toolbar">
@@ -150,6 +155,36 @@
         </div>
 
         <div class="categories" id="categories"></div>
+
+        <div class="social-share" id="socialShare" style="display:flex;gap:8px;padding:8px 0 16px;flex-wrap:wrap;justify-content:center">
+            <span style="font-size:13px;color:var(--muted);margin-right:8px;display:flex;align-items:center">&#128257; Partager</span>
+            <button class="share-btn" data-platform="whatsapp" style="background:#25D366" onclick="shareStore('whatsapp')">WA</button>
+            <button class="share-btn" data-platform="facebook" style="background:#1877F2" onclick="shareStore('facebook')">fb</button>
+            <button class="share-btn" data-platform="twitter" style="background:#000" onclick="shareStore('twitter')">X</button>
+            <button class="share-btn" data-platform="telegram" style="background:#0088CC" onclick="shareStore('telegram')">TG</button>
+            <button class="share-btn" data-platform="pinterest" style="background:#BD081C" onclick="shareStore('pinterest')">Pin</button>
+            <button class="share-btn native" style="background:var(--accent)" onclick="nativeShare()">&#128257;</button>
+        </div>
+        <style>
+            .share-btn{color:#fff;border:none;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;transition:transform .15s,opacity .15s;letter-spacing:.3px}
+            .share-btn:hover{transform:scale(1.08);opacity:.9}
+            .share-btn.native{font-size:16px;padding:6px 10px}
+        </style>
+
+        <div class="popular-section" id="popularSection" style="display:none;margin-bottom:24px">
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:12px">&#128293; Populaires</h3>
+            <div class="popular-scroll" style="display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+            </div>
+        </div>
+        <style>
+            .popular-scroll::-webkit-scrollbar{display:none}
+            .popular-card{min-width:180px;max-width:180px;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;cursor:pointer;flex-shrink:0;transition:all .2s}
+            .popular-card:hover{transform:translateY(-3px);border-color:var(--accent)}
+            .popular-card img{width:100%;aspect-ratio:1;object-fit:cover;background:var(--card2)}
+            .popular-body{padding:10px}
+            .popular-name{font-size:13px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            .popular-price{font-size:15px;font-weight:700;color:var(--accent)}
+        </style>
 
         <div class="product-grid" id="productGrid"></div>
         <div class="load-more" id="loadMore"><button onclick="loadMore()">Charger plus</button></div>
@@ -175,11 +210,25 @@
 
     <div class="toast" id="toast"></div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         let userId='', page=1, totalPages=1, isLoading=false, cart={items:[],total:0,itemCount:0,currency:'XOF'};
         let searchTimer=null;
+        function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
 
         function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+
+        function renderStoreMap(lat,lng,addr){
+            var section=document.getElementById('storeMap');
+            section.style.display='block';
+            document.getElementById('storeMapAddr').textContent=addr;
+            setTimeout(function(){
+                var map=L.map('storeProfileMap',{scrollWheelZoom:false,zoomControl:false}).setView([lat,lng],15);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'&copy; OpenStreetMap',maxZoom:19}).addTo(map);
+                L.marker([lat,lng]).addTo(map);
+                setTimeout(function(){map.invalidateSize()},300);
+            },200);
+        }
 
         function getStoreId(){return window.location.pathname.split('/store/')[1]||''}
 
@@ -191,10 +240,28 @@
                 if(!r.ok){document.getElementById('productGrid').innerHTML='<div class="empty-state"><div class="icon">&#128274;</div><h3>Boutique introuvable</h3></div>';return}
                 const d=await r.json();
                 if(d.storeName)document.getElementById('storeName').textContent=d.storeName;
+                if(d.storeDescription)document.getElementById('storeDesc').textContent=d.storeDescription;
+                if(d.profileLocation&&d.profileLocation.lat&&d.profileLocation.lng){
+                    renderStoreMap(d.profileLocation.lat,d.profileLocation.lng,d.profileLocation.address||'');
+                }
                 loadCategories();
                 loadProducts(1);
+                loadPopular();
             }catch(e){document.getElementById('productGrid').innerHTML='<div class="empty-state"><div class="icon">&#9888;</div><h3>Erreur de chargement</h3></div>'}
             loadCart();
+        }
+
+        async function loadPopular(){
+            try{
+                const r=await fetch('/api/products/popular/'+userId+'?limit=10');
+                const d=await r.json();
+                const items=d.recommendations||[];
+                if(items.length){
+                    document.getElementById('popularSection').style.display='block';
+                    const scroll=document.querySelector('.popular-scroll');
+                    scroll.innerHTML=items.map(p=>'<div class="popular-card" onclick="window.location=\'/product/'+esc(p.id)+'\'"><img src="'+(p.thumbnail||'/placeholder.png')+'" alt="'+esc(p.name)+'" loading="lazy"><div class="popular-body"><div class="popular-name">'+esc(p.name)+'</div><div class="popular-price">'+Number(p.price).toLocaleString()+'</div></div></div>').join('');
+                }
+            }catch(e){}
         }
 
         async function loadCategories(){
@@ -203,7 +270,7 @@
                 const d=await r.json();
                 if(d.categories&&d.categories.length){
                     let html='<button class="cat-pill active" onclick="filterCategory(this,\'\')">Tous</button>';
-                    d.categories.forEach(c=>{html+='<button class="cat-pill" onclick="filterCategory(this,\''+c.id+'\')">'+c.name+'</button>'});
+                    d.categories.forEach(c=>{html+='<button class="cat-pill" onclick="filterCategory(this,\''+esc(c.id)+'\')">'+esc(c.name)+'</button>'});
                     document.getElementById('categories').innerHTML=html;
                 }
             }catch(e){}
@@ -251,11 +318,11 @@
                         const discount=p.comparePrice>p.price?Math.round((1-p.price/p.comparePrice)*100):0;
                         const card=document.createElement('div');
                         card.className='product-card';
-                        card.style.animationDelay=((resetPage?i:i)+'*0.05s');
-                        card.innerHTML='<img class="product-img" src="'+(img||'/placeholder.png')+'" alt="'+(p.name||'')+'" loading="lazy"'+(img?'':' style="padding:32px"')+'>'+
+                        card.style.animationDelay=(i+'*0.05s');
+                        card.innerHTML='<img class="product-img" src="'+(img||'/placeholder.png')+'" alt="'+esc(p.name||'')+'" loading="lazy"'+(img?'':' style="padding:32px"')+'>'+
                             (discount?'<span class="product-badge discount">-'+discount+'%</span>':'')+
                             (p.featured?'<span class="product-badge featured">En vedette</span>':'')+
-                            '<div class="product-body"><div class="product-name">'+(p.name||'')+'</div>'+
+                            '<div class="product-body"><div class="product-name">'+esc(p.name||'')+'</div>'+
                             '<div><span class="product-price">'+Number(p.price).toLocaleString()+'</span>'+
                             (p.comparePrice>p.price?'<span class="product-old">'+Number(p.comparePrice).toLocaleString()+'</span>':'')+'</div></div>';
                         card.onclick=()=>window.location='/product/'+p.id;
@@ -305,10 +372,10 @@
             document.getElementById('cartSubtotal').textContent=cart.items.length+' article'+(cart.items.length>1?'s':'');
             document.getElementById('cartTotal').textContent=formatPrice(cart.total);
 
-            itemsEl.innerHTML=cart.items.map((item,i)=>'<div class="cart-item"><img class="cart-item-img" src="'+(item.image||'/placeholder.png')+'" alt="'+item.name+'">'+
-                '<div class="cart-item-info"><div class="cart-item-name">'+item.name+'</div>'+
+            itemsEl.innerHTML=cart.items.map((item,i)=>'<div class="cart-item"><img class="cart-item-img" src="'+(item.image||'/placeholder.png')+'" alt="'+esc(item.name)+'">'+
+                '<div class="cart-item-info"><div class="cart-item-name">'+esc(item.name)+'</div>'+
                 '<div class="cart-item-price">'+formatPrice(item.price)+'</div>'+
-                '<div class="cart-item-qty"><button class="cart-qty-btn" onclick="updateQty(\''+item.productId+'\','+(item.quantity-1)+')">-</button>'+
+                '<div class="cart-item-qty"><button class="cart-qty-btn" onclick="updateQty(\''+esc(item.productId)+'\','+(item.quantity-1)+')">-</button>'+
                 '<span class="cart-qty-val">'+item.quantity+'</span>'+
                 '<button class="cart-qty-btn" onclick="updateQty(\''+item.productId+'\','+(item.quantity+1)+')">+</button></div></div>'+
                 '<span class="cart-item-remove" onclick="removeFromCart(\''+item.productId+'\')">&#10005;</span></div>').join('');
@@ -343,6 +410,14 @@
         }
 
         function goToCheckout(){window.location.href='/checkout.html'}
+
+        function getStoreUrl(){return window.location.href.split('?')[0]}
+        function shareStore(platform){
+            const url=encodeURIComponent(getStoreUrl()),text=encodeURIComponent(document.getElementById('storeName').textContent+' - Decouvrez ma boutique');
+            const links={whatsapp:'https://wa.me/?text='+text+'%20'+url,facebook:'https://www.facebook.com/sharer/sharer.php?u='+url,twitter:'https://twitter.com/intent/tweet?text='+text+'&url='+url,telegram:'https://t.me/share/url?url='+url+'&text='+text,pinterest:'https://pinterest.com/pin/create/button/?url='+url+'&description='+text};
+            if(links[platform])window.open(links[platform],'_blank','width=600,height=400');
+        }
+        function nativeShare(){if(navigator.share)navigator.share({title:document.getElementById('storeName').textContent,url:getStoreUrl()}).catch(()=>{})}
 
         loadStore();
     </script>

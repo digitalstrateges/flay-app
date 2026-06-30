@@ -83,9 +83,55 @@ router.get('/loyalty', auth, requireFeature('loyalty'), (req, res) => {
     res.json(loyalty);
 });
 
+router.post('/loyalty/redeem', auth, requireFeature('loyalty'), (req, res) => {
+    const { rewardId, points } = req.body;
+    const loyalty = premiumFeatures.getLoyaltyPoints(req.userId);
+    if (loyalty.error) return res.status(403).json({ error: loyalty.error });
+    const reward = loyalty.rewards?.find(r => r.points === parseInt(points));
+    if (!reward) return res.status(400).json({ error: 'Reward not found' });
+    if (loyalty.points < reward.cost) return res.status(400).json({ error: 'Not enough points', current: loyalty.points, required: reward.cost });
+    const user = db.get('users', req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const loyaltyRecord = {
+        id: 'loyalty_' + Date.now() + '_' + require('crypto').randomBytes(4).toString('hex'),
+        userId: req.userId,
+        type: 'redeem',
+        points: -reward.cost,
+        reward: reward.name,
+        createdAt: new Date().toISOString()
+    };
+    db.insert('loyalty_history', loyaltyRecord);
+    res.json({ success: true, redeemed: reward.name, pointsSpent: reward.cost, remaining: loyalty.points - reward.cost });
+});
+
+router.post('/loyalty/add', auth, requireFeature('loyalty'), (req, res) => {
+    const { points, reason } = req.body;
+    if (!points || points <= 0) return res.status(400).json({ error: 'Invalid points' });
+    const loyaltyRecord = {
+        id: 'loyalty_' + Date.now() + '_' + require('crypto').randomBytes(4).toString('hex'),
+        userId: req.userId,
+        type: 'earn',
+        points: parseInt(points),
+        reason: reason || 'bonus',
+        createdAt: new Date().toISOString()
+    };
+    db.insert('loyalty_history', loyaltyRecord);
+    res.json({ success: true, added: points });
+});
+
 // === PREMIUM: SEO ===
 
 router.get('/seo/analyze', auth, requireFeature('seo'), (req, res) => {
+    const analysis = premiumFeatures.analyzeSEO(req.userId);
+    res.json(analysis);
+});
+
+router.get('/seo', auth, requireFeature('seo'), (req, res) => {
+    const analysis = premiumFeatures.analyzeSEO(req.userId);
+    res.json(analysis);
+});
+
+router.post('/seo/analyze', auth, requireFeature('seo'), (req, res) => {
     const analysis = premiumFeatures.analyzeSEO(req.userId);
     res.json(analysis);
 });
@@ -116,7 +162,7 @@ router.post('/team/invite', auth, requireFeature('multiUser'), (req, res) => {
     const team = premiumFeatures.getTeamMembers(req.userId);
     if (team.error) return res.status(403).json({ error: team.error });
     
-    if (team.members.length >= team.maxMembers) {
+    if (team.maxMembers !== -1 && team.members.length >= team.maxMembers) {
         return res.status(400).json({ error: `Maximum ${team.maxMembers} team members` });
     }
     
@@ -131,6 +177,14 @@ router.post('/team/invite', auth, requireFeature('multiUser'), (req, res) => {
     
     db.insert('team_members', member);
     res.json(member);
+});
+
+router.delete('/team/:id', auth, requireFeature('multiUser'), (req, res) => {
+    const member = db.get('team_members', req.params.id);
+    if (!member) return res.status(404).json({ error: 'Member not found' });
+    if (member.ownerId !== req.userId) return res.status(403).json({ error: 'Not authorized' });
+    db.delete('team_members', req.params.id);
+    res.json({ success: true, message: 'Member removed' });
 });
 
 // === DOREE: WHITE LABEL ===
@@ -152,13 +206,13 @@ router.post('/coupons', auth, requireFeature('coupons'), (req, res) => {
 });
 
 router.get('/coupons', auth, requireFeature('coupons'), (req, res) => {
-    const coupons = db.findBy('coupons', 'userId', req.userId) || [];
+    const coupons = db.findAll('coupons', 'userId', req.userId) || [];
     res.json(coupons);
 });
 
 router.post('/coupons/validate', auth, (req, res) => {
     const { code, cartTotal } = req.body;
-    const coupons = db.findBy('coupons', 'userId', req.userId) || [];
+    const coupons = db.findAll('coupons', 'userId', req.userId) || [];
     const coupon = coupons.find(c => c.code === code && c.active);
     
     if (!coupon) return res.status(404).json({ error: 'Coupon not found' });
@@ -181,6 +235,41 @@ router.post('/coupons/validate', auth, (req, res) => {
     res.json({ valid: true, discount, coupon });
 });
 
+// === USAGE STATS (for conversion prompts) ===
+
+router.get('/usage', auth, (req, res) => {
+    const plan = req.user?.plan || 'free';
+    const features = premiumFeatures.getPlanFeatures(plan);
+    const usage = {
+        plan,
+        features: {},
+        limits: {}
+    };
+
+    const counts = {
+        products: db.count('products', { userId: req.userId }),
+        contacts: db.count('contacts', { userId: req.userId }),
+        invoices: db.count('invoices', { userId: req.userId }),
+        reservations: db.count('reservations', { userId: req.userId })
+    };
+
+    for (const [key, limit] of Object.entries(features)) {
+        if (typeof limit === 'number' && limit !== -1 && limit !== true && limit !== false) {
+            const current = counts[key] || 0;
+            usage.features[key] = { current, limit, percentage: Math.round((current / limit) * 100), remaining: Math.max(0, limit - current) };
+            usage.limits[key] = limit;
+        }
+    }
+
+    usage.hasCustomDomain = !!features.customDomain;
+    usage.hasWhiteLabel = !!features.whiteLabel;
+    usage.hasAI = features.aiCredits !== 0;
+    usage.hasLoyalty = !!features.loyalty;
+    usage.hasExport = !!features.export;
+
+    res.json(usage);
+});
+
 // === FEATURE GATING CHECK ===
 
 router.get('/check/:feature', auth, (req, res) => {
@@ -195,11 +284,11 @@ router.get('/dashboard', auth, (req, res) => {
     const features = premiumFeatures.getPlanFeatures(plan);
     
     // Get real data
-    const products = db.findBy('products', 'userId', req.userId) || [];
-    const orders = db.findBy('orders', 'userId', req.userId) || [];
-    const reservations = db.findBy('reservations', 'userId', req.userId) || [];
-    const invoices = db.findBy('invoices', 'userId', req.userId) || [];
-    const contacts = db.findBy('contacts', 'userId', req.userId) || [];
+    const products = db.findAll('products', 'userId', req.userId) || [];
+    const orders = db.findAll('orders', 'userId', req.userId) || [];
+    const reservations = db.findAll('reservations', 'userId', req.userId) || [];
+    const invoices = db.findAll('invoices', 'userId', req.userId) || [];
+    const contacts = db.findAll('contacts', 'userId', req.userId) || [];
     
     const totalRevenue = orders.filter(o => o.status === 'completed').reduce((s, o) => s + (o.total || 0), 0);
     const pendingReservations = reservations.filter(r => r.status === 'pending').length;

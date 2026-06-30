@@ -188,16 +188,41 @@ class DesignStudio {
         </section>` : ''}
 
         <!-- MAP SECTION -->
-        ${profile.geoLocation ? `
+        ${(() => {
+            const ld = profile.locationData || {};
+            const gl = profile.geoLocation || {};
+            const mLat = ld.lat || gl.latitude || null;
+            const mLng = ld.lng || gl.longitude || null;
+            const mAddr = ld.address || gl.address || (typeof profile.location === 'string' ? profile.location : '') || '';
+            if (!mLat && !mLng && !mAddr) return '';
+            const lat = parseFloat(mLat) || 5.36;
+            const lng = parseFloat(mLng) || -4.01;
+            return `
+        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <section class="section map-section" id="location">
             <div class="container">
                 <h2 class="section-title">&#128205; Localisation</h2>
                 <div class="map-container">
-                    <iframe src="${profile.geoLocation.embedUrl}" width="100%" height="300" style="border:0;border-radius:12px;" allowfullscreen="" loading="lazy"></iframe>
-                    <p class="map-address">${this.esc(profile.geoLocation.address || profile.location || '')}</p>
+                    <div id="profileMap" style="height:300px;border-radius:12px;"></div>
+                    ${mAddr ? `<p class="map-address">${this.esc(mAddr)}</p>` : ''}
                 </div>
             </div>
-        </section>` : ''}
+        </section>
+        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <script>
+            (function(){
+                try {
+                    var map = L.map('profileMap', { scrollWheelZoom: false }).setView([${lat}, ${lng}], 15);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        attribution: '&copy; OpenStreetMap',
+                        maxZoom: 19
+                    }).addTo(map);
+                    L.marker([${lat}, ${lng}]).addTo(map);
+                    setTimeout(function(){ map.invalidateSize(); }, 500);
+                } catch(e) {}
+            })();
+        </script>` ;
+        })()}
 
         ${storeProducts.length > 0 ? `
         <!-- STORE SECTION -->

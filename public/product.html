@@ -184,14 +184,44 @@
             <h3>Produits similaires</h3>
             <div class="related-grid" id="relatedGrid"></div>
         </div>
+
+        <div class="related" id="suggestionsSection" style="display:none">
+            <h3>Suggestions</h3>
+            <div class="related-grid" id="suggestionsGrid"></div>
+        </div>
     </div>
 
     <div class="lightbox" id="lightbox" onclick="this.classList.remove('open')">
         <img src="" alt="" id="lightboxImg">
     </div>
     <div class="toast" id="toast"></div>
+    <div class="share-modal" id="shareModal" onclick="this.style.display='none'">
+        <div class="share-modal-content" onclick="event.stopPropagation()">
+            <h3 style="margin-bottom:16px">&#128257; Partager ce produit</h3>
+            <div class="share-btns">
+                <button onclick="shareSocial(‘whatsapp')" style="background:#25D366">&#128172; WhatsApp</button>
+                <button onclick="shareSocial(‘facebook')" style="background:#1877F2">f Facebook</button>
+                <button onclick="shareSocial(‘twitter')" style="background:#000">X Twitter</button>
+                <button onclick="shareSocial(‘telegram')" style="background:#0088CC">&#9992; Telegram</button>
+                <button onclick="shareSocial(‘pinterest')" style="background:#BD081C">&#128204; Pinterest</button>
+            </div>
+            <div class="share-link-copy">
+                <input type="text" id="shareLinkInput" readonly style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--text);font-size:14px;margin-top:12px">
+                <button onclick="copyShareLink()" style="margin-top:8px;width:100%;padding:10px;border:1px solid var(--accent);border-radius:8px;background:var(--accent);color:#fff;font-size:14px;font-weight:600;cursor:pointer">&#128203; Copier le lien</button>
+            </div>
+        </div>
+    </div>
+    <style>
+        .share-modal{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
+        .share-modal-content{background:var(--card);border-radius:16px;padding:24px;width:90%;max-width:360px;border:1px solid var(--border)}
+        .share-modal h3{font-size:16px;font-weight:700}
+        .share-btns{display:flex;flex-direction:column;gap:8px}
+        .share-btns button{color:#fff;border:none;padding:12px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:transform .15s;display:flex;align-items:center;gap:8px}
+        .share-btns button:hover{transform:scale(1.02)}
+    </style>
 
     <script>
+        function esc(s){const d=document.createElement('div');d.textContent=s||'';return d.innerHTML}
         let product=null, qty=1, currentImg=0, images=[];
 
         function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
@@ -223,7 +253,7 @@
             document.getElementById('mainImgSrc').src=imgs[0]||'/placeholder.png';
             document.getElementById('mainImgSrc').alt=product.name;
             if(imgs.length>1){
-                document.getElementById('thumbs').innerHTML=imgs.map((url,i)=>'<div class="thumb'+(i===0?' active':'')+'" onclick="switchImage('+i+')"><img src="'+url+'" alt=""></div>').join('');
+                document.getElementById('thumbs').innerHTML=imgs.map((url,i)=>'<div class="thumb'+(i===0?' active':'')+'" onclick="switchImage('+i+')"><img src="'+esc(url)+'" alt=""></div>').join('');
             }
 
             // Name
@@ -261,7 +291,7 @@
             if(opts.length){
                 const vs=document.getElementById('variantSection');
                 vs.style.display='block';
-                vs.innerHTML=opts.map(o=>'<div class="variant-label">'+o.name+'</div><div class="variant-options">'+o.values.map((v,i)=>'<button class="variant-btn'+(i===0?' active':'')+'" onclick="selectVariant(this,\''+o.name+'\')">'+v+'</button>').join('')+'</div>').join('');
+                vs.innerHTML=opts.map(o=>'<div class="variant-label">'+esc(o.name)+'</div><div class="variant-options">'+o.values.map((v,i)=>'<button class="variant-btn'+(i===0?' active':'')+'" onclick="selectVariant(this,\''+esc(o.name)+'\')">'+esc(v)+'</button>').join('')+'</div>').join('');
             }
 
             // Description
@@ -314,10 +344,21 @@
         }
 
         function shareProduct(){
-            const url=window.location.href;
-            if(navigator.share)navigator.share({title:product.name,url}).catch(()=>{});
-            else{navigator.clipboard.writeText(url);showToast('&#128279; Lien copie !')}
+            const url=window.location.href,t=product.name;
+            document.getElementById('shareLinkInput').value=url;
+            if(navigator.share)navigator.share({title:t,url}).catch(()=>{});
+            else{
+                const m=document.getElementById('shareModal');
+                if(m){m.style.display='flex';return}
+                showToast('&#128279; Lien copie !')
+            }
         }
+        function shareSocial(p){
+            const url=encodeURIComponent(window.location.href),t=encodeURIComponent(product.name);
+            const links={whatsapp:'https://wa.me/?text='+t+'%20'+url,facebook:'https://www.facebook.com/sharer/sharer.php?u='+url,twitter:'https://twitter.com/intent/tweet?text='+t+'&url='+url,telegram:'https://t.me/share/url?url='+url+'&text='+t,pinterest:'https://pinterest.com/pin/create/button/?url='+url+'&description='+t};
+            if(links[p])window.open(links[p],'_blank','width=600,height=400');
+        }
+        function copyShareLink(){navigator.clipboard.writeText(window.location.href);showToast('&#128279; Lien copie !');document.getElementById('shareModal').style.display='none'}
 
         async function loadReviews(){
             try{
@@ -326,7 +367,7 @@
                 const d=await r.json();
                 const list=document.getElementById('reviewsList');
                 if(d.reviews&&d.reviews.length){
-                    list.innerHTML=d.reviews.map(rv=>'<div class="review-card"><div class="review-header"><span class="review-author">'+(rv.userName||'Anonyme')+'</span><span class="review-date">'+new Date(rv.createdAt).toLocaleDateString()+'</span></div><div class="review-stars">'+'&#9733;'.repeat(rv.rating)+'&#9734;'.repeat(5-rv.rating)+'</div>'+(rv.comment?'<div class="review-comment">'+rv.comment+'</div>':'')+'</div>').join('');
+                    list.innerHTML=d.reviews.map(rv=>'<div class="review-card"><div class="review-header"><span class="review-author">'+esc(rv.userName||'Anonyme')+'</span><span class="review-date">'+new Date(rv.createdAt).toLocaleDateString()+'</span></div><div class="review-stars">'+'&#9733;'.repeat(rv.rating)+'&#9734;'.repeat(5-rv.rating)+'</div>'+(rv.comment?'<div class="review-comment">'+esc(rv.comment)+'</div>':'')+'</div>').join('');
                 }else list.innerHTML='<p style="color:var(--muted);font-size:14px">Aucun avis pour le moment</p>';
 
                 const token=localStorage.getItem('flay_token');
@@ -356,7 +397,30 @@
                 const others=items.filter(p=>p.id!==product.id).slice(0,4);
                 if(others.length){
                     document.getElementById('relatedSection').style.display='block';
-                    document.getElementById('relatedGrid').innerHTML=others.map(p=>'<div class="related-card" onclick="window.location=\'/product/'+p.id+'\'"><img src="'+(p.thumbnail||'')+'" alt="'+p.name+'"><div class="related-body"><div class="related-name">'+p.name+'</div><div class="related-price">'+Number(p.price).toLocaleString()+'</div></div></div>').join('');
+                    document.getElementById('relatedGrid').innerHTML=others.map(p=>'<div class="related-card" onclick="window.location=\'/product/'+esc(p.id)+'\'"><img src="'+(p.thumbnail||'')+'" alt="'+esc(p.name)+'"><div class="related-body"><div class="related-name">'+esc(p.name)+'</div><div class="related-price">'+Number(p.price).toLocaleString()+'</div></div></div>').join('');
+                }
+            }catch(e){}
+            loadSuggestions();
+        }
+
+        async function loadSuggestions(){
+            try{
+                const pid=getProductId();
+                const token=localStorage.getItem('flay_token');
+                let url='/api/products/recommendations/'+pid+'?limit=6';
+                if(token){
+                    try{
+                        const u=JSON.parse(localStorage.getItem('flay_user')||'{}');
+                        if(u.id)url+='&userId='+u.id;
+                    }catch(e){}
+                }
+                const r=await fetch(url);
+                const d=await r.json();
+                const items=d.recommendations||[];
+                const filtered=items.filter(p=>p.id!==pid).slice(0,6);
+                if(filtered.length){
+                    document.getElementById('suggestionsSection').style.display='block';
+                    document.getElementById('suggestionsGrid').innerHTML=filtered.map(p=>'<div class="related-card" onclick="window.location=\'/product/'+esc(p.id)+'\'"><img src="'+(p.thumbnail||'')+'" alt="'+esc(p.name)+'"><div class="related-body"><div class="related-name">'+esc(p.name)+'</div><div class="related-price">'+Number(p.price).toLocaleString()+'</div></div></div>').join('');
                 }
             }catch(e){}
         }

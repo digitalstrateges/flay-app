@@ -1,6 +1,7 @@
 const express = require('express');
 const { authenticate } = require('../lib/auth');
 const crm = require('../crm');
+const db = require('../db');
 const router = express.Router();
 
 router.get('/contacts', authenticate, (req, res) => {
@@ -11,6 +12,10 @@ router.get('/contacts', authenticate, (req, res) => {
 });
 
 router.post('/contacts', authenticate, (req, res) => {
+    const premiumFeatures = require('../premium-features');
+    const userContacts = db.findAll('contacts', 'userId', req.user.id) || [];
+    const check = premiumFeatures.checkLimit(req.user.id, 'contacts', userContacts.length);
+    if (!check.allowed) return res.status(403).json({ error: check.reason, code: 'PLAN_LIMIT', limit: check.limit, current: check.current });
     const contact = crm.addContact(req.user.id, req.body);
     res.status(201).json({ contact });
 });

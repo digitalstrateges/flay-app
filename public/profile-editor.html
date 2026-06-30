@@ -56,7 +56,7 @@
 <body>
     <nav class="nav">
         <div class="logo">Flay</div>
-        <a href="/dashboard" class="btn-back">Retour</a>
+        <a href="/dashboard.html" class="btn-back">Retour</a>
     </nav>
     <div class="main">
         <h1 class="page-title">Editer mon profil</h1>
@@ -91,8 +91,14 @@
                     <div class="social-input"><span class="icon">&#128247;</span><input type="url" id="instagram" placeholder="Instagram URL"></div>
                     <div class="social-input"><span class="icon">&#128188;</span><input type="url" id="linkedin" placeholder="LinkedIn URL"></div>
                     <div class="social-input"><span class="icon">&#128172;</span><input type="url" id="whatsapp" placeholder="WhatsApp URL"></div>
+                    <div class="social-input"><span class="icon">&#128038;</span><input type="url" id="twitter" placeholder="Twitter / X URL"></div>
                     <div class="social-input"><span class="icon">&#127916;</span><input type="url" id="tiktok" placeholder="TikTok URL"></div>
                     <div class="social-input"><span class="icon">&#128249;</span><input type="url" id="youtube" placeholder="YouTube URL"></div>
+                    <div class="social-input"><span class="icon">&#9992;</span><input type="url" id="telegram" placeholder="Telegram URL"></div>
+                    <div class="social-input"><span class="icon">&#128123;</span><input type="url" id="snapchat" placeholder="Snapchat URL"></div>
+                    <div class="social-input"><span class="icon">&#128204;</span><input type="url" id="pinterest" placeholder="Pinterest URL"></div>
+                    <div class="social-input"><span class="icon">&#129525;</span><input type="url" id="threads" placeholder="Threads URL"></div>
+                    <div class="social-input"><span class="icon">&#128172;</span><input type="url" id="discord" placeholder="Discord URL"></div>
                 </div>
             </div>
 
@@ -156,7 +162,10 @@
             document.getElementById('location').value=p.location||'';document.getElementById('website').value=p.website||'';
             document.getElementById('facebook').value=p.socials?.facebook||'';document.getElementById('instagram').value=p.socials?.instagram||'';
             document.getElementById('linkedin').value=p.socials?.linkedin||'';document.getElementById('whatsapp').value=p.socials?.whatsapp||'';
-            document.getElementById('tiktok').value=p.socials?.tiktok||'';document.getElementById('youtube').value=p.socials?.youtube||'';
+            document.getElementById('twitter').value=p.socials?.twitter||'';document.getElementById('tiktok').value=p.socials?.tiktok||'';
+            document.getElementById('youtube').value=p.socials?.youtube||'';document.getElementById('telegram').value=p.socials?.telegram||'';
+            document.getElementById('snapchat').value=p.socials?.snapchat||'';document.getElementById('pinterest').value=p.socials?.pinterest||'';
+            document.getElementById('threads').value=p.socials?.threads||'';document.getElementById('discord').value=p.socials?.discord||'';
             document.getElementById('servicesList').innerHTML='';
             if(p.services&&p.services.length>0)p.services.forEach(s=>addService(s.name,s.price));else addService();
             selectedTheme=p.theme||'dark';loadThemes();
@@ -165,8 +174,8 @@
         document.getElementById('profileForm').addEventListener('submit',async e=>{
             e.preventDefault();
             const services=[];document.querySelectorAll('.service-item').forEach(i=>{const n=i.querySelector('.svc-name').value.trim();const p=i.querySelector('.svc-price').value.trim();if(n)services.push({name:n,price:p})});
-            const body={slug:document.getElementById('slug').value.trim(),title:document.getElementById('title').value.trim(),bio:document.getElementById('bio').value.trim(),phone:document.getElementById('phone').value.trim(),email:document.getElementById('email').value.trim(),location:document.getElementById('location').value.trim(),website:document.getElementById('website').value.trim(),theme:selectedTheme,socials:{facebook:document.getElementById('facebook').value.trim(),instagram:document.getElementById('instagram').value.trim(),linkedin:document.getElementById('linkedin').value.trim(),whatsapp:document.getElementById('whatsapp').value.trim(),tiktok:document.getElementById('tiktok').value.trim(),youtube:document.getElementById('youtube').value.trim()},services};
-            const d=await api('/api/profile/my',{method:'PUT',body:JSON.stringify(body)});
+            const body={slug:document.getElementById('slug').value.trim(),title:document.getElementById('title').value.trim(),bio:document.getElementById('bio').value.trim(),phone:document.getElementById('phone').value.trim(),email:document.getElementById('email').value.trim(),location:document.getElementById('location').value.trim(),website:document.getElementById('website').value.trim(),theme:selectedTheme,socials:{facebook:document.getElementById('facebook').value.trim(),instagram:document.getElementById('instagram').value.trim(),linkedin:document.getElementById('linkedin').value.trim(),whatsapp:document.getElementById('whatsapp').value.trim(),twitter:document.getElementById('twitter').value.trim(),tiktok:document.getElementById('tiktok').value.trim(),youtube:document.getElementById('youtube').value.trim(),telegram:document.getElementById('telegram').value.trim(),snapchat:document.getElementById('snapchat').value.trim(),pinterest:document.getElementById('pinterest').value.trim(),threads:document.getElementById('threads').value.trim(),discord:document.getElementById('discord').value.trim()},services};
+            const d=await api('/api/profile',{method:'PUT',body:JSON.stringify(body)});
             if(d&&d.profile)showToast('Profil enregistre !');else showToast('Erreur');
         });
 

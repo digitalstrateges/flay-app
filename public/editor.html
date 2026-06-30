@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Flay - Editeur de Profil</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <style>
         :root { --bg: #0a0a1a; --card: #15152a; --border: #252545; --accent: #667eea; --text: #fff; --text2: #a0a0c0; --gradient: linear-gradient(135deg, #667eea, #764ba2); --gold: #ffd700; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -80,7 +81,17 @@
                     <div class="ai-suggestion" onclick="generateBio()"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg> Generer avec l'Agent IA</div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group"><label>Localisation</label><input type="text" id="edLocation" placeholder="Abidjan, Cote d'Ivoire"></div>
+                    <div class="form-group"><label>Localisation</label>
+                        <div style="display:flex;gap:8px">
+                            <input type="text" id="edLocation" placeholder="Abidjan, Cote d'Ivoire" style="flex:1" onkeydown="if(event.key==='Enter')geocodeLocation()">
+                            <button type="button" class="btn btn-secondary" onclick="geocodeLocation()" style="padding:8px 14px;white-space:nowrap">&#128269;</button>
+                        </div>
+                        <div id="mapPicker" style="height:220px;border-radius:8px;margin-top:8px;display:none"></div>
+                        <div style="display:flex;gap:8px;margin-top:4px">
+                            <input type="text" id="edLat" placeholder="Latitude" readonly style="font-size:11px;padding:6px 8px;flex:1">
+                            <input type="text" id="edLng" placeholder="Longitude" readonly style="font-size:11px;padding:6px 8px;flex:1">
+                        </div>
+                    </div>
                     <div class="form-group"><label>Site web</label><input type="url" id="edWebsite" placeholder="https://monsite.com"></div>
                 </div>
                 <div class="form-row">
@@ -105,6 +116,12 @@
                     <div class="social-row"><span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><input type="url" id="edLi" placeholder="LinkedIn URL"></div>
                     <div class="social-row"><span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span><input type="url" id="edTt" placeholder="TikTok URL"></div>
                     <div class="social-row"><span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg></span><input type="url" id="edYt" placeholder="YouTube URL"></div>
+                    <div class="social-row"><span style="color:#25D366">&#128172;</span><input type="url" id="edWa" placeholder="WhatsApp URL"></div>
+                    <div class="social-row"><span style="color:#0088CC">&#9992;</span><input type="url" id="edTg" placeholder="Telegram URL"></div>
+                    <div class="social-row"><span style="color:#FFFC00">&#128123;</span><input type="url" id="edSc" placeholder="Snapchat URL"></div>
+                    <div class="social-row"><span style="color:#BD081C">&#128204;</span><input type="url" id="edPi" placeholder="Pinterest URL"></div>
+                    <div class="social-row"><span style="color:#000">&#129525;</span><input type="url" id="edTh" placeholder="Threads URL"></div>
+                    <div class="social-row"><span style="color:#5865F2">&#128172;</span><input type="url" id="edDc" placeholder="Discord URL"></div>
                 </div>
             </div>
 
@@ -123,6 +140,21 @@
                 </div>
             </div>
 
+            <div class="card">
+                <div class="card-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> Notifications push</div>
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                    <div>
+                        <div style="font-size:14px;font-weight:600;margin-bottom:2px">Recevoir des alertes</div>
+                        <div style="font-size:12px;color:var(--text2)">Soyez notifie des reservations, paiements et rappels</div>
+                    </div>
+                    <label style="position:relative;display:inline-block;width:48px;height:28px;cursor:pointer">
+                        <input type="checkbox" id="pushToggle" onchange="togglePush()" style="opacity:0;width:0;height:0">
+                        <span style="position:absolute;inset:0;background:var(--border);border-radius:14px;transition:all .3s;cursor:pointer"></span>
+                        <span id="pushToggleKnob" style="position:absolute;top:3px;left:3px;width:22px;height:22px;background:var(--text2);border-radius:50%;transition:all .3s"></span>
+                    </label>
+                </div>
+                <div id="pushStatus" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+            </div>
             <div class="actions">
                 <button class="btn btn-primary" onclick="saveProfile()">&#128190; Enregistrer</button>
                 <a href="/p/" target="_blank" class="btn btn-secondary" id="previewLink"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Voir mon profil</a>
@@ -194,12 +226,85 @@
             } catch(e) {}
         }
 
+        let mapPicker = null, mapMarker = null;
+        function initMapPicker(lat, lng) {
+            const container = document.getElementById('mapPicker');
+            container.style.display = 'block';
+            if (!mapPicker) {
+                mapPicker = L.map('mapPicker', { scrollWheelZoom: true }).setView([lat || 5.36, lng || -4.01], 13);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap', maxZoom: 19 }).addTo(mapPicker);
+                mapPicker.on('click', function(e) {
+                    placeMarker(e.latlng.lat, e.latlng.lng);
+                    reverseGeocode(e.latlng.lat, e.latlng.lng);
+                });
+                setTimeout(function(){ mapPicker.invalidateSize(); }, 300);
+            }
+            if (!mapMarker) {
+                placeMarker(lat || 5.36, lng || -4.01);
+            }
+            mapPicker.setView([lat || 5.36, lng || -4.01], 13);
+        }
+
+        function placeMarker(lat, lng) {
+            if (mapMarker) mapPicker.removeLayer(mapMarker);
+            mapMarker = L.marker([lat, lng], { draggable: true }).addTo(mapPicker);
+            mapMarker.on('dragend', function(e) {
+                const pos = e.target.getLatLng();
+                document.getElementById('edLat').value = pos.lat.toFixed(6);
+                document.getElementById('edLng').value = pos.lng.toFixed(6);
+                reverseGeocode(pos.lat, pos.lng);
+            });
+            document.getElementById('edLat').value = lat.toFixed(6);
+            document.getElementById('edLng').value = lng.toFixed(6);
+        }
+
+        async function geocodeLocation() {
+            const q = document.getElementById('edLocation').value.trim();
+            if (!q) return;
+            try {
+                const r = await fetch('https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(q) + '&limit=1&countrycodes=ci,bf,ml,sn,gn,ne,tg,bj,gh,ng');
+                const data = await r.json();
+                if (data && data[0]) {
+                    const lat = parseFloat(data[0].lat);
+                    const lng = parseFloat(data[0].lon);
+                    const displayName = data[0].display_name;
+                    document.getElementById('edLocation').value = displayName.split(',')[0];
+                    initMapPicker(lat, lng);
+                    placeMarker(lat, lng);
+                } else {
+                    showToast('Adresse non trouvee');
+                }
+            } catch(e) {
+                showToast('Erreur de geocodage');
+            }
+        }
+
+        async function reverseGeocode(lat, lng) {
+            try {
+                const r = await fetch('https://nominatim.openstreetmap.org/reverse?format=json&lat=' + lat + '&lon=' + lng + '&zoom=18');
+                const data = await r.json();
+                if (data && data.display_name) {
+                    const parts = data.display_name.split(',');
+                    document.getElementById('edLocation').value = parts.slice(0, 3).join(',').trim();
+                }
+            } catch(e) {}
+        }
+
         async function saveProfile() {
+            const latVal = document.getElementById('edLat').value;
+            const lngVal = document.getElementById('edLng').value;
+            const locationData = (latVal && lngVal) ? {
+                lat: parseFloat(latVal),
+                lng: parseFloat(lngVal),
+                address: document.getElementById('edLocation').value,
+                placeId: ''
+            } : null;
             const data = {
                 name: document.getElementById('edName').value,
                 title: document.getElementById('edTitle').value,
                 bio: document.getElementById('edBio').value,
                 location: document.getElementById('edLocation').value,
+                locationData,
                 website: document.getElementById('edWebsite').value,
                 phone: document.getElementById('edPhone').value,
                 email: document.getElementById('edEmail').value,
@@ -212,7 +317,13 @@
                     twitter: document.getElementById('edTw').value,
                     linkedin: document.getElementById('edLi').value,
                     tiktok: document.getElementById('edTt').value,
-                    youtube: document.getElementById('edYt').value
+                    youtube: document.getElementById('edYt').value,
+                    whatsapp: document.getElementById('edWa').value,
+                    telegram: document.getElementById('edTg').value,
+                    snapchat: document.getElementById('edSc').value,
+                    pinterest: document.getElementById('edPi').value,
+                    threads: document.getElementById('edTh').value,
+                    discord: document.getElementById('edDc').value
                 }
             };
             try {
@@ -232,6 +343,45 @@
             document.getElementById('previewFrame').src = '/p/' + user.username + '?t=' + Date.now();
         }
 
+        // Push notification toggle styles
+        const style = document.createElement('style');
+        style.textContent = '#pushToggle:checked + span { background: var(--accent) !important } #pushToggle:checked + span + span { transform: translateX(20px); background: #fff !important }';
+        document.head.appendChild(style);
+
+        async function togglePush() {
+            const enabled = document.getElementById('pushToggle').checked;
+            const status = document.getElementById('pushStatus');
+            if (enabled) {
+                status.textContent = 'Demande d\'autorisation...';
+                const sub = await FlayPWA.subscribeToPush();
+                if (sub) {
+                    status.textContent = 'Notifications activees';
+                    document.getElementById('pushToggle').checked = true;
+                } else {
+                    status.textContent = 'Impossible d\'activer les notifications. Verifiez les permissions.';
+                    document.getElementById('pushToggle').checked = false;
+                }
+            } else {
+                await FlayPWA.unsubscribeFromPush();
+                status.textContent = 'Notifications desactivees';
+            }
+        }
+
+        async function initPushState() {
+            const status = document.getElementById('pushStatus');
+            try {
+                const subbed = await FlayPWA.isSubscribed();
+                document.getElementById('pushToggle').checked = subbed;
+                status.textContent = subbed ? 'Notifications activees' : 'Notifications desactivees';
+                if (!('Notification' in window)) {
+                    status.textContent = 'Notifications non supportees par ce navigateur';
+                    document.getElementById('pushToggle').disabled = true;
+                }
+            } catch (e) {
+                status.textContent = 'Erreur de verification';
+            }
+        }
+
         (async () => {
             initThemes();
             try {
@@ -242,6 +392,12 @@
                     document.getElementById('edTitle').value = profile?.title || '';
                     document.getElementById('edBio').value = profile?.bio || '';
                     document.getElementById('edLocation').value = profile?.location || '';
+                    const locData = profile?.locationData;
+                    if (locData && locData.lat && locData.lng) {
+                        document.getElementById('edLat').value = locData.lat;
+                        document.getElementById('edLng').value = locData.lng;
+                        setTimeout(() => initMapPicker(locData.lat, locData.lng), 100);
+                    }
                     document.getElementById('edWebsite').value = profile?.website || '';
                     document.getElementById('edPhone').value = profile?.phone || '';
                     document.getElementById('edEmail').value = profile?.email || '';
@@ -255,10 +411,17 @@
                         document.getElementById('edLi').value = profile.socials.linkedin || '';
                         document.getElementById('edTt').value = profile.socials.tiktok || '';
                         document.getElementById('edYt').value = profile.socials.youtube || '';
+                        document.getElementById('edWa').value = profile.socials.whatsapp || '';
+                        document.getElementById('edTg').value = profile.socials.telegram || '';
+                        document.getElementById('edSc').value = profile.socials.snapchat || '';
+                        document.getElementById('edPi').value = profile.socials.pinterest || '';
+                        document.getElementById('edTh').value = profile.socials.threads || '';
+                        document.getElementById('edDc').value = profile.socials.discord || '';
                     }
                     updatePreview();
                 }
-            } catch(e) {}
+                } catch(e) {}
+            initPushState();
         })();
     </script>
 </body>

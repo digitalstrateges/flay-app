@@ -8,6 +8,24 @@ class AnalyticsEngine {
         this.events = new Map();
         this.dailyStats = new Map();
         this.realtime = new Map();
+        this._startCleanup();
+    }
+
+    _startCleanup() {
+        setInterval(() => {
+            const now = Date.now();
+            const maxAge = 24 * 60 * 60 * 1000;
+            for (const [userId, events] of this.events) {
+                const filtered = events.filter(e => now - new Date(e.timestamp).getTime() < maxAge);
+                if (filtered.length === 0) this.events.delete(userId);
+                else this.events.set(userId, filtered);
+            }
+            const cutoff = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            for (const [key] of this.dailyStats) {
+                const date = key.split('_').pop();
+                if (date < cutoff) this.dailyStats.delete(key);
+            }
+        }, 300000);
     }
 
     track(userId, event, data = {}) {
@@ -22,7 +40,9 @@ class AnalyticsEngine {
         };
 
         if (!this.events.has(userId)) this.events.set(userId, []);
-        this.events.get(userId).push(record);
+        const userEvents = this.events.get(userId);
+        userEvents.push(record);
+        if (userEvents.length > 1000) userEvents.splice(0, userEvents.length - 1000);
 
         const dailyKey = `${userId}_${record.date}`;
         if (!this.dailyStats.has(dailyKey)) {

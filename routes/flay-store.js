@@ -63,8 +63,7 @@ router.get('/pay/:purchaseId', async (req, res) => {
         // Apply effect to user's plan limits
         if (item && item.effect) {
             const userId = purchase.userId;
-            const user = db.query('users', { id: userId })[0] || 
-                         require('../db').get('users', userId);
+            const user = db.get('users', userId);
             
             if (user) {
                 const currentLimits = JSON.parse(user.planLimits || '{}');

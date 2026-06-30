@@ -109,6 +109,22 @@ class SocialIntegration {
                 shareUrl: 'https://pinterest.com/pin/create/button/?url={url}&description={text}',
                 features: ['pin', 'board', 'shop'],
                 metrics: ['pins', 'saves', 'clicks']
+            },
+            threads: {
+                id: 'threads',
+                name: 'Threads',
+                icon: '🧵',
+                color: '#000000',
+                features: ['post', 'thread'],
+                metrics: ['views', 'likes', 'replies']
+            },
+            discord: {
+                id: 'discord',
+                name: 'Discord',
+                icon: '💬',
+                color: '#5865F2',
+                features: ['chat', 'voice', 'community'],
+                metrics: ['members', 'messages', 'active']
             }
         };
     }

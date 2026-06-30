@@ -82,12 +82,12 @@
         <p class="subtitle">Gerez votre compte, securite et preferences</p>
 
         <div class="tabs">
-            <div class="tab active" onclick="showTab('account')">Compte</div>
-            <div class="tab" onclick="showTab('security')">Securite</div>
-            <div class="tab" onclick="showTab('notifications')">Notifications</div>
-            <div class="tab" onclick="showTab('api')">API Keys</div>
-            <div class="tab" onclick="showTab('domains')">Domaines</div>
-            <div class="tab" onclick="showTab('team')">Equipe</div>
+            <div class="tab active" onclick="showTab('account', event)">Compte</div>
+            <div class="tab" onclick="showTab('security', event)">Securite</div>
+            <div class="tab" onclick="showTab('notifications', event)">Notifications</div>
+            <div class="tab" onclick="showTab('api', event)">API Keys</div>
+            <div class="tab" onclick="showTab('domains', event)">Domaines</div>
+            <div class="tab" onclick="showTab('team', event)">Equipe</div>
         </div>
 
         <div id="account" class="tab-content active">
@@ -219,11 +219,13 @@
         const user = JSON.parse(localStorage.getItem('flay_user') || '{}');
         if (!token) window.location.href = '/login.html';
 
-        function showTab(id) {
+        function esc(s) { const d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; }
+
+        function showTab(id, event) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active');
-            event.target.classList.add('active');
+            event?.target?.classList?.add('active');
         }
 
         async function loadProfile() {
@@ -256,7 +258,11 @@
             const confirm = document.getElementById('secConfirmPass').value;
             if (newPass !== confirm) { alert('Les mots de passe ne correspondent pas'); return; }
             if (newPass.length < 6) { alert('Min 6 caracteres'); return; }
-            alert('Mot de passe change !');
+            try {
+                const res = await fetch('/api/auth/password', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ currentPassword: current, newPassword: newPass }) });
+                if (res.ok) { alert('Mot de passe change !'); document.getElementById('secCurrentPass').value = ''; document.getElementById('secNewPass').value = ''; document.getElementById('secConfirmPass').value = ''; }
+                else { const d = await res.json(); alert(d.error || 'Erreur'); }
+            } catch(e) { alert('Erreur reseau'); }
         }
 
         async function setup2FA() {
@@ -310,7 +316,7 @@
                 const res = await fetch('/api/api-keys', { headers: { 'Authorization': 'Bearer ' + token } });
                 if (res.ok) {
                     const { apiKeys } = await res.json();
-                    document.getElementById('apiKeysList').innerHTML = apiKeys.length ? apiKeys.map(k => `<div class="key-item"><div style="font-weight:600;font-size:14px;">${k.name}</div><div class="key-value">${k.key}</div><button class="btn btn-danger btn-sm" onclick="deleteApiKey('${k.id}')">Supprimer</button></div>`).join('') : '<p style="color:var(--text2);">Aucune cle API</p>';
+                    document.getElementById('apiKeysList').innerHTML = apiKeys.length ? apiKeys.map(k => `<div class="key-item"><div style="font-weight:600;font-size:14px;">${esc(k.name)}</div><div class="key-value">${esc(k.key)}</div><button class="btn btn-danger btn-sm" onclick="deleteApiKey('${esc(k.id)}')">Supprimer</button></div>`).join('') : '<p style="color:var(--text2);">Aucune cle API</p>';
                 }
             } catch(e) {}
         }
@@ -324,17 +330,31 @@
             const domain = document.getElementById('dDomain').value;
             const subdomain = document.getElementById('dSubdomain').value;
             if (!domain && !subdomain) return alert('Entrez un domaine');
-            alert('Domaine ajoute ! Verifiez vos DNS.');
+            try {
+                const res = await fetch('/api/domains', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ domain, subdomain }) });
+                if (res.ok) { alert('Domaine ajoute ! Verifiez vos DNS.'); document.getElementById('dDomain').value = ''; document.getElementById('dSubdomain').value = ''; }
+                else { const d = await res.json(); alert(d.error || 'Erreur'); }
+            } catch(e) { alert('Erreur reseau'); }
         }
 
         async function inviteMember() {
             const email = document.getElementById('tEmail').value;
             const role = document.getElementById('tRole').value;
             if (!email) return;
-            alert('Invitation envoyee a ' + email);
+            try {
+                const res = await fetch('/api/premium/team/invite', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token }, body: JSON.stringify({ email, role }) });
+                if (res.ok) { alert('Invitation envoyee a ' + email); document.getElementById('tEmail').value = ''; }
+                else { const d = await res.json(); alert(d.error || 'Erreur'); }
+            } catch(e) { alert('Erreur reseau'); }
         }
 
-        function deleteAccount() { alert('Compte supprime.'); }
+        async function deleteAccount() {
+            try {
+                const res = await fetch('/api/auth/account', { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+                if (res.ok) { alert('Compte supprime.'); localStorage.clear(); window.location.href = '/login.html'; }
+                else { const d = await res.json(); alert(d.error || 'Erreur'); }
+            } catch(e) { alert('Erreur reseau'); }
+        }
 
         // --- Wave Payment Link ---
         async function loadWaveStatus() {
@@ -346,12 +366,12 @@
                     const btnRemove = document.getElementById('btnRemoveWave');
                     
                     if (data.configured) {
-                        statusEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:12px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;"><span style="color:#22c55e;font-size:20px;">✓</span><div><div style="color:#22c55e;font-weight:600;font-size:14px;">Wave configure</div><div style="color:var(--text2);font-size:12px;">Lien actif depuis ' + new Date(data.createdAt).toLocaleDateString('fr') + '</div></div></div>';
+                        statusEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px;padding:12px;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:8px;"><span style="color:#22c55e;font-size:20px;">✓</span><div><div style="color:#22c55e;font-weight:600;font-size:14px;">Wave configure</div><div style="color:var(--text2);font-size:12px;">Lien actif depuis ' + esc(new Date(data.createdAt).toLocaleDateString('fr')) + '</div></div></div>';
                         document.getElementById('sWaveLink').value = data.paymentLink || '';
                         btnRemove.style.display = 'inline-block';
                         
                         // Test link
-                        document.getElementById('waveTest').innerHTML = '<a href="' + data.paymentLink + '" target="_blank" style="color:#1dc4e9;font-size:13px;">Tester le lien de paiement →</a>';
+                        document.getElementById('waveTest').innerHTML = '<a href="' + esc(data.paymentLink) + '" target="_blank" style="color:#1dc4e9;font-size:13px;">Tester le lien de paiement →</a>';
                     } else {
                         statusEl.innerHTML = '<div style="padding:12px;background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.3);border-radius:8px;color:#eab308;font-size:14px;">Aucun lien Wave configure</div>';
                         btnRemove.style.display = 'none';

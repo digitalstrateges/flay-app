@@ -148,9 +148,40 @@ class ECommerce {
         return true;
     }
 
-    // === CART (still in-memory for simplicity - persists during session) ===
+    // === CART (persisted to database) ===
     constructor() {
         this.carts = new Map();
+        this.loadCarts();
+    }
+
+    loadCarts() {
+        const rows = db.getAll('carts');
+        for (const row of rows) {
+            const items = typeof row.items === 'string' ? JSON.parse(row.items) : (row.items || []);
+            const cart = { items, total: 0, currency: 'XOF', itemCount: 0 };
+            this._recalcCart(cart);
+            this.carts.set(row.userId, cart);
+        }
+    }
+
+    saveCart(userId) {
+        const cart = this.carts.get(userId);
+        if (!cart) {
+            db.deleteWhere('carts', 'userId', userId);
+            return;
+        }
+        const existing = db.findBy('carts', 'userId', userId);
+        const data = {
+            userId,
+            items: JSON.stringify(cart.items),
+            updatedAt: new Date().toISOString()
+        };
+        if (existing) {
+            db.update('carts', existing.id, data);
+        } else {
+            const id = `cart_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+            db.insert('carts', { id, ...data });
+        }
     }
 
     getCart(userId) {
@@ -178,6 +209,7 @@ class ECommerce {
         }
         this._recalcCart(cart);
         this.carts.set(userId, cart);
+        this.saveCart(userId);
         return cart;
     }
 
@@ -191,6 +223,7 @@ class ECommerce {
         else cart.items[idx].quantity = quantity;
         this._recalcCart(cart);
         this.carts.set(userId, cart);
+        this.saveCart(userId);
         return cart;
     }
 
@@ -200,6 +233,7 @@ class ECommerce {
 
     clearCart(userId) {
         this.carts.delete(userId);
+        this.saveCart(userId);
         return { items: [], total: 0, currency: 'XOF', itemCount: 0 };
     }
 
@@ -358,7 +392,7 @@ class ECommerce {
 
     generateTrackingUrl(trackingNumber) {
         const config = require('./config');
-        return `${config.SITE_URL || 'http://localhost:3000'}/track/${trackingNumber}`;
+        return `${config.SITE_URL || 'http://localhost:4000'}/track/${trackingNumber}`;
     }
 
     // === COUPONS ===
@@ -439,6 +473,92 @@ class ECommerce {
             pendingOrders: orders.filter(o => o.status === 'pending').length,
             totalRevenue, topProducts,
             averageOrderValue: orders.length > 0 ? Math.round(totalRevenue / orders.length) : 0
+        };
+    }
+
+    // === RECOMMENDATIONS ===
+    getRecommendations(userId, productId, limit = 6) {
+        const product = db.get('products', productId);
+        if (!product) return [];
+        const allProducts = db.getAll('products').filter(p => p.status === 'active' && p.id !== productId);
+        const scores = new Map();
+
+        if (product.categoryId) {
+            for (const p of allProducts) {
+                if (p.categoryId === product.categoryId) {
+                    scores.set(p.id, (scores.get(p.id) || 0) + 3);
+                }
+            }
+        }
+
+        for (const p of allProducts) {
+            if (p.userId === product.userId) {
+                const s = typeof p.stats === 'string' ? JSON.parse(p.stats) : (p.stats || {});
+                const boost = (s.views || 0) * 0.001 + (s.sales || 0) * 0.01 + (s.rating || 0);
+                scores.set(p.id, (scores.get(p.id) || 0) + boost);
+            }
+        }
+
+        if (userId) {
+            const userOrders = db.findAll('orders', 'userId', userId);
+            const purchasedCategoryIds = new Set();
+            for (const order of userOrders) {
+                const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+                for (const item of items) {
+                    const prod = db.get('products', item.productId);
+                    if (prod && prod.categoryId) purchasedCategoryIds.add(prod.categoryId);
+                }
+            }
+            for (const p of allProducts) {
+                if (p.categoryId && purchasedCategoryIds.has(p.categoryId)) {
+                    scores.set(p.id, (scores.get(p.id) || 0) + 2);
+                }
+            }
+        }
+
+        const scored = [...scores.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
+        return scored.map(([id]) => this._formatProduct(db.get('products', id))).filter(Boolean);
+    }
+
+    getPopularProducts(userId, limit = 12) {
+        let products = db.getAll('products').filter(p => p.status === 'active');
+        products.sort((a, b) => {
+            const sa = typeof a.stats === 'string' ? JSON.parse(a.stats) : (a.stats || {});
+            const sb = typeof b.stats === 'string' ? JSON.parse(b.stats) : (b.stats || {});
+            return ((sb.views || 0) + (sb.sales || 0) * 10) - ((sa.views || 0) + (sa.sales || 0) * 10);
+        });
+        return products.slice(0, limit).map(p => this._formatProduct(p));
+    }
+
+    getFrequentlyBoughtTogether(productId, limit = 4) {
+        const orders = db.getAll('orders');
+        const relatedIds = new Map();
+        for (const order of orders) {
+            const items = typeof order.items === 'string' ? JSON.parse(order.items) : (order.items || []);
+            const hasProduct = items.some(i => i.productId === productId);
+            if (hasProduct) {
+                for (const item of items) {
+                    if (item.productId !== productId) {
+                        relatedIds.set(item.productId, (relatedIds.get(item.productId) || 0) + 1);
+                    }
+                }
+            }
+        }
+        const sorted = [...relatedIds.entries()].sort((a, b) => b[1] - a[1]).slice(0, limit);
+        return sorted.map(([id]) => this._formatProduct(db.get('products', id))).filter(Boolean);
+    }
+
+    _formatProduct(p) {
+        if (!p) return null;
+        const stats = typeof p.stats === 'string' ? JSON.parse(p.stats) : (p.stats || {});
+        return {
+            id: p.id, name: p.name, price: p.price, currency: p.currency || 'XOF',
+            thumbnail: p.thumbnail || (Array.isArray(p.images) ? p.images[0] : '') || '',
+            slug: typeof p.seo === 'string' ? JSON.parse(p.seo).slug : '',
+            category: p.category, categoryId: p.categoryId, userId: p.userId,
+            comparePrice: p.comparePrice, rating: stats.rating || 0,
+            reviewCount: stats.reviewCount || 0, sales: stats.sales || 0,
+            description: p.description || '', images: p.images || []
         };
     }
 

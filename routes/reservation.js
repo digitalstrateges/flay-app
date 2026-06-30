@@ -30,6 +30,19 @@ router.post('/', async (req, res) => {
     if (!body.name || !body.phone || !body.service || !body.date || !body.time) {
         return res.status(400).json({ error: 'Champs requis manquants' });
     }
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    let userId = null;
+    if (token) {
+        const authUtils = require('../auth-utils');
+        const payload = authUtils.verifyToken(token);
+        if (payload) userId = payload.userId;
+    }
+    if (userId) {
+        const premiumFeatures = require('../premium-features');
+        const userReservations = db.findAll('reservations', 'userId', userId) || [];
+        const check = premiumFeatures.checkLimit(userId, 'reservations', userReservations.length);
+        if (!check.allowed) return res.status(403).json({ error: check.reason, code: 'PLAN_LIMIT', limit: check.limit, current: check.current });
+    }
     const id = `res_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
     let ownerId = null;
     if (body.profileId) {

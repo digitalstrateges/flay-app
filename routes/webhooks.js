@@ -27,22 +27,27 @@ router.get('/:id/logs', authenticate, (req, res) => {
 
 // --- Payment Webhooks (Wave) ---
 router.post('/wave', async (req, res) => {
-    const rawBody = JSON.stringify(req.body);
-    const signature = req.headers['wave-signature'] || req.headers['x-wave-signature'] || '';
+    try {
+        const rawBody = JSON.stringify(req.body);
+        const signature = req.headers['wave-signature'] || req.headers['x-wave-signature'] || '';
 
-    if (!paymentGateway.verifyWebhook(rawBody, signature, 'wave')) {
-        console.error('[WEBHOOK] Wave signature invalide');
-        return res.status(403).json({ error: 'Signature invalide' });
+        if (!paymentGateway.verifyWebhook(rawBody, signature, 'wave')) {
+            console.error('[WEBHOOK] Wave signature invalide');
+            return res.status(403).json({ error: 'Signature invalide' });
+        }
+
+        const event = req.body;
+        const result = paymentGateway.handleWebhook(event, 'wave');
+        console.log(`[WEBHOOK Wave] ${result.status} - ${result.externalId || result.sessionId || 'unknown'}`);
+
+        if (result.status === 'confirmed') {
+            processConfirmedPayment(result.externalId, result);
+        }
+        res.json({ received: true });
+    } catch (err) {
+        console.error('[WEBHOOK] Error:', err.message);
+        res.status(500).json({ error: err.message });
     }
-
-    const event = req.body;
-    const result = paymentGateway.handleWebhook(event, 'wave');
-    console.log(`[WEBHOOK Wave] ${result.status} - ${result.externalId || result.sessionId || 'unknown'}`);
-
-    if (result.status === 'confirmed') {
-        processConfirmedPayment(result.externalId, result);
-    }
-    res.json({ received: true });
 });
 
 // --- Helper ---
