@@ -1462,8 +1462,10 @@
             tbody.innerHTML = items.map(p => {
                 const stock = p.stock || p.quantity || 0;
                 const statusCls = stock === 0 ? 'badge-danger' : stock <= 5 ? 'badge-warning' : 'badge-success';
-                const statusText = stock === 0 ? 'Out of Stock' : stock <= 5 ? 'Low Stock' : 'In Stock';
-                return '<tr><td><strong>' + esc(p.name || 'Product') + '</strong></td><td>' + formatMoney(p.price || 0) + '</td><td>' + stock + '</td><td><span class="badge ' + statusCls + '">' + statusText + '</span></td><td><button class="btn btn-ghost btn-sm" onclick="editProduct(' + esc(p.id || p._id || 0) + ')">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteProduct(' + esc(p.id || p._id || 0) + ')">Delete</button></td></tr>';
+                const statusText = stock === 0 ? 'Rupture' : stock <= 5 ? 'Stock bas' : 'En stock';
+                const thumb = p.thumbnail || (Array.isArray(p.images) ? p.images[0] : '') || '';
+                const imgHtml = thumb ? '<img src="' + thumb + '" style="width:40px;height:40px;border-radius:8px;object-fit:cover;vertical-align:middle;margin-right:8px">' : '<div style="width:40px;height:40px;border-radius:8px;background:var(--bg);display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin-right:8px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>';
+                return '<tr><td style="display:flex;align-items:center">' + imgHtml + '<strong>' + esc(p.name || 'Produit') + '</strong></td><td>' + formatMoney(p.price || 0) + '</td><td>' + stock + '</td><td><span class="badge ' + statusCls + '">' + statusText + '</span></td><td><button class="btn btn-ghost btn-sm" onclick="editProduct(' + esc(p.id || p._id || 0) + ')">Edit</button> <button class="btn btn-danger btn-sm" onclick="deleteProduct(' + esc(p.id || p._id || 0) + ')">Delete</button></td></tr>';
             }).join('');
         }
 
@@ -1476,31 +1478,117 @@
                 showModal('Upgrade Required', showUpgradeGate('products'));
                 return;
             }
-            showModal('Add Product', '<div class="form-row"><div class="form-group"><label>Name <span class="required">*</span></label><input type="text" id="productName" placeholder="Product name"></div><div class="form-group"><label>SKU</label><input type="text" id="productSku" placeholder="SKU-001"></div></div><div class="form-row"><div class="form-group"><label>Price <span class="required">*</span></label><input type="number" id="productPrice" step="0.01" min="0" placeholder="0.00"></div><div class="form-group"><label>Stock</label><input type="number" id="productStock" min="0" placeholder="0"></div></div><div class="form-group"><label>Description</label><textarea id="productDesc" rows="3" placeholder="Product description..."></textarea></div>',
-                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveProduct()">Save Product</button>');
+            showModal('Ajouter un produit', `
+                <div class="form-group"><label>Photo du produit</label>
+                    <div id="addProdImagePreview" style="width:120px;height:120px;border:2px dashed var(--border);border-radius:12px;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;margin-bottom:8px;background:var(--bg)" onclick="document.getElementById('addProdImageInput').click()">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                    </div>
+                    <input type="file" id="addProdImageInput" accept="image/*" style="display:none" onchange="previewProductImage(this,'addProdImagePreview')">
+                    <button class="btn btn-ghost btn-sm" onclick="document.getElementById('addProdImageInput').click()">Choisir une photo</button>
+                </div>
+                <div class="form-row"><div class="form-group"><label>Nom <span class="required">*</span></label><input type="text" id="productName" placeholder="Nom du produit"></div><div class="form-group"><label>SKU</label><input type="text" id="productSku" placeholder="SKU-001"></div></div>
+                <div class="form-row"><div class="form-group"><label>Prix <span class="required">*</span></label><input type="number" id="productPrice" step="0.01" min="0" placeholder="0"></div><div class="form-group"><label>Stock</label><input type="number" id="productStock" min="0" placeholder="0"></div></div>
+                <div class="form-group"><label>Description</label><textarea id="productDesc" rows="3" placeholder="Description du produit..."></textarea></div>`,
+                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Annuler</button><button class="btn btn-primary" onclick="saveProduct()">Ajouter</button>');
+        }
+
+        function previewProductImage(input, previewId) {
+            if (!input.files || !input.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const preview = document.getElementById(previewId);
+                preview.innerHTML = '<img src="' + e.target.result + '" style="width:100%;height:100%;object-fit:cover">';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+
+        async function uploadProductImage(productId, file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    try {
+                        const data = await api('/api/products/' + productId + '/images', {
+                            method: 'POST',
+                            body: e.target.result
+                        });
+                        resolve(data);
+                    } catch (err) { reject(err); }
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
         }
 
         async function saveProduct() {
             const name = document.getElementById('productName').value.trim();
             const price = parseFloat(document.getElementById('productPrice').value);
-            if (!name) { toast('Product name is required', 'error'); return; }
-            if (isNaN(price) || price < 0) { toast('Please enter a valid price', 'error'); return; }
+            if (!name) { toast('Le nom est requis', 'error'); return; }
+            if (isNaN(price) || price < 0) { toast('Prix invalide', 'error'); return; }
             const body = { name, price, sku: document.getElementById('productSku').value.trim(), stock: parseInt(document.getElementById('productStock').value) || 0, description: document.getElementById('productDesc').value.trim() };
             const data = await api('/api/products', { method: 'POST', body: JSON.stringify(body) });
-            if (data) { toast('Product added successfully!', 'success'); closeModal(); loadProducts(); loadDashboard(); }
+            if (data && data.product) {
+                const fileInput = document.getElementById('addProdImageInput');
+                if (fileInput && fileInput.files && fileInput.files[0]) {
+                    try { await uploadProductImage(data.product.id, fileInput.files[0]); } catch (e) { console.error('Image upload failed:', e); }
+                }
+                toast('Produit ajoute !', 'success'); closeModal(); loadProducts(); loadDashboard();
+            }
         }
 
         function editProduct(id) {
             const p = state.products.find(x => (x.id || x._id) == id);
             if (!p) return;
-            showModal('Edit Product', '<div class="form-row"><div class="form-group"><label>Name</label><input type="text" id="editProdName" value="' + esc(p.name || '') + '"></div><div class="form-group"><label>SKU</label><input type="text" id="editProdSku" value="' + esc(p.sku || '') + '"></div></div><div class="form-row"><div class="form-group"><label>Price</label><input type="number" id="editProdPrice" step="0.01" value="' + (p.price || 0) + '"></div><div class="form-group"><label>Stock</label><input type="number" id="editProdStock" value="' + (p.stock || p.quantity || 0) + '"></div></div><div class="form-group"><label>Description</label><textarea id="editProdDesc" rows="3">' + esc(p.description || '') + '</textarea></div>',
-                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="updateProduct(' + id + ')">Update</button>');
+            const images = Array.isArray(p.images) ? p.images : [];
+            const thumb = p.thumbnail || '';
+            showModal('Modifier le produit', `
+                <div class="form-group"><label>Photos du produit</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px" id="editProdImages">
+                        ${images.map((img, i) => '<div style="width:80px;height:80px;border-radius:8px;overflow:hidden;position:relative;border:2px solid ' + (img === thumb ? 'var(--accent)' : 'var(--border)') + '"><img src="' + img + '" style="width:100%;height:100%;object-fit:cover"><button onclick="removeProductImage(\'' + id + '\',' + i + ')" style="position:absolute;top:2px;right:2px;background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:50%;width:18px;height:18px;cursor:pointer;font-size:10px">&times;</button>' + (img !== thumb ? '<button onclick="setThumbnail(\'' + id + '\',\'' + img + '\')" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.7);color:#fff;border:none;border-radius:4px;font-size:9px;padding:2px 4px;cursor:pointer">Thumb</button>' : '') + '</div>').join('')}
+                        <div style="width:80px;height:80px;border:2px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="document.getElementById('editProdImageInput').click()">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
+                        </div>
+                    </div>
+                    <input type="file" id="editProdImageInput" accept="image/*" style="display:none" onchange="addProductImage('${id}',this)">
+                </div>
+                <div class="form-row"><div class="form-group"><label>Nom</label><input type="text" id="editProdName" value="' + esc(p.name || '') + '"></div><div class="form-group"><label>SKU</label><input type="text" id="editProdSku" value="' + esc(p.sku || '') + '"></div></div>
+                <div class="form-row"><div class="form-group"><label>Prix</label><input type="number" id="editProdPrice" step="0.01" value="' + (p.price || 0) + '"></div><div class="form-group"><label>Stock</label><input type="number" id="editProdStock" value="' + (p.stock || p.quantity || 0) + '"></div></div>
+                <div class="form-group"><label>Description</label><textarea id="editProdDesc" rows="3">' + esc(p.description || '') + '</textarea></div>`,
+                '<button class="btn btn-ghost btn-sm" onclick="closeModal()">Annuler</button><button class="btn btn-primary" onclick="updateProduct(' + id + ')">Mettre a jour</button>');
+        }
+
+        async function addProductImage(productId, input) {
+            if (!input.files || !input.files[0]) return;
+            try {
+                await uploadProductImage(productId, input.files[0]);
+                toast('Photo ajoutee !', 'success');
+                editProduct(productId);
+                loadProducts();
+            } catch (e) { toast('Erreur upload: ' + e.message, 'error'); }
+        }
+
+        async function removeProductImage(productId, index) {
+            if (!confirm('Supprimer cette photo ?')) return;
+            try {
+                await api('/api/products/' + productId + '/images/' + index, { method: 'DELETE' });
+                toast('Photo supprimee', 'success');
+                editProduct(productId);
+                loadProducts();
+            } catch (e) { toast('Erreur: ' + e.message, 'error'); }
+        }
+
+        async function setThumbnail(productId, url) {
+            try {
+                await api('/api/products/' + productId + '/thumbnail', { method: 'PUT', body: JSON.stringify({ thumbnail: url }) });
+                toast('Image principale definie', 'success');
+                editProduct(productId);
+                loadProducts();
+            } catch (e) { toast('Erreur: ' + e.message, 'error'); }
         }
 
         async function updateProduct(id) {
             const body = { name: document.getElementById('editProdName').value.trim(), price: parseFloat(document.getElementById('editProdPrice').value), sku: document.getElementById('editProdSku').value.trim(), stock: parseInt(document.getElementById('editProdStock').value) || 0, description: document.getElementById('editProdDesc').value.trim() };
             const data = await api('/api/products/' + id, { method: 'PUT', body: JSON.stringify(body) });
-            if (data) { toast('Product updated!', 'success'); closeModal(); loadProducts(); }
+            if (data) { toast('Produit mis a jour !', 'success'); closeModal(); loadProducts(); }
         }
 
         async function deleteProduct(id) {

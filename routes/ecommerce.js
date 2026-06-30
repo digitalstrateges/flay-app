@@ -392,4 +392,126 @@ router.delete('/wishlist/:productId', authenticate, (req, res) => {
     res.json({ message: 'Removed from wishlist' });
 });
 
+// === PRODUCT IMAGE UPLOAD ===
+router.post('/products/:id/images', authenticate, (req, res) => {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const product = ecommerce.getProduct(req.params.id);
+        if (!product) return res.status(404).json({ error: 'Produit non trouve' });
+        if (product.userId !== req.user.id) return res.status(403).json({ error: 'Non autorise' });
+
+        let rawBody = '';
+        req.setEncoding('utf8');
+        req.on('data', chunk => { rawBody += chunk; });
+        req.on('end', () => {
+            const matches = rawBody.match(/data:([^;]+);base64,(.+)/);
+            if (!matches) return res.status(400).json({ error: 'Donnees invalides' });
+            const mimeType = matches[1];
+            const base64 = matches[2];
+            const buffer = Buffer.from(base64, 'base64');
+            if (buffer.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'Image trop volumineuse (max 5 MB)' });
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(mimeType)) return res.status(400).json({ error: 'Type non autorise (JPEG, PNG, GIF, WebP)' });
+
+            const ext = mimeType.split('/')[1] || 'jpg';
+            const filename = `${req.user.id}_prod_${Date.now()}.${ext}`;
+            const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
+            if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+            fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+
+            const imageUrl = `/uploads/${filename}`;
+            const images = Array.isArray(product.images) ? [...product.images, imageUrl] : [imageUrl];
+            const update = { images };
+            if (!product.thumbnail) update.thumbnail = imageUrl;
+            db.update('products', product.id, update);
+
+            res.json({ url: imageUrl, images, thumbnail: update.thumbnail || product.thumbnail });
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// === DELETE PRODUCT IMAGE ===
+router.delete('/products/:id/images/:index', authenticate, (req, res) => {
+    try {
+        const product = ecommerce.getProduct(req.params.id);
+        if (!product) return res.status(404).json({ error: 'Produit non trouve' });
+        if (product.userId !== req.user.id) return res.status(403).json({ error: 'Non autorise' });
+
+        const images = Array.isArray(product.images) ? [...product.images] : [];
+        const idx = parseInt(req.params.index);
+        if (idx < 0 || idx >= images.length) return res.status(400).json({ error: 'Index invalide' });
+
+        const removed = images.splice(idx, 1)[0];
+        const update = { images };
+        if (product.thumbnail === removed) {
+            update.thumbnail = images[0] || '';
+        }
+
+        // Delete file from disk
+        const fs = require('fs');
+        const path = require('path');
+        const filePath = path.join(__dirname, '..', 'public', removed);
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+
+        db.update('products', product.id, update);
+        res.json({ images: update.images, thumbnail: update.thumbnail });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// === SET PRODUCT THUMBNAIL ===
+router.put('/products/:id/thumbnail', authenticate, (req, res) => {
+    try {
+        const product = ecommerce.getProduct(req.params.id);
+        if (!product) return res.status(404).json({ error: 'Produit non trouve' });
+        if (product.userId !== req.user.id) return res.status(403).json({ error: 'Non autorise' });
+
+        const { thumbnail } = req.body;
+        if (!thumbnail) return res.status(400).json({ error: 'URL requise' });
+        db.update('products', product.id, { thumbnail });
+        res.json({ thumbnail });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// === CATEGORY IMAGE UPLOAD ===
+router.post('/categories/:id/image', authenticate, (req, res) => {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const category = db.get('categories', req.params.id);
+        if (!category) return res.status(404).json({ error: 'Categorie non trouvee' });
+        if (category.userId !== req.user.id) return res.status(403).json({ error: 'Non autorise' });
+
+        let rawBody = '';
+        req.setEncoding('utf8');
+        req.on('data', chunk => { rawBody += chunk; });
+        req.on('end', () => {
+            const matches = rawBody.match(/data:([^;]+);base64,(.+)/);
+            if (!matches) return res.status(400).json({ error: 'Donnees invalides' });
+            const mimeType = matches[1];
+            const base64 = matches[2];
+            const buffer = Buffer.from(base64, 'base64');
+            if (buffer.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'Image trop volumineuse (max 5 MB)' });
+
+            const ext = mimeType.split('/')[1] || 'jpg';
+            const filename = `${req.user.id}_cat_${Date.now()}.${ext}`;
+            const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
+            if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+            fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+
+            const imageUrl = `/uploads/${filename}`;
+            db.update('categories', category.id, { image: imageUrl });
+            res.json({ url: imageUrl });
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;
