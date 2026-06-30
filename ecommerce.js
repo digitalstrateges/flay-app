@@ -445,6 +445,11 @@ class ECommerce {
             .replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
     }
 
+    _esc(str) {
+        if (typeof str !== 'string') return str;
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+    }
+
     generateProductPage(product, storeInfo = {}) {
         const currency = product.currency || 'XOF';
         const images = typeof product.images === 'string' ? JSON.parse(product.images) : (product.images || []);
@@ -454,8 +459,8 @@ class ECommerce {
         return `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>${product.name} | ${storeInfo.storeName || 'Boutique'}</title>
-<meta name="description" content="${(product.description||'').substring(0,160)}">
+<title>${this._esc(product.name)} | ${this._esc(storeInfo.storeName || 'Boutique')}</title>
+<meta name="description" content="${this._esc((product.description||'').substring(0,160))}">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0a0a1a;--card:#12121f;--text:#e2e8f0;--muted:#64748b;--primary:#818cf8;--border:#1e293b}
@@ -490,20 +495,20 @@ h1{font-size:28px;margin-bottom:8px}
 <body><div class="container">
 <a href="/store/${product.userId}" class="back">&larr; Retour a la boutique</a>
 <div class="grid">
-<div><div class="main-img"><img src="${product.thumbnail || images[0] || '/placeholder.png'}" alt="${product.name}"></div>
+<div><div class="main-img"><img src="${product.thumbnail || images[0] || '/placeholder.png'}" alt="${this._esc(product.name)}"></div>
 ${images.length > 1 ? `<div class="thumbs">${images.map(i => `<img src="${i}" alt="">`).join('')}</div>` : ''}</div>
 <div>
-<h1>${product.name}</h1>
+<h1>${this._esc(product.name)}</h1>
 <div class="price">${Number(product.price).toLocaleString()} ${currency}
 ${product.comparePrice > product.price ? `<span class="compare">${Number(product.comparePrice).toLocaleString()} ${currency}</span><span class="badge">-${Math.round((1-product.price/product.comparePrice)*100)}%</span>` : ''}</div>
-<p class="desc">${product.description || ''}</p>
+<p class="desc">${this._esc(product.description || '')}</p>
 ${product.trackInventory ? `<div class="stock">${product.stock > 0 ? `<span class="in-stock">✓ En stock (${product.stock} disponible${product.stock>1?'s':''})</span>` : `<span class="out-stock">✗ Rupture de stock</span>`}</div>` : ''}
 <div class="actions">
 <input type="number" value="1" min="1" max="${product.stock||99}" id="qty">
 <button class="btn btn-primary" onclick="addToCart('${product.id}')" ${product.trackInventory&&product.stock<=0?'disabled':''}>
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
 Ajouter au panier</button></div>
-${tags.length ? `<div class="tags">${tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : ''}
+${tags.length ? `<div class="tags">${tags.map(t => `<span class="tag">${this._esc(t)}</span>`).join('')}</div>` : ''}
 </div></div></div>
 <script>
 async function addToCart(productId){const qty=parseInt(document.getElementById('qty').value)||1;const token=localStorage.getItem('flay_token');if(!token){window.location.href='/login.html';return}
@@ -518,7 +523,7 @@ if(r.ok){alert('Ajoute au panier !')}else{const d=await r.json();alert(d.error||
         return `<!DOCTYPE html>
 <html lang="fr">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>${storeInfo.storeName || 'Boutique'} | Flay</title>
+<title>${this._esc(storeInfo.storeName || 'Boutique')} | Flay</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--bg:#0a0a1a;--card:#12121f;--text:#e2e8f0;--muted:#64748b;--primary:#818cf8;--border:#1e293b;--accent:#818cf8}
@@ -552,7 +557,7 @@ footer a{color:var(--primary);text-decoration:none}
 </style></head>
 <body>
 <nav class="site-nav">
-    <a href="${profileUrl || '/'}" class="site-nav-brand">${storeInfo.storeName || 'Boutique'}</a>
+    <a href="${profileUrl || '/'}" class="site-nav-brand">${this._esc(storeInfo.storeName || 'Boutique')}</a>
     <div class="site-nav-links">
         ${profileUrl ? `<a href="${profileUrl}" class="site-nav-link">👤 Profil</a>` : ''}
         <a href="#products-section" class="site-nav-link active">Produits</a>
@@ -560,22 +565,22 @@ footer a{color:var(--primary);text-decoration:none}
 </nav>
 <div class="container" id="products-section">
 <div class="header">
-<h1>${storeInfo.storeName || 'Boutique'}</h1>
-<p>${storeInfo.storeDescription || 'Decouvrez nos produits'}</p></div>
-${categories.length ? `<div class="categories"><button class="cat-btn active" onclick="filter('')">Tous</button>${categories.map(c => `<button class="cat-btn" onclick="filter('${c.id}')">${c.name}</button>`).join('')}</div>` : ''}
+<h1>${this._esc(storeInfo.storeName || 'Boutique')}</h1>
+<p>${this._esc(storeInfo.storeDescription || 'Decouvrez nos produits')}</p></div>
+${categories.length ? `<div class="categories"><button class="cat-btn active" onclick="filter('')">Tous</button>${categories.map(c => `<button class="cat-btn" onclick="filter('${this._esc(c.id)}')">${this._esc(c.name)}</button>`).join('')}</div>` : ''}
 <div class="products-grid" id="products">
 ${items.length ? items.map(p => {
     const img = p.thumbnail || (Array.isArray(p.images) ? p.images[0] : '') || '/placeholder.png';
     return `<div class="product-card" onclick="window.location='/product/${p.id}'">
-<img src="${img}" alt="${p.name}" loading="lazy">
-<div class="card-body"><h3>${p.name}</h3>
+<img src="${img}" alt="${this._esc(p.name)}" loading="lazy">
+<div class="card-body"><h3>${this._esc(p.name)}</h3>
 <div><span class="card-price">${Number(p.price).toLocaleString()} ${p.currency||'XOF'}</span>
 ${p.comparePrice > p.price ? `<span class="card-old">${Number(p.comparePrice).toLocaleString()}</span>` : ''}</div></div></div>`;
 }).join('') : `<div class="empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><p>Aucun produit pour le moment</p></div>`}</div>
 <div class="pagination" style="text-align:center;padding:32px 0">
 ${products.pagination?.totalPages > 1 ? Array.from({length: products.pagination.totalPages}, (_, i) => `<button class="cat-btn ${i+1===products.pagination.page?'active':''}" onclick="window.location='?page=${i+1}'">${i+1}</button>`).join('') : ''}
 </div>
-<footer><a href="${profileUrl || '/'}">${storeInfo.storeName || 'Retour au profil'}</a> &middot; Propulse par <strong>Flay</strong></footer>
+<footer><a href="${profileUrl || '/'}">${this._esc(storeInfo.storeName || 'Retour au profil')}</a> &middot; Propulse par <strong>Flay</strong></footer>
 </div>
 <script>function filter(c){window.location='?category='+c}</script>
 </body></html>`;
@@ -615,8 +620,8 @@ h1{font-size:28px;margin-bottom:24px}
 ${cart.items.length ? `
 <div id="cart-items">${cart.items.map((item,i) => `
 <div class="cart-item">
-<img src="${item.image||'/placeholder.png'}" alt="${item.name}">
-<div class="item-info"><h3>${item.name}</h3>
+<img src="${item.image||'/placeholder.png'}" alt="${this._esc(item.name)}">
+<div class="item-info"><h3>${this._esc(item.name)}</h3>
 <div class="item-price">${Number(item.price).toLocaleString()} ${cart.currency}</div>
 <div class="qty-controls">
 <button class="qty-btn" onclick="updateQty(${i},${item.quantity-1})">−</button>

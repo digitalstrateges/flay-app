@@ -11,8 +11,8 @@ const { rateLimit } = require('./lib/rate-limit');
 const app = express();
 
 // === MIDDLEWARE ===
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
 
 // Trust proxy for correct IP behind reverse proxy
 app.set('trust proxy', 1);
@@ -460,7 +460,7 @@ app.use((err, req, res, next) => {
         h1{font-size:1.25rem;margin:1rem 0 .5rem;color:#f1f5f9}p{color:#64748b;margin-bottom:1.5rem;font-size:.9rem}
         .btn{display:inline-block;padding:.75rem 2rem;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:500}</style></head><body><div class="card"><div class="code">500</div><h1>Erreur serveur</h1><p>Une erreur s\\'est produite. Reessayez plus tard.</p><a href="/" class="btn">Retour a l\\'accueil</a></div></body></html>`);
     } else {
-        res.status(err.status || 500).json({ error: err.message || 'Erreur serveur' });
+        res.status(err.status || 500).json({ error: err.status >= 500 ? 'Erreur serveur' : (err.message || 'Erreur serveur') });
     }
 });
 

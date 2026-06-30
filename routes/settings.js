@@ -214,8 +214,11 @@ router.post('/upload', authenticate, (req, res) => {
     const base64 = matches[2];
     const buffer = Buffer.from(base64, 'base64');
     if (buffer.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'Fichier trop volumineux (max 5 MB)' });
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!allowedTypes.includes(mimeType)) return res.status(400).json({ error: 'Type de fichier non autorise' });
+    if (buffer[0] !== 0xFF && buffer[0] !== 0x89 && buffer[0] !== 0x47 && buffer[0] !== 0x52) {
+        return res.status(400).json({ error: 'Contenu du fichier invalide' });
+    }
     const ext = mimeType.split('/')[1] || 'jpg';
     const filename = `${req.user.id}_${Date.now()}.${ext}`;
     const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');

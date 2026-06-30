@@ -4,6 +4,7 @@
  */
 
 const crypto = require('crypto');
+const config = require('./config');
 
 class Security {
     constructor() {
@@ -159,7 +160,8 @@ class Security {
     generateToken(payload, expiresIn = 86400) {
         const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
         const body = Buffer.from(JSON.stringify({ ...payload, iat: Math.floor(Date.now() / 1000), exp: Math.floor(Date.now() / 1000) + expiresIn })).toString('base64url');
-        const signature = crypto.createHmac('sha256', process.env.JWT_SECRET || 'flay-secret-key-3.0')
+        const jwtSecret = config.JWT_SECRET;
+        const signature = crypto.createHmac('sha256', jwtSecret)
             .update(`${header}.${body}`)
             .digest('base64url');
         return `${header}.${body}.${signature}`;
@@ -168,7 +170,8 @@ class Security {
     verifyToken(token) {
         try {
             const [header, body, signature] = token.split('.');
-            const expectedSig = crypto.createHmac('sha256', process.env.JWT_SECRET || 'flay-secret-key-3.0')
+            const jwtSecret = config.JWT_SECRET;
+            const expectedSig = crypto.createHmac('sha256', jwtSecret)
                 .update(`${header}.${body}`)
                 .digest('base64url');
             if (signature !== expectedSig) return null;

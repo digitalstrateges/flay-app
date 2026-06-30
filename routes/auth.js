@@ -77,7 +77,7 @@ router.post('/forgot-password', async (req, res) => {
         const user = db.findBy('users', 'email', req.body.email);
         if (user) {
             const resetToken = authUtils.generateToken({ userId: user.id, type: 'reset' }, '1h');
-            console.log(`[AUTH] Reset token for ${req.body.email}: /reset-password.html?token=${resetToken}`);
+            console.log(`[AUTH] Password reset link sent for ${req.body.email}`);
         }
         res.json({ message: 'Si cet email existe, un lien a ete envoye' });
     } catch (err) {
