@@ -67,7 +67,7 @@ function processConfirmedPayment(externalId, eventData) {
                     profile.plan = payment.plan;
                     db.update('profiles', profile.userId, { plan: payment.plan });
                 }
-                console.log(`[PAY] Payment ${id} confirmed for user ${payment.userId}`);
+                console.log(`[PAY] Payment ${payment.id} confirmed for user ${payment.userId}`);
             }
             return;
         }

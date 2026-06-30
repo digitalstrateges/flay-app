@@ -144,6 +144,20 @@ router.delete('/account', async (req, res) => {
     db.delete('profiles', user.id);
     db.deleteWhere('payments', 'userId', user.id);
     db.deleteWhere('reservations', 'userId', user.id);
+    db.deleteWhere('contacts', 'userId', user.id);
+    db.deleteWhere('deals', 'userId', user.id);
+    db.deleteWhere('invoices', 'userId', user.id);
+    db.deleteWhere('orders', 'userId', user.id);
+    db.deleteWhere('products', 'userId', user.id);
+    db.deleteWhere('analytics', 'userId', user.id);
+    db.deleteWhere('notifications', 'userId', user.id);
+    db.deleteWhere('sessions', 'userId', user.id);
+    db.deleteWhere('coupons', 'userId', user.id);
+    db.deleteWhere('parcels', 'userId', user.id);
+    db.deleteWhere('reviews', 'userId', user.id);
+    db.deleteWhere('team_members', 'userId', user.id);
+    db.deleteWhere('domains', 'userId', user.id);
+    db.deleteWhere('referrals', 'referrerId', user.id);
     res.json({ message: 'Compte supprime avec succes' });
 });
 

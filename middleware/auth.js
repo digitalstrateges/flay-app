@@ -1,5 +1,5 @@
 const { verifyToken } = require('../auth-utils');
-const User = require('../models/User');
+const db = require('../db');
 const config = require('../config');
 
 // Simple in-memory rate limiter
@@ -50,7 +50,7 @@ function optionalAuth(req, res, next) {
 function requirePlan(minPlan) {
     const planOrder = { free: 0, pro: 1, premium: 2 };
     return (req, res, next) => {
-        const user = User.findById(req.user.id);
+        const user = db.get('users', req.user.id);
         if (!user) return res.status(404).json({ message: 'Utilisateur non trouve.' });
 
         const userPlanLevel = planOrder[user.plan] || 0;
@@ -99,7 +99,7 @@ function validateBody(schema) {
 }
 
 function adminOnly(req, res, next) {
-    const user = User.findById(req.user.id);
+    const user = db.get('users', req.user.id);
     if (!user || !user.isAdmin) {
         return res.status(403).json({ message: 'Acces admin requis.' });
     }

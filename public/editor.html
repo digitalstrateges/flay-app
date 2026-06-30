@@ -158,6 +158,7 @@
                 div.className = `theme-btn ${t === selectedTheme ? 'selected' : ''}`;
                 div.style.background = THEMES_BG[t];
                 div.style.color = THEMES_FG[t];
+                div.dataset.theme = t;
                 div.textContent = THEMES_LABEL[t] || t;
                 div.onclick = () => { selectedTheme = t; document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('selected')); div.classList.add('selected'); };
                 grid.appendChild(div);
@@ -245,7 +246,7 @@
                     document.getElementById('edPhone').value = profile?.phone || '';
                     document.getElementById('edEmail').value = profile?.email || '';
                     if (profile?.services?.length) { services = profile.services; renderServices(); }
-                    if (profile?.theme) { selectedTheme = profile.theme; document.querySelectorAll('.theme-btn').forEach(b => { b.classList.toggle('selected', b.textContent === profile.theme); }); }
+                    if (profile?.theme) { selectedTheme = profile.theme; document.querySelectorAll('.theme-btn').forEach(b => { b.classList.toggle('selected', b.dataset.theme === profile.theme); }); }
                     if (profile?.template) document.getElementById('edTemplate').value = profile.template;
                     if (profile?.socials) {
                         document.getElementById('edFb').value = profile.socials.facebook || '';

@@ -100,46 +100,4 @@ router.get('/sitemap/dynamic', (req, res) => {
     res.send(xml);
 });
 
-router.get('/profile/themes', (req, res) => {
-    const themes = [
-        // Dark modes
-        { id: 'dark', name: 'Dark', colors: { bg: '#1a1a2e', text: '#fff', card: '#16213e', primary: '#667eea' } },
-        { id: 'midnight', name: 'Midnight', colors: { bg: '#0a0a23', text: '#fff', card: '#111133', primary: '#4a90d9' } },
-        { id: 'ocean', name: 'Ocean', colors: { bg: '#0a192f', text: '#fff', card: '#112240', primary: '#64ffda' } },
-        { id: 'emerald', name: 'Emerald', colors: { bg: '#0d2818', text: '#fff', card: '#1a3a2a', primary: '#2ecc71' } },
-        { id: 'sunset', name: 'Sunset', colors: { bg: '#1a0a0a', text: '#fff', card: '#2a1515', primary: '#ff6b6b' } },
-        { id: 'electric', name: 'Electric', colors: { bg: '#0a0a1a', text: '#fff', card: '#15152a', primary: '#a855f7' } },
-        { id: 'rose', name: 'Rose', colors: { bg: '#1a0a15', text: '#fff', card: '#2a1525', primary: '#f472b6' } },
-        { id: 'forest', name: 'Forest', colors: { bg: '#0a1a0a', text: '#fff', card: '#152a15', primary: '#4ade80' } },
-        { id: 'gold', name: 'Gold', colors: { bg: '#1a150a', text: '#fff', card: '#2a2515', primary: '#f5a623' } },
-        { id: 'aurora', name: 'Aurora', colors: { bg: '#0a0a2a', text: '#fff', card: '#151540', primary: '#00d4ff' } },
-        { id: 'noir', name: 'Noir', colors: { bg: '#0a0a0a', text: '#fff', card: '#141414', primary: '#e0e0e0' } },
-        // Light modes
-        { id: 'light', name: 'Light', colors: { bg: '#ffffff', text: '#1a1a2e', card: '#f8f9fa', primary: '#667eea' } },
-        { id: 'daylight', name: 'Daylight', colors: { bg: '#fafbfc', text: '#1a1a2e', card: '#fff', primary: '#4a90d9' } },
-        { id: 'ivory', name: 'Ivory', colors: { bg: '#fffff0', text: '#2d2d2d', card: '#fff', primary: '#8b7355' } },
-        { id: 'cloud', name: 'Cloud', colors: { bg: '#f0f4f8', text: '#1a202c', card: '#fff', primary: '#3182ce' } },
-        { id: 'snow', name: 'Snow', colors: { bg: '#f8fafc', text: '#1a202c', card: '#fff', primary: '#805ad5' } },
-        // National
-        { id: 'cotedivoire', name: "Cote d'Ivoire", colors: { bg: '#f8f400', text: '#1a1a2e', card: '#fff', primary: '#f77f00' } },
-        { id: 'france', name: 'France', colors: { bg: '#002395', text: '#fff', card: '#001d6e', primary: '#ed2939' } },
-        { id: 'senegal', name: 'Senegal', colors: { bg: '#00853f', text: '#fff', card: '#006b32', primary: '#fdef42' } },
-        { id: 'cameroun', name: 'Cameroun', colors: { bg: '#007a5e', text: '#fff', card: '#00664d', primary: '#fcd116' } },
-        { id: 'mali', name: 'Mali', colors: { bg: '#14b53a', text: '#fff', card: '#109930', primary: '#fcd116' } },
-        { id: 'burkina', name: 'Burkina Faso', colors: { bg: '#ef2b2d', text: '#fff', card: '#d42527', primary: '#fcd116' } },
-        { id: 'ghana', name: 'Ghana', colors: { bg: '#006b3f', text: '#fff', card: '#005532', primary: '#fcd116' } },
-        { id: 'nigeria', name: 'Nigeria', colors: { bg: '#008751', text: '#fff', card: '#006d41', primary: '#fff' } },
-        { id: 'togo', name: 'Togo', colors: { bg: '#006a1c', text: '#fff', card: '#005516', primary: '#fcd116' } },
-        { id: 'afrique', name: 'Afrique', colors: { bg: '#000000', text: '#fff', card: '#1a1a1a', primary: '#f7941d' } },
-        // Special
-        { id: 'noel', name: 'Noel', colors: { bg: '#1a3a1a', text: '#fff', card: '#0d2818', primary: '#e74c3c' } },
-        { id: 'halloween', name: 'Halloween', colors: { bg: '#1a0a00', text: '#fff', card: '#2a1500', primary: '#ff6600' } },
-        { id: 'love', name: 'Love', colors: { bg: '#2a0a15', text: '#fff', card: '#3a1525', primary: '#ff1493' } },
-        { id: 'royal', name: 'Royal', colors: { bg: '#1a0a2a', text: '#fff', card: '#2a1540', primary: '#9b59b6' } },
-        { id: 'cyber', name: 'Cyber', colors: { bg: '#0a0a1a', text: '#00ff88', card: '#0f0f2a', primary: '#00ff88' } },
-        { id: 'pastel', name: 'Pastel', colors: { bg: '#fdf2f8', text: '#831843', card: '#fff', primary: '#ec4899' } }
-    ];
-    res.json({ themes });
-});
-
 module.exports = router;

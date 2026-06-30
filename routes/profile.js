@@ -73,6 +73,9 @@ router.put('/', async (req, res) => {
     for (const key of allowed) {
         if (req.body[key] !== undefined) updates[key] = req.body[key];
     }
+    if (updates.theme && !VALID_THEMES.includes(updates.theme)) {
+        return res.status(400).json({ error: 'Theme non supporte', validThemes: VALID_THEMES });
+    }
     if (req.body.username && req.body.username !== user.username) {
         const existing = db.findBy('users', 'username', req.body.username);
         if (existing && existing.id !== user.id) return res.status(400).json({ error: 'Username deja pris' });
