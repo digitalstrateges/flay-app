@@ -1,5 +1,5 @@
 /**
- * Flay v14.0 - Payment Gateway Unifie
+ * Flay v22.0 - Payment Gateway Unifie
  * 
  * Supporte 3 modes:
  * 1. Wave Checkout API (cle API) — flow: creer session → redirect → webhook

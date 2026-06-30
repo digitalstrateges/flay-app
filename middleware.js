@@ -1,5 +1,5 @@
 /**
- * Flay v14.0 - Middleware System
+ * Flay v22.0 - Middleware System
  * Rate limiting, auth, validation, CORS, logging
  */
 

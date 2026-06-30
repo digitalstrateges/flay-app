@@ -1,5 +1,5 @@
 module.exports = {
-    VERSION: '2.2.0',
+    VERSION: '22.0.0',
     PORT: process.env.PORT || 4000,
     JWT_SECRET: process.env.JWT_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('JWT_SECRET env var required in production'); })() : 'flay_dev_secret_do_not_use_in_prod'),
     JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || (process.env.NODE_ENV === 'production' ? (() => { throw new Error('JWT_REFRESH_SECRET env var required in production'); })() : 'flay_dev_refresh_secret_do_not_use_in_prod'),
