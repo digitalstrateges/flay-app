@@ -11,7 +11,7 @@ const FlayPWA = {
 
         if ('serviceWorker' in navigator) {
             try {
-                const reg = await navigator.serviceWorker.register('/sw.js');
+                const reg = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
                 console.log('[PWA] Service Worker registered:', reg.scope);
 
                 navigator.serviceWorker.addEventListener('message', (e) => {
@@ -23,11 +23,18 @@ const FlayPWA = {
                 reg.addEventListener('updatefound', () => {
                     const newWorker = reg.installing;
                     newWorker.addEventListener('statechange', () => {
-                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                            this.showUpdateBanner();
+                        if (newWorker.state === 'installed') {
+                            if (navigator.serviceWorker.controller) {
+                                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                window.location.reload();
+                            }
                         }
                     });
                 });
+
+                if (reg.waiting) {
+                    reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
             } catch (error) {
                 console.error('[PWA] Service Worker registration failed:', error);
             }

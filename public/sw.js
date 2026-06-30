@@ -129,6 +129,22 @@ self.addEventListener('fetch', e => {
         return;
     }
 
+    const isJS = url.pathname.endsWith('.js');
+    const isCSS = url.pathname.endsWith('.css');
+
+    if (isJS || isCSS) {
+        e.respondWith(
+            fetch(e.request).then(res => {
+                if (res.ok && res.type === 'basic') {
+                    const clone = res.clone();
+                    caches.open(CACHE).then(c => c.put(e.request, clone));
+                }
+                return res;
+            }).catch(() => caches.match(e.request))
+        );
+        return;
+    }
+
     e.respondWith(
         caches.match(e.request).then(cached => {
             const fetching = fetch(e.request).then(res => {
