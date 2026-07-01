@@ -842,6 +842,21 @@
                         <h3>Generate Image</h3>
                         <p>Create AI-powered images for your products and posts</p>
                     </div>
+                    <div class="ai-card" onclick="openAiChat()" style="border:1px solid #10b981;background:linear-gradient(135deg,rgba(16,185,129,.05),rgba(6,182,212,.05))">
+                        <div class="ai-card-icon" style="background:linear-gradient(135deg,#10b981,#06b6d4);color:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
+                        <h3>AI Assistant</h3>
+                        <p>Chat with AI to manage your business, get advice</p>
+                    </div>
+                    <div class="ai-card" onclick="aiAction('auto-content')" style="border:1px solid #f59e0b;background:linear-gradient(135deg,rgba(245,158,11,.05),rgba(239,68,68,.05))">
+                        <div class="ai-card-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+                        <h3>Auto Content</h3>
+                        <p>Generate complete marketing kit (bio, posts, emails)</p>
+                    </div>
+                    <div class="ai-card" onclick="aiAction('analyze-performance')" style="border:1px solid #8b5cf6;background:linear-gradient(135deg,rgba(139,92,246,.05),rgba(236,72,153,.05))">
+                        <div class="ai-card-icon" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);color:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg></div>
+                        <h3>Performance Analysis</h3>
+                        <p>AI-powered business insights and growth recommendations</p>
+                    </div>
                 </div>
                 <div class="ai-output" id="aiOutput"></div>
             </div>
@@ -1936,22 +1951,68 @@
                 return;
             }
             const endpoints = {
-                'generate-bio': '/api/accounting/ai/generate-bio',
-                'generate-services': '/api/accounting/ai/generate-services',
-                'marketing': '/api/accounting/ai/marketing',
-                'analyze-profile': '/api/accounting/ai/analyze-profile'
+                'generate-bio': '/api/ai/generate-bio',
+                'generate-services': '/api/ai/generate-services',
+                'marketing': '/api/ai/marketing',
+                'analyze-profile': '/api/ai/optimize',
+                'seo': '/api/ai/seo',
+                'auto-content': '/api/ai/auto-content',
+                'analyze-performance': '/api/ai/analyze-performance',
+                'personalize': '/api/ai/personalize-experience'
             };
-            const labels = { 'generate-bio': 'Generate Bio', 'generate-services': 'Generate Services', 'marketing': 'Marketing Content', 'analyze-profile': 'Analyze Profile' };
+            const labels = { 'generate-bio': 'Bio', 'generate-services': 'Services', 'marketing': 'Marketing Content', 'analyze-profile': 'Profile Analysis', 'seo': 'SEO Optimization', 'auto-content': 'Auto Content Kit', 'analyze-performance': 'Performance Analysis', 'personalize': 'Personalization' };
             output.className = 'ai-output visible';
-            output.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:8px 0"><div class="spinner"></div> Generating ' + esc(labels[action] || '') + '...</div>';
-            const data = await api(endpoints[action], { method: 'POST', body: JSON.stringify({ username: user.username, name: user.name, business: user.business || user.name }) });
+            output.innerHTML = '<div style="display:flex;align-items:center;gap:10px;padding:8px 0"><div class="spinner"></div> Gemini generate ' + esc(labels[action] || '') + '...</div>';
+            const data = await api(endpoints[action] || '/api/ai/generate-bio', { method: 'POST', body: JSON.stringify({ username: user.username, name: user.name, business: user.business || user.name, industry: user.business || '' }) });
             if (data) {
-                const text = data.result || data.content || data.text || data.bio || data.services || data.analysis || data.marketing || JSON.stringify(data, null, 2);
-                output.textContent = text;
-                toast(labels[action] + ' generated!', 'success');
+                const text = data.bio || data.content || data.text || data.services || data.analysis || data.suggestions || data.seo || data.personalization || JSON.stringify(data, null, 2);
+                const source = data.source === 'gemini' ? ' <span style="color:#10b981;font-size:11px;background:rgba(16,185,129,.1);padding:2px 8px;border-radius:10px">Gemini 2.5 Flash</span>' : '';
+                output.innerHTML = '<div style="white-space:pre-wrap;font-size:14px;line-height:1.7">' + esc(typeof text === 'string' ? text : JSON.stringify(text, null, 2)) + '</div>' + source;
+                toast(labels[action] + ' generated via Gemini!', 'success');
             } else {
-                output.innerHTML = '<div style="color:var(--danger)">Failed to generate. Please try again.</div>';
+                output.innerHTML = '<div style="color:var(--danger)">Generation failed. Please try again.</div>';
             }
+        }
+
+        /* ===========================
+           AI CHAT ASSISTANT
+        =========================== */
+        let aiChatHistory = [];
+        function openAiChat() {
+            if (!canUseFeature('ai')) { toast('Upgrade to use AI Assistant', 'warning'); return; }
+            aiChatHistory = [{ role: 'assistant', content: 'Bonjour ! Je suis votre assistant AI Flay powered by Gemini 2.5 Flash. Comment puis-je vous aider avec votre business aujourd\'hui ?' }];
+            showModal('AI Assistant Gemini', `
+                <div style="display:flex;flex-direction:column;height:450px">
+                    <div id="aiChatMessages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px"></div>
+                    <div style="display:flex;gap:8px;padding:12px;border-top:1px solid var(--border)">
+                        <input type="text" id="aiChatInput" placeholder="Demandez n'importe quoi..." style="flex:1;margin:0;padding:12px 16px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text)" onkeydown="if(event.key==='Enter')sendAiChat()">
+                        <button class="btn btn-primary btn-sm" onclick="sendAiChat()" style="padding:12px 20px">Send</button>
+                    </div>
+                </div>
+            `, '500px');
+            renderAiChat();
+        }
+        function renderAiChat() {
+            const el = document.getElementById('aiChatMessages');
+            if (!el) return;
+            el.innerHTML = aiChatHistory.map(m => '<div style="max-width:85%;padding:12px 16px;border-radius:14px;font-size:14px;line-height:1.6;white-space:pre-wrap;' + (m.role === 'assistant' ? 'background:var(--card);color:var(--text);align-self:flex-start;border-bottom-left-radius:4px' : 'background:var(--accent);color:#fff;align-self:flex-end;border-bottom-right-radius:4px') + '">' + esc(m.content) + '</div>').join('');
+            el.scrollTop = el.scrollHeight;
+        }
+        async function sendAiChat() {
+            const input = document.getElementById('aiChatInput');
+            const msg = input.value.trim();
+            if (!msg) return;
+            input.value = '';
+            aiChatHistory.push({ role: 'user', content: msg });
+            renderAiChat();
+            const el = document.getElementById('aiChatMessages');
+            el.innerHTML += '<div style="padding:12px 16px;background:var(--card);border-radius:14px;align-self:flex-start;font-size:14px"><div class="spinner" style="width:16px;height:16px"></div></div>';
+            el.scrollTop = el.scrollHeight;
+            const data = await api('/api/ai/chat', { method: 'POST', body: JSON.stringify({ message: msg, history: aiChatHistory.slice(-10) }) });
+            const response = data?.response || 'Desole, je n\'ai pas pu traiter votre demande.';
+            aiChatHistory.pop();
+            aiChatHistory.push({ role: 'user', content: msg }, { role: 'assistant', content: response });
+            renderAiChat();
         }
 
         /* ===========================
