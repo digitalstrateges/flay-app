@@ -144,10 +144,11 @@ class DesignStudio {
             </div>
         </section>
 
-        <!-- SERVICES SECTION -->
+                <!-- SERVICES SECTION -->
         <section class="section services-section" id="services">
             <div class="container">
-                <h2 class="section-title">&#128736; Services</h2>
+                <h2 class="section-title">Nos Services</h2>
+                <p class="section-subtitle">Des solutions sur mesure pour votre reussite</p>
                 <div class="services-grid">
                     ${(profile.services || []).map(s => `
                     <div class="service-card">
@@ -165,12 +166,18 @@ class DesignStudio {
         <!-- ABOUT SECTION -->
         <section class="section about-section" id="about">
             <div class="container">
-                <h2 class="section-title">&#128100; A propos</h2>
+                <h2 class="section-title">A propos</h2>
+                <p class="section-subtitle">Une vision, une mission, l'excellence</p>
                 <div class="about-content">
                     ${profile.avatar ? `<img src="${profile.avatar}" alt="${this.esc(user.name)}" class="about-avatar">` : ''}
                     <div class="about-text">
-                        <p>${this.esc(profile.bio || 'Professionnel passionné et dedie a la satisfaction de ses clients.')}</p>
+                        <p>${this.esc(profile.bio || 'Professionnel passionne et dedie a la satisfaction de ses clients. Nous mettons notre expertise au service de votre reussite.')}</p>
                         ${profile.location ? `<div class="about-location">&#128205; ${this.esc(profile.location)}</div>` : ''}
+                        <div class="hero-stats" style="margin-top:24px;padding-top:24px;border-top:1px solid var(--border)">
+                            <div class="hero-stat"><div class="hero-stat-value">5+</div><div class="hero-stat-label">Annees exp.</div></div>
+                            <div class="hero-stat"><div class="hero-stat-value">200+</div><div class="hero-stat-label">Clients</div></div>
+                            <div class="hero-stat"><div class="hero-stat-value">98%</div><div class="hero-stat-label">Satisfaction</div></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -180,7 +187,8 @@ class DesignStudio {
         ${(profile.gallery && profile.gallery.length > 0) ? `
         <section class="section gallery-section" id="gallery">
             <div class="container">
-                <h2 class="section-title">&#127912; Galerie</h2>
+                <h2 class="section-title">Galerie</h2>
+                <p class="section-subtitle">Un apercu de notre travail</p>
                 <div class="gallery-grid">
                     ${profile.gallery.map(img => `<div class="gallery-item"><img src="${img}" alt="Galerie" loading="lazy"></div>`).join('')}
                 </div>
@@ -228,14 +236,17 @@ class DesignStudio {
         <!-- STORE SECTION -->
         <section class="section" id="store" style="background:rgba(0,0,0,.15)">
             <div class="container">
-                <h2 class="section-title">🛍️ Boutique ${hasStore ? `<span class="badge-store">En ligne</span>` : ''}</h2>
+                <h2 class="section-title">Boutique ${hasStore ? `<span class="badge-store">En ligne</span>` : ''}</h2>
+                <p class="section-subtitle">Decouvrez nos produits et services</p>
                 <div class="products-mini-grid">
                     ${storeProducts.map(p => `
                     <a href="${ecom.storeUrl}/../product/${p.id}" class="product-mini-card">
-                        ${p.image ? `<img src="${p.image}" alt="${this.esc(p.name)}" style="width:100%;height:140px;object-fit:cover;border-radius:8px;margin-bottom:.5rem">` : ''}
-                        <div class="product-mini-name">${this.esc(p.name)}</div>
-                        <div class="product-mini-price">${(p.price || 0).toLocaleString()} FCFA</div>
-                        ${p.shortDescription ? `<div class="product-mini-desc">${this.esc(p.shortDescription)}</div>` : ''}
+                        ${p.image ? `<img src="${p.image}" alt="${this.esc(p.name)}">` : ''}
+                        <div class="product-mini-body">
+                            <div class="product-mini-name">${this.esc(p.name)}</div>
+                            <div class="product-mini-price">${(p.price || 0).toLocaleString()} FCFA</div>
+                            ${p.shortDescription ? `<div class="product-mini-desc">${this.esc(p.shortDescription)}</div>` : ''}
+                        </div>
                     </a>`).join('')}
                 </div>
                 <div class="store-cta">
@@ -245,11 +256,39 @@ class DesignStudio {
         </section>` : hasStore ? `
         <section class="section" id="store" style="background:rgba(0,0,0,.15);text-align:center;padding:3rem 1rem">
             <div class="container">
-                <h2 class="section-title">🛍️ Boutique</h2>
+                <h2 class="section-title">Boutique</h2>
                 <p style="color:var(--textLight);margin-bottom:1.5rem">Decouvrez nos produits et services</p>
                 <a href="${ecom.storeUrl}" class="btn btn-primary">Visiter la boutique</a>
             </div>
         </section>` : ''}
+
+        <!-- TESTIMONIALS SECTION -->
+        <section class="section testimonials-section" id="testimonials">
+            <div class="container">
+                <h2 class="section-title">Avis Clients</h2>
+                <p class="section-subtitle">Ce que disent nos clients</p>
+                <div class="testimonials-grid">
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">Service exceptionnel ! Le travail est toujours fait avec professionnalisme et dans les delais. Je recommande vivement.</div>
+                        <div class="testimonial-author">Aminata K.</div>
+                        <div class="testimonial-role">Cliente reguliere</div>
+                        <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">Un vrai professionnel. La qualite du travail est au rendez-vous et le rapport qualite-prix est excellent.</div>
+                        <div class="testimonial-author">Jean-Pierre M.</div>
+                        <div class="testimonial-role">Entrepreneur</div>
+                        <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    </div>
+                    <div class="testimonial-card">
+                        <div class="testimonial-text">Je suis tres satisfait du service. L'equipe est reactive et a toujours trouve des solutions a mes problemes.</div>
+                        <div class="testimonial-author">Fatou B.</div>
+                        <div class="testimonial-role">Chef d'entreprise</div>
+                        <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- RESERVATION SECTION -->
         <section class="section reservation-section" id="reservation">
@@ -276,10 +315,37 @@ class DesignStudio {
             </div>
         </section>
 
+        <!-- FAQ SECTION -->
+        <section class="section" id="faq">
+            <div class="container">
+                <h2 class="section-title">Questions Frequentes</h2>
+                <p class="section-subtitle">Trouvez reponse a vos interrogations</p>
+                <div class="faq-list">
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">Comment prendre rendez-vous ?</div>
+                        <div class="faq-answer">Vous pouvez prendre rendez-vous via le formulaire de reservation ci-dessus, ou nous contacter directement par telephone ou WhatsApp.</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">Quels sont vos delais d'intervention ?</div>
+                        <div class="faq-answer">Nos delais varient selon le type de service. Contactez-nous pour une estimation precise adaptee a votre projet.</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">Acceptez-vous les paiements mobiles ?</div>
+                        <div class="faq-answer">Oui, nous acceptons Wave, Orange Money, MTN Mobile Money et les virements bancaires pour votre commodite.</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-question" onclick="this.parentElement.classList.toggle('open')">Proposez-vous des devis gratuits ?</div>
+                        <div class="faq-answer">Oui, tous nos devis sont 100% gratuits et sans engagement. Contactez-nous pour recevoir une estimation detaillee.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <!-- CONTACT SECTION -->
         <section class="section contact-section" id="contact">
             <div class="container">
-                <h2 class="section-title">&#128231; Contact</h2>
+                <h2 class="section-title">Contact</h2>
+                <p class="section-subtitle">Nous sommes a votre ecoute</p>
                 <div class="contact-grid">
                     ${profile.phone ? `<a href="tel:${profile.phone}" class="contact-card"><div class="contact-icon">&#128222;</div><div class="contact-label">Telephone</div><div class="contact-value">${this.esc(profile.phone)}</div></a>` : ''}
                     ${profile.email ? `<a href="mailto:${profile.email}" class="contact-card"><div class="contact-icon">&#9993;</div><div class="contact-label">Email</div><div class="contact-value">${this.esc(profile.email)}</div></a>` : ''}
@@ -305,7 +371,8 @@ class DesignStudio {
                     <p class="footer-wave-url">flay.app/${this.esc(user.username)}</p>
                 </div>
                 <div class="footer-credits">
-                    Fait avec &#10084; par <strong>DIGITALSTRATEGES</strong> | Contact: +225 07 59 73 19 90
+                    Propulse par <strong>Flay</strong> &mdash; L'economie connectee<br>
+                    <span style="font-size:12px;opacity:0.7">DIGITALSTRATEGES | +225 07 59 73 19 90</span>
                 </div>
                 <div class="footer-brand">Flay</div>
             </div>
@@ -349,6 +416,43 @@ class DesignStudio {
             const bg = document.querySelector('.vitrine-bg');
             if (bg) bg.style.transform = 'translateY(' + (scrolled * 0.5) + 'px)';
         });
+
+        // Scroll reveal animation
+        const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+        document.querySelectorAll('.service-card, .testimonial-card, .contact-card, .product-mini-card, .gallery-item, .faq-item').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.6s cubic-bezier(0.4,0,0.2,1)';
+            observer.observe(el);
+        });
+
+        // Animated counter for stats
+        function animateCounters() {
+            document.querySelectorAll('.hero-stat-value').forEach(el => {
+                const target = parseInt(el.textContent) || 0;
+                const suffix = el.textContent.replace(/[0-9]/g, '');
+                let current = 0;
+                const step = Math.ceil(target / 40);
+                const timer = setInterval(() => {
+                    current += step;
+                    if (current >= target) {
+                        current = target;
+                        clearInterval(timer);
+                    }
+                    el.textContent = current + suffix;
+                }, 30);
+            });
+        }
+        setTimeout(animateCounters, 500);
     </script>
     <script>
     (function(){
@@ -412,78 +516,187 @@ class DesignStudio {
     getFullCSS(colors, theme) {
         return `
             ${this.getThemeCSS(colors, theme)}
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Playfair+Display:wght@700;800;900&display=swap');
             * { margin: 0; padding: 0; box-sizing: border-box; }
-            body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+            html { scroll-behavior: smooth; }
+            body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
             .vitrine { min-height: 100vh; position: relative; overflow-x: hidden; }
-            .vitrine-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--gradient); opacity: 0.03; pointer-events: none; z-index: 0; }
-            .container { max-width: 900px; margin: 0 auto; padding: 0 24px; }
-            .section { padding: 80px 0; position: relative; z-index: 1; }
-            .section-title { font-size: 28px; font-weight: 800; margin-bottom: 40px; color: var(--text); }
-            .hero { min-height: 80vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; position: relative; z-index: 1; }
-            .hero-content { max-width: 600px; }
-            .hero-avatar { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--accent); object-fit: cover; margin-bottom: 24px; box-shadow: 0 0 40px rgba(102,126,234,0.3); }
-            .hero-avatar-placeholder { width: 160px; height: 160px; border-radius: 50%; border: 4px solid var(--accent); background: var(--card-bg); display: flex; align-items: center; justify-content: center; font-size: 64px; font-weight: 800; color: var(--accent); margin: 0 auto 24px; }
-            .hero-name { font-size: 42px; font-weight: 900; margin-bottom: 8px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-            .hero-title { font-size: 18px; color: var(--accent); font-weight: 500; margin-bottom: 16px; }
-            .hero-badges { display: flex; gap: 8px; justify-content: center; margin-bottom: 20px; }
-            .badge { padding: 4px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
-            .badge-pro { background: var(--accent); color: white; }
-            .badge-premium { background: var(--gold); color: #1a1a2e; }
-            .hero-bio { font-size: 16px; color: var(--text-light); margin-bottom: 16px; line-height: 1.8; }
-            .hero-location { font-size: 14px; color: var(--text-light); margin-bottom: 24px; }
-            .hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-            .btn { display: inline-flex; align-items: center; justify-content: center; padding: 14px 28px; border-radius: var(--radius); font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.3s ease; border: none; cursor: pointer; }
-            .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 15px rgba(102,126,234,0.4); }
-            .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.5); }
+            .vitrine-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--gradient); opacity: 0.03; pointer-events: none; z-index: 0; transition: opacity 0.3s; }
+            .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+            /* === HERO === */
+            .hero { min-height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; padding: 80px 24px 60px; position: relative; z-index: 1; }
+            .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: radial-gradient(ellipse at 50% 50%, var(--accent) 0%, transparent 70%); opacity: 0.05; pointer-events: none; }
+            .hero-content { max-width: 650px; animation: heroFadeIn 1s ease-out; }
+            @keyframes heroFadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+            .hero-avatar { width: 180px; height: 180px; border-radius: 50%; border: 4px solid var(--accent); object-fit: cover; margin-bottom: 28px; box-shadow: 0 0 60px rgba(102,126,234,0.25), 0 0 120px rgba(102,126,234,0.1); transition: transform 0.4s, box-shadow 0.4s; }
+            .hero-avatar:hover { transform: scale(1.05); box-shadow: 0 0 80px rgba(102,126,234,0.4); }
+            .hero-avatar-placeholder { width: 180px; height: 180px; border-radius: 50%; border: 4px solid var(--accent); background: var(--card-bg); display: flex; align-items: center; justify-content: center; font-size: 72px; font-weight: 900; color: var(--accent); margin: 0 auto 28px; box-shadow: 0 0 60px rgba(102,126,234,0.25); }
+            .hero-name { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 900; margin-bottom: 10px; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.1; }
+            .hero-title { font-size: 20px; color: var(--accent); font-weight: 500; margin-bottom: 18px; letter-spacing: 0.5px; }
+            .hero-badges { display: flex; gap: 10px; justify-content: center; margin-bottom: 22px; }
+            .badge { padding: 5px 16px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+            .badge-pro { background: var(--accent); color: white; box-shadow: 0 2px 10px rgba(102,126,234,0.3); }
+            .badge-premium { background: var(--gold); color: #1a1a2e; box-shadow: 0 2px 10px rgba(245,166,35,0.3); }
+            .hero-bio { font-size: 17px; color: var(--text-light); margin-bottom: 18px; line-height: 1.8; }
+            .hero-location { font-size: 14px; color: var(--text-light); margin-bottom: 28px; opacity: 0.8; }
+            .hero-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+            .hero-stats { display: flex; gap: 40px; justify-content: center; margin-top: 40px; padding-top: 30px; border-top: 1px solid var(--border); }
+            .hero-stat { text-align: center; }
+            .hero-stat-value { font-size: 28px; font-weight: 800; color: var(--accent); }
+            .hero-stat-label { font-size: 12px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; }
+
+            /* === BUTTONS === */
+            .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 14px 32px; border-radius: 12px; font-size: 15px; font-weight: 600; text-decoration: none; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); border: none; cursor: pointer; position: relative; overflow: hidden; }
+            .btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent); opacity: 0; transition: opacity 0.3s; }
+            .btn:hover::after { opacity: 1; }
+            .btn-primary { background: var(--accent); color: white; box-shadow: 0 4px 20px rgba(102,126,234,0.35); }
+            .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(102,126,234,0.5); }
             .btn-secondary { background: var(--card-bg); color: var(--text); border: 1px solid var(--border); }
+            .btn-secondary:hover { border-color: var(--accent); transform: translateY(-2px); }
             .btn-full { width: 100%; }
-            .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-            .service-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; transition: all 0.3s ease; }
-            .service-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: var(--accent); }
-            .service-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-            .service-name { font-size: 18px; font-weight: 700; }
-            .service-price { font-size: 16px; font-weight: 700; color: var(--accent); white-space: nowrap; }
-            .service-desc { font-size: 14px; color: var(--text-light); margin-bottom: 16px; line-height: 1.6; }
-            .service-cta { display: block; text-align: center; padding: 10px; background: var(--accent); color: white; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; }
-            .about-content { display: flex; gap: 40px; align-items: center; }
-            .about-avatar { width: 200px; height: 200px; border-radius: var(--radius); object-fit: cover; border: 3px solid var(--accent); }
-            .about-text { font-size: 16px; color: var(--text-light); line-height: 1.8; }
-            .about-location { margin-top: 12px; font-weight: 600; color: var(--accent); }
-            .map-container { border-radius: var(--radius); overflow: hidden; }
-            .map-address { text-align: center; padding: 12px; color: var(--text-light); font-size: 14px; }
+
+            /* === SECTIONS === */
+            .section { padding: 100px 0; position: relative; z-index: 1; }
+            .section-title { font-family: 'Playfair Display', serif; font-size: 36px; font-weight: 800; margin-bottom: 16px; color: var(--text); }
+            .section-subtitle { font-size: 16px; color: var(--text-light); margin-bottom: 48px; max-width: 500px; }
+
+            /* === SERVICES === */
+            .services-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+            .service-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 32px; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); position: relative; overflow: hidden; }
+            .service-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--gradient); transform: scaleX(0); transition: transform 0.4s; }
+            .service-card:hover::before { transform: scaleX(1); }
+            .service-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.15); border-color: var(--accent); }
+            .service-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+            .service-name { font-size: 20px; font-weight: 700; }
+            .service-price { font-size: 18px; font-weight: 800; color: var(--accent); white-space: nowrap; background: linear-gradient(135deg, var(--accent), var(--gold)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+            .service-desc { font-size: 15px; color: var(--text-light); margin-bottom: 20px; line-height: 1.7; }
+            .service-cta { display: block; text-align: center; padding: 12px; background: var(--accent); color: white; border-radius: 10px; text-decoration: none; font-weight: 600; font-size: 14px; transition: all 0.3s; }
+            .service-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+
+            /* === ABOUT === */
+            .about-content { display: flex; gap: 48px; align-items: center; }
+            .about-avatar { width: 240px; height: 240px; border-radius: 20px; object-fit: cover; border: 3px solid var(--accent); box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
+            .about-text { font-size: 17px; color: var(--text-light); line-height: 1.9; }
+            .about-location { margin-top: 16px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+
+            /* === GALLERY === */
+            .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+            .gallery-item { border-radius: 16px; overflow: hidden; aspect-ratio: 1; cursor: pointer; transition: all 0.4s; position: relative; }
+            .gallery-item::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.4)); opacity: 0; transition: opacity 0.3s; }
+            .gallery-item:hover { transform: scale(1.03); box-shadow: 0 15px 40px rgba(0,0,0,0.2); }
+            .gallery-item:hover::after { opacity: 1; }
+            .gallery-item img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+            .gallery-item:hover img { transform: scale(1.1); }
+
+            /* === MAP === */
+            .map-container { border-radius: 16px; overflow: hidden; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+            .map-address { text-align: center; padding: 16px; color: var(--text-light); font-size: 15px; font-weight: 500; }
+
+            /* === STORE === */
+            .products-mini-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+            .product-mini-card { background: var(--card-bg); border-radius: 16px; padding: 0; border: 1px solid var(--border); transition: all 0.4s cubic-bezier(0.4,0,0.2,1); text-decoration: none; color: inherit; overflow: hidden; }
+            .product-mini-card:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.15); border-color: var(--accent); }
+            .product-mini-card img { width: 100%; height: 200px; object-fit: cover; transition: transform 0.5s; }
+            .product-mini-card:hover img { transform: scale(1.05); }
+            .product-mini-body { padding: 20px; }
+            .product-mini-name { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+            .product-mini-price { font-size: 20px; font-weight: 800; color: var(--accent); }
+            .product-mini-desc { font-size: 13px; color: var(--text-light); margin-top: 8px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6; }
+            .badge-store { background: linear-gradient(135deg, var(--accent), #a855f7); color: #fff; padding: 4px 12px; border-radius: 999px; font-size: 11px; font-weight: 700; margin-left: 8px; }
+            .store-cta { text-align: center; margin-top: 32px; }
+            .nav-store-link { display: inline-flex; align-items: center; gap: 6px; padding: 6px 16px !important; background: linear-gradient(135deg, var(--accent), #a855f7); color: #fff !important; border-radius: 999px !important; font-weight: 600; }
+
+            /* === RESERVATION === */
             .reservation-form { max-width: 600px; }
-            .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+            .form-row { display: flex; gap: 14px; margin-bottom: 14px; }
             .form-row input, .form-row select { flex: 1; }
-            input, select, textarea { width: 100%; padding: 14px 16px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 15px; font-family: inherit; margin-bottom: 12px; transition: border-color 0.3s; }
-            input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); }
-            .contact-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
-            .contact-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 24px; background: var(--card-bg); border: 1px solid var(--border); border-radius: var(--radius); text-decoration: none; color: var(--text); transition: all 0.3s; }
-            .contact-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-            .contact-icon { font-size: 32px; margin-bottom: 8px; }
-            .contact-label { font-size: 12px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-            .contact-value { font-size: 14px; font-weight: 600; }
-            .social-links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-            .social-btn { padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; color: white; transition: transform 0.2s; }
-            .social-btn:hover { transform: translateY(-2px); }
+            input, select, textarea { width: 100%; padding: 14px 18px; background: var(--card-bg); border: 1.5px solid var(--border); border-radius: 12px; color: var(--text); font-size: 15px; font-family: inherit; margin-bottom: 14px; transition: all 0.3s; }
+            input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
+
+            /* === CONTACT === */
+            .contact-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; margin-bottom: 40px; }
+            .contact-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 28px 20px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; text-decoration: none; color: var(--text); transition: all 0.4s; position: relative; overflow: hidden; }
+            .contact-card::before { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px; background: var(--gradient); transform: scaleX(0); transition: transform 0.4s; }
+            .contact-card:hover::before { transform: scaleX(1); }
+            .contact-card:hover { border-color: var(--accent); transform: translateY(-4px); box-shadow: 0 15px 40px rgba(0,0,0,0.1); }
+            .contact-icon { font-size: 36px; margin-bottom: 10px; }
+            .contact-label { font-size: 11px; color: var(--text-light); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; font-weight: 600; }
+            .contact-value { font-size: 15px; font-weight: 600; }
+
+            /* === SOCIAL === */
+            .social-links { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+            .social-btn { padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 14px; color: white; transition: all 0.3s; position: relative; overflow: hidden; }
+            .social-btn::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent); opacity: 0; transition: opacity 0.3s; }
+            .social-btn:hover::after { opacity: 1; }
+            .social-btn:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.2); }
             .facebook { background: #1877f2; }
             .instagram { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
             .twitter { background: #1da1f2; }
             .linkedin { background: #0077b5; }
             .tiktok { background: #000; }
             .youtube { background: #ff0000; }
+            .whatsapp { background: #25d366; }
+
+            /* === TESTIMONIALS === */
+            .testimonials-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+            .testimonial-card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 16px; padding: 28px; position: relative; }
+            .testimonial-card::before { content: '\\201C'; position: absolute; top: 16px; left: 20px; font-size: 60px; color: var(--accent); opacity: 0.2; font-family: serif; line-height: 1; }
+            .testimonial-text { font-size: 15px; color: var(--text-light); line-height: 1.8; margin-bottom: 16px; font-style: italic; }
+            .testimonial-author { font-size: 14px; font-weight: 700; color: var(--text); }
+            .testimonial-role { font-size: 12px; color: var(--text-light); }
+            .testimonial-stars { color: var(--gold); margin-top: 8px; font-size: 14px; }
+
+            /* === FAQ === */
+            .faq-list { max-width: 700px; margin: 0 auto; }
+            .faq-item { background: var(--card-bg); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 12px; overflow: hidden; transition: all 0.3s; }
+            .faq-item:hover { border-color: var(--accent); }
+            .faq-question { padding: 18px 24px; font-weight: 600; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-size: 15px; }
+            .faq-question::after { content: '+'; font-size: 20px; color: var(--accent); transition: transform 0.3s; }
+            .faq-item.open .faq-question::after { transform: rotate(45deg); }
+            .faq-answer { padding: 0 24px 18px; color: var(--text-light); font-size: 14px; line-height: 1.8; display: none; }
+            .faq-item.open .faq-answer { display: block; }
+
+            /* === NEWSLETTER === */
+            .newsletter { text-align: center; padding: 60px 0; }
+            .newsletter-form { display: flex; gap: 12px; max-width: 450px; margin: 0 auto; }
+            .newsletter-form input { flex: 1; margin-bottom: 0; }
+
+            /* === FOOTER === */
             .footer { padding: 60px 0 40px; text-align: center; position: relative; z-index: 1; border-top: 1px solid var(--border); }
-            .footer-wave { margin-bottom: 20px; padding: 20px; background: var(--card-bg); border-radius: var(--radius); display: inline-block; }
-            .footer-wave-url { font-size: 14px; color: var(--accent); font-weight: 600; }
-            .footer-credits { font-size: 14px; color: var(--text-light); margin-bottom: 16px; }
-            .footer-brand { font-size: 32px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+            .footer-wave { margin-bottom: 24px; padding: 24px 32px; background: var(--card-bg); border-radius: 16px; display: inline-block; border: 1px solid var(--border); }
+            .footer-wave-url { font-size: 15px; color: var(--accent); font-weight: 700; margin-top: 4px; }
+            .footer-credits { font-size: 13px; color: var(--text-light); margin-bottom: 16px; }
+            .footer-brand { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+            /* === ANIMATIONS === */
+            @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+            .reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s cubic-bezier(0.4,0,0.2,1); }
+            .reveal.visible { opacity: 1; transform: translateY(0); }
+
+            /* === RESPONSIVE === */
             @media (max-width: 768px) {
-                .hero { padding: 40px 16px; min-height: 60vh; }
-                .hero-name { font-size: 28px; }
-                .hero-avatar, .hero-avatar-placeholder { width: 100px; height: 100px; }
-                .about-content { flex-direction: column; }
-                .about-avatar { width: 150px; height: 150px; }
+                .hero { padding: 50px 16px 40px; min-height: 70vh; }
+                .hero-name { font-size: 34px; }
+                .hero-avatar, .hero-avatar-placeholder { width: 120px; height: 120px; }
+                .hero-stats { gap: 20px; }
+                .hero-stat-value { font-size: 22px; }
+                .section { padding: 60px 0; }
+                .section-title { font-size: 28px; }
+                .about-content { flex-direction: column; text-align: center; }
+                .about-avatar { width: 180px; height: 180px; }
+                .about-location { justify-content: center; }
                 .form-row { flex-direction: column; }
                 .services-grid { grid-template-columns: 1fr; }
+                .products-mini-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+                .newsletter-form { flex-direction: column; }
+                .testimonials-grid { grid-template-columns: 1fr; }
+                .contact-grid { grid-template-columns: 1fr 1fr; }
+            }
+            @media (max-width: 480px) {
+                .contact-grid { grid-template-columns: 1fr; }
+                .hero-actions { flex-direction: column; align-items: center; }
+                .hero-actions .btn { width: 100%; }
             }
         `;
     }
