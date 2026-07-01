@@ -31,7 +31,7 @@ router.get('/themes', (req, res) => {
     res.json({ themes: [
         'dark', 'midnight', 'ocean', 'emerald', 'sunset', 'electric', 'rose', 'forest', 'gold', 'aurora', 'noir',
         'light', 'daylight', 'ivory', 'cloud', 'snow',
-        'cotedivoire', 'france', 'senegal', 'cameroun', 'mali', 'burkina', 'ghana', 'nigeria', 'togo', 'benin', 'congo', 'gabon', 'guinea', 'niger',
+        'cotedivoire', 'cotedivoire_dark', 'cotedivoire_light', 'france', 'france_dark', 'france_light', 'senegal', 'senegal_dark', 'senegal_light', 'cameroun', 'mali', 'burkina', 'ghana', 'nigeria', 'togo', 'benin', 'congo', 'gabon', 'guinee', 'niger', 'togo_sunset',
         'afrique',
         'noel', 'halloween', 'love', 'royal', 'nature', 'cyber', 'pastel', 'mandy', 'ocean_light', 'sunset_light'
     ]});

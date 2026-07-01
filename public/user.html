@@ -241,7 +241,56 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        const THEMES={dark:{bg:'#0a0a1a',card:'#12121f',card2:'#1a1a2e',accent:'#818cf8',accent2:'#a78bfa',text:'#f1f5f9'},light:{bg:'#f8f9fa',card:'#fff',card2:'#f1f5f9',accent:'#6366f1',accent2:'#818cf8',text:'#1a1a2e'},midnight:{bg:'#0a0a23',card:'#111133',card2:'#1a1a40',accent:'#4a90d9',accent2:'#60a5fa',text:'#e2e8f0'},ocean:{bg:'#0a192f',card:'#112240',card2:'#1a3050',accent:'#64ffda',accent2:'#00d4ff',text:'#e2e8f0'},emerald:{bg:'#0d2818',card:'#1a3a2a',card2:'#224a35',accent:'#2ecc71',accent2:'#4ade80',text:'#e2e8f0'},cotedivoire:{bg:'#f8f400',card:'#fff',card2:'#f5f0e0',accent:'#f77f00',accent2:'#e67300',text:'#1a1a2e'},france:{bg:'#002395',card:'#001d6e',card2:'#002a8a',accent:'#ed2939',accent2:'#ff4d4d',text:'#e2e8f0'},senegal:{bg:'#00853f',card:'#006b32',card2:'#007a38',accent:'#fdef42',accent2:'#fcd116',text:'#e2e8f0'}};
+        const THEMES={
+            dark:{bg:'#1a1a2e',card:'#16213e',card2:'#1a1a2e',accent:'#667eea',accent2:'#764ba2',text:'#fff'},
+            midnight:{bg:'#0a0a23',card:'#111133',card2:'#1a1a40',accent:'#4a90d9',accent2:'#357abd',text:'#fff'},
+            ocean:{bg:'#0a192f',card:'#112240',card2:'#1a3050',accent:'#64ffda',accent2:'#4ad0b0',text:'#fff'},
+            emerald:{bg:'#0d2818',card:'#1a3a2a',card2:'#224a35',accent:'#2ecc71',accent2:'#27ae60',text:'#fff'},
+            sunset:{bg:'#1a0a0a',card:'#2a1515',card2:'#352020',accent:'#ff6b6b',accent2:'#ffa500',text:'#fff'},
+            electric:{bg:'#0a0a1a',card:'#15152a',card2:'#1f1f3a',accent:'#a855f7',accent2:'#ec4899',text:'#fff'},
+            rose:{bg:'#1a0a15',card:'#2a1525',card2:'#352030',accent:'#f472b6',accent2:'#ec4899',text:'#fff'},
+            forest:{bg:'#0a1a0a',card:'#152a15',card2:'#1f351f',accent:'#4ade80',accent2:'#22c55e',text:'#fff'},
+            gold:{bg:'#1a150a',card:'#2a2515',card2:'#353020',accent:'#f5a623',accent2:'#ffd700',text:'#fff'},
+            aurora:{bg:'#0a0a2a',card:'#151540',card2:'#1f1f50',accent:'#00d4ff',accent2:'#a855f7',text:'#fff'},
+            noir:{bg:'#0a0a0a',card:'#141414',card2:'#1e1e1e',accent:'#e0e0e0',accent2:'#ccc',text:'#fff'},
+            light:{bg:'#ffffff',card:'#f8f9fa',card2:'#f0f2f5',accent:'#667eea',accent2:'#764ba2',text:'#1a1a2e'},
+            daylight:{bg:'#fafbfc',card:'#fff',card2:'#f0f2f5',accent:'#4a90d9',accent2:'#667eea',text:'#1a1a2e'},
+            ivory:{bg:'#fffff0',card:'#fff',card2:'#f5f5dc',accent:'#8b7355',accent2:'#b8860b',text:'#2d2d2d'},
+            cloud:{bg:'#f0f4f8',card:'#fff',card2:'#e2e8f0',accent:'#3182ce',accent2:'#63b3ed',text:'#1a202c'},
+            snow:{bg:'#f8fafc',card:'#fff',card2:'#edf2f7',accent:'#805ad5',accent2:'#b794f4',text:'#1a202c'},
+            cotedivoire:{bg:'#f8f400',card:'#fff',card2:'#f5f0e0',accent:'#f77f00',accent2:'#e67300',text:'#1a1a2e'},
+            cotedivoire_dark:{bg:'#1a1500',card:'#2a2510',card2:'#353020',accent:'#f77f00',accent2:'#ff9020',text:'#f8f400'},
+            cotedivoire_light:{bg:'#fffef5',card:'#fff',card2:'#fff9e0',accent:'#f77f00',accent2:'#e67300',text:'#1a1a2e'},
+            france:{bg:'#002395',card:'#001d6e',card2:'#002a8a',accent:'#ed2939',accent2:'#ff4d4d',text:'#fff'},
+            france_dark:{bg:'#000d3a',card:'#001250',card2:'#001a60',accent:'#ed2939',accent2:'#ff3a4a',text:'#fff'},
+            france_light:{bg:'#f0f4ff',card:'#fff',card2:'#e0e8ff',accent:'#ed2939',accent2:'#d41f2f',text:'#002395'},
+            senegal:{bg:'#00853f',card:'#006b32',card2:'#007a38',accent:'#fdef42',accent2:'#fcd116',text:'#fff'},
+            senegal_dark:{bg:'#002a15',card:'#003a20',card2:'#004525',accent:'#fdef42',accent2:'#ffe855',text:'#fdef42'},
+            senegal_light:{bg:'#f0fff5',card:'#fff',card2:'#e0ffe8',accent:'#00853f',accent2:'#006b32',text:'#004d28'},
+            cameroun:{bg:'#007a5e',card:'#00664d',card2:'#007055',accent:'#fcd116',accent2:'#e8bd00',text:'#fff'},
+            mali:{bg:'#14b53a',card:'#109930',card2:'#12a835',accent:'#fcd116',accent2:'#e8bd00',text:'#fff'},
+            burkina:{bg:'#ef2b2d',card:'#d42527',card2:'#e03030',accent:'#fcd116',accent2:'#e8bd00',text:'#fff'},
+            ghana:{bg:'#006b3f',card:'#005532',card2:'#006038',accent:'#fcd116',accent2:'#e8bd00',text:'#fff'},
+            nigeria:{bg:'#008751',card:'#006d41',card2:'#007a48',accent:'#fff',accent2:'#eee',text:'#fff'},
+            togo:{bg:'#006a1c',card:'#005516',card2:'#006018',accent:'#fcd116',accent2:'#e8bd00',text:'#fff'},
+            benin:{bg:'#008751',card:'#006d41',card2:'#007a48',accent:'#fcd116',accent2:'#e8bd00',text:'#fff'},
+            congo:{bg:'#009543',card:'#007a37',card2:'#008840',accent:'#fbde4a',accent2:'#e8cc3a',text:'#fff'},
+            gabon:{bg:'#009e60',card:'#008250',card2:'#009058',accent:'#fcd116',accent2:'#e8bd00',text:'#fff'},
+            guinee:{bg:'#ce1126',card:'#b00e22',card2:'#c01028',accent:'#fcd116',accent2:'#e8bd00',text:'#fff'},
+            niger:{bg:'#e05206',card:'#c4470a',card2:'#d04d0e',accent:'#fff',accent2:'#eee',text:'#fff'},
+            togo_sunset:{bg:'#ff6b35',card:'#e05a2a',card2:'#ee6030',accent:'#ffd166',accent2:'#eec55a',text:'#fff'},
+            afrique:{bg:'#000000',card:'#1a1a1a',card2:'#222222',accent:'#f7941d',accent2:'#e74c3c',text:'#fff'},
+            noel:{bg:'#1a3a1a',card:'#0d2818',card2:'#153020',accent:'#e74c3c',accent2:'#ffd700',text:'#fff'},
+            halloween:{bg:'#1a0a00',card:'#2a1500',card2:'#352000',accent:'#ff6600',accent2:'#ff9900',text:'#fff'},
+            love:{bg:'#2a0a15',card:'#3a1525',card2:'#452030',accent:'#ff1493',accent2:'#ff69b4',text:'#fff'},
+            royal:{bg:'#1a0a2a',card:'#2a1540',card2:'#352050',accent:'#9b59b6',accent2:'#ffd700',text:'#fff'},
+            nature:{bg:'#0a1a0a',card:'#1b5e20',card2:'#226b28',accent:'#66bb6a',accent2:'#aed581',text:'#e8f5e9'},
+            cyber:{bg:'#0a0a1a',card:'#0f0f2a',card2:'#151535',accent:'#00ff88',accent2:'#0088ff',text:'#00ff88'},
+            pastel:{bg:'#fdf2f8',card:'#fff',card2:'#fce7f3',accent:'#ec4899',accent2:'#f59e0b',text:'#831843'},
+            mandy:{bg:'#fde68a',card:'#fff',card2:'#fcd34d',accent:'#dc2626',accent2:'#f59e0b',text:'#78350f'},
+            ocean_light:{bg:'#f0f9ff',card:'#fff',card2:'#e0f2fe',accent:'#0284c7',accent2:'#38bdf8',text:'#0c4a6e'},
+            sunset_light:{bg:'#fff7ed',card:'#fff',card2:'#ffedd5',accent:'#ea580c',accent2:'#f59e0b',text:'#7c2d12'}
+        };
 
         let slug='', roomId='', visitorName='', chatConnected=false, pollInterval=null;
 
