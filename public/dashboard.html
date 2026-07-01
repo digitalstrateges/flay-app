@@ -837,6 +837,11 @@
                         <h3>Analyze Profile</h3>
                         <p>Get AI insights and recommendations for your profile</p>
                     </div>
+                    <div class="ai-card" onclick="openAiImageGenerator()" style="border:1px solid var(--accent);background:linear-gradient(135deg,rgba(99,102,241,.05),rgba(168,85,247,.05))">
+                        <div class="ai-card-icon" style="background:linear-gradient(135deg,var(--accent),#a855f7);color:#fff"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg></div>
+                        <h3>Generate Image</h3>
+                        <p>Create AI-powered images for your products and posts</p>
+                    </div>
                 </div>
                 <div class="ai-output" id="aiOutput"></div>
             </div>
@@ -1947,6 +1952,111 @@
             } else {
                 output.innerHTML = '<div style="color:var(--danger)">Failed to generate. Please try again.</div>';
             }
+        }
+
+        /* ===========================
+           AI IMAGE GENERATOR
+        =========================== */
+        function openAiImageGenerator() {
+            if (!canUseFeature('ai')) { toast('Upgrade to use AI Image Generator', 'warning'); return; }
+            showModal('AI Image Generator', `
+                <div style="display:flex;flex-direction:column;gap:16px">
+                    <div>
+                        <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Describe your image</label>
+                        <textarea id="aiImgPrompt" placeholder="Ex: Un beau paysage de Cocody au coucher du soleil, style moderne..." style="width:100%;min-height:80px;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;resize:vertical;font-family:inherit"></textarea>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Style</label>
+                            <select id="aiImgStyle" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px">
+                                <option value="realistic">Realistic</option>
+                                <option value="artistic">Artistic</option>
+                                <option value="cartoon">Cartoon</option>
+                                <option value="anime">Anime</option>
+                                <option value="minimalist">Minimalist</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="font-size:13px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px">Size</label>
+                            <select id="aiImgSize" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px">
+                                <option value="512x512">512x512 (Square)</option>
+                                <option value="768x512">768x512 (Landscape)</option>
+                                <option value="512x768">512x768 (Portrait)</option>
+                                <option value="1024x1024">1024x1024 (HD)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <button class="btn btn-ghost btn-sm" onclick="aiImgPrompt.value='Logo moderne pour restaurant africain'" style="font-size:12px">Logo</button>
+                        <button class="btn btn-ghost btn-sm" onclick="aiImgPrompt.value='Photo de plat de pate avec poisson, presentation gastronomique'" style="font-size:12px">Plat</button>
+                        <button class="btn btn-ghost btn-sm" onclick="aiImgPrompt.value='Boutique moderne en Afrique, facade elegante'" style="font-size:12px">Boutique</button>
+                        <button class="btn btn-ghost btn-sm" onclick="aiImgPrompt.value='Fond abstrait geometrique, couleurs vives'" style="font-size:12px">Fond</button>
+                        <button class="btn btn-ghost btn-sm" onclick="aiImgPrompt.value='Portrait professionnel, fond studio'" style="font-size:12px">Portrait</button>
+                    </div>
+                    <div id="aiImgResult" style="display:none;text-align:center">
+                        <img id="aiImgPreview" style="max-width:100%;max-height:400px;border-radius:12px;border:1px solid var(--border)">
+                        <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+                            <button class="btn btn-primary btn-sm" onclick="useAiImage()">Use as Product Image</button>
+                            <button class="btn btn-secondary btn-sm" onclick="downloadAiImage()">Download</button>
+                            <button class="btn btn-ghost btn-sm" onclick="regenerateAiImage()">Regenerate</button>
+                        </div>
+                    </div>
+                    <div id="aiImgLoading" style="display:none;text-align:center;padding:20px">
+                        <div class="spinner" style="margin:0 auto 12px"></div>
+                        <p style="color:var(--text2);font-size:13px">Generating your image... (may take 10-30s)</p>
+                    </div>
+                    <button class="btn btn-primary" id="aiImgGenBtn" onclick="generateAiImage()" style="width:100%">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                        Generate Image
+                    </button>
+                </div>
+            `, '600px');
+        }
+
+        let lastAiImageUrl = '';
+
+        async function generateAiImage() {
+            const prompt = document.getElementById('aiImgPrompt').value.trim();
+            if (!prompt) { toast('Enter a description', 'warning'); return; }
+            const style = document.getElementById('aiImgStyle').value;
+            const [w, h] = document.getElementById('aiImgSize').value.split('x').map(Number);
+            document.getElementById('aiImgLoading').style.display = 'block';
+            document.getElementById('aiImgResult').style.display = 'none';
+            document.getElementById('aiImgGenBtn').disabled = true;
+            try {
+                const data = await api('/api/ai/generate-image', {
+                    method: 'POST',
+                    body: JSON.stringify({ prompt, style, width: w, height: h })
+                });
+                if (data && data.url) {
+                    lastAiImageUrl = data.url;
+                    document.getElementById('aiImgPreview').src = data.url;
+                    document.getElementById('aiImgResult').style.display = 'block';
+                    toast('Image generated!', 'success');
+                } else {
+                    toast('Generation failed', 'error');
+                }
+            } catch (e) {
+                toast('Error: ' + e.message, 'error');
+            }
+            document.getElementById('aiImgLoading').style.display = 'none';
+            document.getElementById('aiImgGenBtn').disabled = false;
+        }
+
+        function regenerateAiImage() { generateAiImage(); }
+
+        function useAiImage() {
+            if (!lastAiImageUrl) return;
+            navigator.clipboard.writeText(lastAiImageUrl);
+            toast('Image URL copied! Paste in product image field.', 'success');
+        }
+
+        function downloadAiImage() {
+            if (!lastAiImageUrl) return;
+            const a = document.createElement('a');
+            a.href = lastAiImageUrl;
+            a.download = 'flay-ai-image-' + Date.now() + '.jpg';
+            a.click();
         }
 
         /* ===========================

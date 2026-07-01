@@ -28,6 +28,15 @@
 
         /* Gallery */
         .gallery{position:relative}
+        .gallery-360{position:relative;width:100%;aspect-ratio:1;background:var(--card);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:none;cursor:grab;user-select:none}
+        .gallery-360:active{cursor:grabbing}
+        .gallery-360 canvas{width:100%;height:100%}
+        .gallery-360-overlay{position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:center;pointer-events:none}
+        .gallery-360-badge{background:rgba(0,0,0,.7);color:#fff;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;pointer-events:auto;display:flex;align-items:center;gap:6px}
+        .gallery-360-hint{background:rgba(0,0,0,.5);color:#fff;padding:4px 10px;border-radius:12px;font-size:11px;animation:pulse 2s infinite}
+        .view-360-btn{position:absolute;top:12px;right:12px;z-index:5;width:40px;height:40px;border-radius:50%;background:rgba(0,0,0,.7);color:#fff;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;transition:all .2s}
+        .view-360-btn:hover{background:var(--accent);transform:scale(1.1)}
+        .view-360-btn.active{background:var(--accent);box-shadow:0 0 20px rgba(129,140,248,.5)}
         .main-img{width:100%;aspect-ratio:1;border-radius:16px;overflow:hidden;background:var(--card);cursor:zoom-in;display:flex;align-items:center;justify-content:center}
         .main-img img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
         .main-img:hover img{transform:scale(1.05)}
@@ -132,7 +141,15 @@
     <div class="container">
         <div class="layout" id="productLayout">
             <div class="gallery">
+                <button class="view-360-btn" id="btn360" onclick="toggle360View()" title="Vue 360°">360°</button>
                 <div class="main-img" id="mainImg" onclick="openLightbox()"><img src="" alt="" id="mainImgSrc"></div>
+                <div class="gallery-360" id="gallery360">
+                    <canvas id="canvas360" width="600" height="600"></canvas>
+                    <div class="gallery-360-overlay">
+                        <div class="gallery-360-badge">360° <span id="angle360">0°</span></div>
+                        <div class="gallery-360-hint">Glissez pour tourner</div>
+                    </div>
+                </div>
                 <div class="thumbnails" id="thumbs"></div>
             </div>
             <div class="info">
@@ -424,6 +441,63 @@
                 }
             }catch(e){}
         }
+
+        let is360Mode=false, angle360=0, dragging360=false, lastX360=0;
+        const gallery360=document.getElementById('gallery360');
+        const canvas360=document.getElementById('canvas360');
+        const ctx360=canvas360.getContext('2d');
+        const angle360El=document.getElementById('angle360');
+
+        function toggle360View(){
+            is360Mode=!is360Mode;
+            const main=document.getElementById('mainImg');
+            const btn=document.getElementById('btn360');
+            if(is360Mode){
+                main.style.display='none';
+                gallery360.style.display='block';
+                btn.classList.add('active');
+                render360();
+            }else{
+                main.style.display='';
+                gallery360.style.display='none';
+                btn.classList.remove('active');
+            }
+        }
+
+        function render360(){
+            if(!is360Mode||!images.length)return;
+            const idx=Math.abs(Math.round(angle360/10))%images.length;
+            const img=new Image();
+            img.crossOrigin='anonymous';
+            img.onload=()=>{
+                ctx360.clearRect(0,0,600,600);
+                const scale=Math.min(600/img.width,600/img.height);
+                const w=img.width*scale, h=img.height*scale;
+                ctx360.drawImage(img,(600-w)/2,(600-h)/2,w,h);
+                ctx360.save();
+                ctx360.globalAlpha=0.15;
+                ctx360.strokeStyle='#fff';
+                ctx360.lineWidth=2;
+                const cx=300, cy=300;
+                for(let i=0;i<8;i++){
+                    const a=(i/8)*Math.PI*2+angle360*Math.PI/180;
+                    ctx360.beginPath();
+                    ctx360.moveTo(cx,cy);
+                    ctx360.lineTo(cx+Math.cos(a)*250,cy+Math.sin(a)*250);
+                    ctx360.stroke();
+                }
+                ctx360.restore();
+                angle360El.textContent=Math.round(angle360%360<0?angle360%360+360:angle360%360)+'°';
+            };
+            img.src=images[idx]||'';
+        }
+
+        gallery360.addEventListener('mousedown',e=>{dragging360=true;lastX360=e.clientX});
+        gallery360.addEventListener('touchstart',e=>{dragging360=true;lastX360=e.touches[0].clientX});
+        window.addEventListener('mousemove',e=>{if(!dragging360)return;angle360+=(e.clientX-lastX360)*0.5;lastX360=e.clientX;render360()});
+        window.addEventListener('touchmove',e=>{if(!dragging360)return;angle360+=(e.touches[0].clientX-lastX360)*0.5;lastX360=e.touches[0].clientX;render360()});
+        window.addEventListener('mouseup',()=>dragging360=false);
+        window.addEventListener('touchend',()=>dragging360=false);
 
         loadProduct();
     </script>
