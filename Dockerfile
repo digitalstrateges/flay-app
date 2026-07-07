@@ -7,10 +7,11 @@ FROM node:20-alpine
 RUN apk add --no-cache tini curl
 
 WORKDIR /app
-RUN adduser -D flay && mkdir -p /app/data /app/uploads && chown -R flay:flay /app
+RUN adduser -D flay && mkdir -p /app/data /app/uploads
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY . .
+RUN chown -R flay:flay /app
 
 USER flay
 EXPOSE 4000
