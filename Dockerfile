@@ -1,7 +1,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --only=production && npm cache clean --force
+RUN npm install --omit=dev && npm cache clean --force
 
 FROM node:20-alpine
 RUN apk add --no-cache tini curl
@@ -19,7 +19,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD curl -s http://localhost:4000/api/health | grep -q '"status":"ok"' || exit 1
 
 LABEL org.opencontainers.image.title="Flay Super App"
-LABEL org.opencontainers.image.version="1.01"
+LABEL org.opencontainers.image.version="1.02"
 LABEL org.opencontainers.image.vendor="DIGITALSTRATEGES"
 LABEL org.opencontainers.image.description="Plateforme tout-en-un : showcase, e-commerce, CRM, reservations"
 

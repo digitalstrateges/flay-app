@@ -1,6 +1,6 @@
 {
   "name": "flay-app",
-  "version": "1.01",
+  "version": "1.02",
   "description": "Flay Super App - Plateforme tout-en-un : showcase, e-commerce, CRM, reservations, IA, marketplace | DIGITALSTRATEGES",
   "main": "server.js",
   "scripts": {
