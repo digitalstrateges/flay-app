@@ -35,7 +35,34 @@
         .nav-cta{padding:10px 20px;background:var(--gradient);color:#fff !important;border-radius:10px;font-weight:600 !important;transition:transform .2s,box-shadow .2s !important}
         .nav-cta:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(247,127,0,.4)}
         .nav-mobile{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:8px}
-        @media(max-width:768px){.nav-links{display:none}.nav-mobile{display:block}.nav-links.open{display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(10,10,26,.98);border-bottom:1px solid var(--border);padding:24px;gap:16px}}
+        @media(max-width:768px){
+            .nav-links{display:none}.nav-mobile{display:block}
+            .nav-links.open{display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(15,10,5,.98);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:24px;gap:16px}
+            .light .nav-links.open{background:rgba(250,246,240,.98)}
+            .hero-grid{grid-template-columns:1fr;gap:40px}
+            .hero-visual{order:-1}.hero h1{font-size:clamp(28px,8vw,36px)}.hero p{font-size:16px}
+            .hero-float{display:none}
+            .stats-grid{grid-template-columns:repeat(2,1fr);gap:16px}
+            .stat-item .num{font-size:24px}
+            .features-grid{grid-template-columns:1fr}
+            .steps{grid-template-columns:1fr;gap:32px}.steps::before{display:none}
+            .showcase-grid{grid-template-columns:1fr}
+            .showcase-visual iframe{height:280px}
+            .pricing-grid{grid-template-columns:1fr;max-width:400px;margin:0 auto}
+            .testimonials-grid{grid-template-columns:1fr}
+            .wave-grid{grid-template-columns:1fr}
+            .footer-grid{grid-template-columns:1fr;gap:24px}
+            .cta-btns{flex-direction:column;align-items:center}
+            .hero-card-stats{grid-template-columns:repeat(3,1fr)}
+            .about-stats{grid-template-columns:repeat(2,1fr)}
+        }
+        @media(max-width:480px){
+            .hero{padding:100px 0 60px}
+            .hero-actions .btn{width:100%;justify-content:center}
+            .stats-grid{grid-template-columns:repeat(2,1fr)}
+            section{padding:60px 0}
+            .pricing-grid{max-width:100%}
+        }
 
         /* === HERO === */
         .hero{min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;position:relative}
@@ -309,8 +336,8 @@
             </div>
             <div class="feature-card fade-in fade-in-delay-1">
                 <div class="feature-icon red">💳</div>
-                <h3>Wave + CinetPay</h3>
-                <p>Paiements Wave, Orange Money, Moov, MTN, MTN. QR Code et webhooks auto.</p>
+                <h3>Wave & Mobile Money</h3>
+                <p>Paiements Wave, Orange Money, Moov, MTN. QR Code et webhooks automatises.</p>
             </div>
             <div class="feature-card fade-in fade-in-delay-2">
                 <div class="feature-icon purple">💬</div>
@@ -390,7 +417,7 @@
                 <ul class="showcase-features">
                     <li>
                         <div class="check">✓</div>
-                        <div class="text"><strong>Wave + CinetPay</strong><span>Paiements Wave, OM, Moov, MTN, CB. Webhooks auto.</span></div>
+                        <div class="text"><strong>Wave & Mobile Money</strong><span>Paiements Wave, OM, Moov, MTN. Webhooks automatises.</span></div>
                     </li>
                     <li>
                         <div class="check">✓</div>
@@ -585,7 +612,7 @@
                     <div class="wave-feat"><span class="ico">⚡</span> Paiement instantane</div>
                     <div class="wave-feat"><span class="ico">🔒</span> Webhooks auto + signature securisee</div>
                     <div class="wave-feat"><span class="ico">📱</span> QR Code de paiement</div>
-                    <div class="wave-feat"><span class="ico">🌍</span> Wave, OM, Moov, MTN, CB (CinetPay)</div>
+                    <div class="wave-feat"><span class="ico">🌍</span> Wave, OM, Moov, MTN, CB</div>
                     <div class="wave-feat"><span class="ico">📊</span> Suivi des transactions + facturation auto</div>
                     <div class="wave-feat"><span class="ico">💱</span> Multi-devises (XOF, EUR, USD, GHS, NGN)</div>
                 </div>
@@ -652,7 +679,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            &copy; 2026 Flay Super App v1.02. Fait avec &#10084; par <a href="https://digitalstrateges.ci">DIGITALSTRATEGES</a> &bull; +225 07 59 73 19 90
+            &copy; 2026 Flay Super App v1.02. Fait avec &#10084; par <a href="/digitalstrateges">DIGITALSTRATEGES</a> &bull; +225 07 59 73 19 90
         </div>
     </div>
 </footer>

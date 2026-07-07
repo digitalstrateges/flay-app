@@ -227,6 +227,7 @@
 
         /* Responsive */
         @media(max-width:1200px){.stats-grid{grid-template-columns:repeat(3,1fr)}}
+        @media(max-width:600px){.stats-grid{grid-template-columns:repeat(2,1fr)}}
         @media(max-width:900px){
             :root{--bottom-bar-height:64px}
             .sidebar{transform:translateX(-100%)}
@@ -295,7 +296,7 @@
         .search-hint kbd{background:var(--bg2);border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:11px;font-family:inherit}
 
         /* === FLOATING ACTION BUTTON === */
-        .fab{position:fixed;bottom:calc(var(--bottom-bar-height) + 20px);right:20px;width:56px;height:56px;border-radius:50%;background:var(--gradient);border:none;color:#fff;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(129,140,248,.4);z-index:250;transition:var(--transition);font-size:24px}
+        .fab{position:fixed;bottom:calc(var(--bottom-bar-height) + 20px);right:20px;width:56px;height:56px;border-radius:50%;background:var(--gradient);border:none;color:#fff;display:none;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(247,127,0,.4);z-index:250;transition:var(--transition);font-size:24px}
         .fab:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(129,140,248,.5)}
         .fab:active{transform:scale(.95)}
         @media(max-width:900px){.fab{display:flex}}
@@ -2417,7 +2418,7 @@
                     <h3 style="margin-bottom:8px">${esc(item.name)}</h3>
                     <p style="color:var(--text2);margin-bottom:24px;font-size:13px">${esc(item.description)}</p>
                     <div style="font-size:32px;font-weight:800;color:var(--accent);margin-bottom:24px">${item.price.toLocaleString()} ${item.currency}</div>
-                    <p style="color:var(--muted);font-size:12px;margin-bottom:16px">Vous allez etre redirige vers le paiement Wave/CinetPay</p>
+                    <p style="color:var(--muted);font-size:12px;margin-bottom:16px">Vous allez etre redirige vers le paiement securise</p>
                 </div>
             `, `
                 <button class="btn btn-primary" onclick="confirmPurchase('${itemId}')">
