@@ -6,28 +6,39 @@
     <title>Flay - Connexion</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0a0a1a; --card: #15152a; --border: #252545; --accent: #818cf8; --text: #fff; --text2: #a0a0c0; --gradient: linear-gradient(135deg, #818cf8, #a78bfa); }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-        .auth-card { width: 100%; max-width: 420px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 48px 40px; }
-        .brand { text-align: center; margin-bottom: 32px; }
-        .brand-name { font-size: 32px; font-weight: 900; background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .brand-sub { color: var(--text2); font-size: 14px; margin-top: 4px; }
-        h1 { font-size: 24px; font-weight: 700; text-align: center; margin-bottom: 8px; }
-        .subtitle { text-align: center; color: var(--text2); font-size: 14px; margin-bottom: 32px; }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; font-size: 13px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
-        input { width: 100%; padding: 14px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 15px; font-family: inherit; transition: border-color 0.3s; }
-        input:focus { outline: none; border-color: var(--accent); }
-        .btn { width: 100%; padding: 14px; background: var(--gradient); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 8px; }
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(129,140,248,0.3); }
-        .links { text-align: center; margin-top: 24px; }
-        .links a { color: var(--accent); text-decoration: none; font-size: 14px; }
-        .error { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #ef4444; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
-        .success { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); color: #4ade80; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+        :root{--bg:#0f0a05;--card:#2a2010;--border:#4a3820;--accent:#f77f00;--accent2:#ff9f30;--text:#f0e6d0;--text2:#b8a880;--gradient:linear-gradient(135deg,#f77f00,#ff9f30);--green:#22c55e}
+        .light{--bg:#faf6f0;--card:#ffffff;--border:#e0d5c5;--accent:#e07000;--accent2:#f77f00;--text:#1a150a;--text2:#6b5c45;--gradient:linear-gradient(135deg,#e07000,#f77f00);--green:#059669}
+        @media(prefers-color-scheme:light){:root{--bg:#faf6f0;--card:#ffffff;--border:#e0d5c5;--accent:#e07000;--accent2:#f77f00;--text:#1a150a;--text2:#6b5c45;--gradient:linear-gradient(135deg,#e07000,#f77f00);--green:#059669}.light{--bg:#0f0a05;--card:#2a2010;--border:#4a3820;--accent:#f77f00;--accent2:#ff9f30;--text:#f0e6d0;--text2:#b8a880;--gradient:linear-gradient(135deg,#f77f00,#ff9f30);--green:#22c55e}}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px}
+        .auth-card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--border);border-radius:20px;padding:40px 32px}
+        .brand{text-align:center;margin-bottom:28px}
+        .brand-name{font-size:28px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .brand-sub{color:var(--text2);font-size:13px;margin-top:4px}
+        h1{font-size:22px;font-weight:700;text-align:center;margin-bottom:4px}
+        .subtitle{text-align:center;color:var(--text2);font-size:14px;margin-bottom:28px}
+        .form-group{margin-bottom:18px}
+        label{display:block;font-size:14px;font-weight:600;color:var(--text2);margin-bottom:6px}
+        input{width:100%;padding:14px 16px;background:var(--bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;font-family:inherit;transition:border-color .3s;min-height:48px}
+        input:focus{outline:none;border-color:var(--accent)}
+        .btn{width:100%;padding:14px;min-height:48px;background:var(--gradient);color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:8px;-webkit-tap-highlight-color:transparent}
+        .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(247,127,0,.3)}
+        .btn:active{transform:translateY(0)}
+        .links{text-align:center;margin-top:20px}
+        .links a{color:var(--accent);text-decoration:none;font-size:14px;display:inline-block;padding:8px 4px}
+        .error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#ef4444;padding:12px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
+        .success{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:var(--green);padding:12px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none}
+        @media(hover:none){.btn:hover{transform:none;box-shadow:none}.btn:active{transform:scale(.97)}}
+        @media(max-width:480px){
+            .auth-card{padding:32px 20px;border-radius:16px}
+            .brand-name{font-size:24px}
+            h1{font-size:20px}
+            input{font-size:15px;padding:12px 14px}
+            .btn{font-size:15px}
+        }
     </style>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#818cf8">
+    <meta name="theme-color" content="#f77f00">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">

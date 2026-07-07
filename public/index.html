@@ -63,6 +63,15 @@
             section{padding:60px 0}
             .pricing-grid{max-width:100%}
         }
+        @media(hover:none){
+            .btn:hover,.btn-primary:hover,.btn-outline:hover{transform:none;box-shadow:none}
+            .btn:active,.btn-primary:active{transform:scale(.97)}
+            .feature-card:hover,.price-card:hover{transform:none;border-color:var(--border)}
+            .nav-links a:hover{color:var(--text2)}
+            .nav-cta:hover{transform:none;box-shadow:none}
+            .mini-btn:hover{border-color:var(--border);color:var(--text)}
+            .showcase-features li:hover{border-color:var(--border)}
+        }
 
         /* === HERO === */
         .hero{min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;position:relative}
@@ -90,7 +99,7 @@
         .stat-label{font-size:11px;color:var(--text2);margin-top:2px}
         .hero-card-actions{display:flex;gap:8px}
         .hero-card-actions .mini-btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:13px;font-weight:500;text-align:center;text-decoration:none;transition:all .2s}
-        .hero-card-actions .mini-btn:hover{border-color:var(--accent);color:var(--accent)}
+        .hero-actions .mini-btn:hover{border-color:var(--accent);color:var(--accent)}
         .hero-float{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:8px;animation:float 3s ease-in-out infinite}
         .hero-float.tl{top:-20px;left:-30px}
         .hero-float.br{bottom:-15px;right:-25px;animation-delay:1.5s}

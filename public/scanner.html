@@ -2,44 +2,66 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Scanner QR | Flay</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0a0a1a">
+<meta name="theme-color" content="#f77f00">
 <style>
+:root{--bg:#0f0a05;--bg2:#1a150a;--card:#2a2010;--border:#4a3820;--accent:#f77f00;--accent2:#e07000;--text:#f0e6d0;--text2:#b8a880;--muted:#8a7a60;--gradient:linear-gradient(135deg,#f77f00,#ff9f30)}
+.light{--bg:#faf6f0;--bg2:#fff0e0;--card:#ffffff;--border:#e0d5c5;--accent:#e07000;--accent2:#f77f00;--text:#1a150a;--text2:#6b5c45;--muted:#8a7a60;--gradient:linear-gradient(135deg,#e07000,#f77f00)}
+@media(prefers-color-scheme:light){:root{--bg:#faf6f0;--bg2:#fff0e0;--card:#ffffff;--border:#e0d5c5;--accent:#e07000;--accent2:#f77f00;--text:#1a150a;--text2:#6b5c45;--muted:#8a7a60;--gradient:linear-gradient(135deg,#e07000,#f77f00)}.light{--bg:#0f0a05;--bg2:#1a150a;--card:#2a2010;--border:#4a3820;--accent:#f77f00;--accent2:#e07000;--text:#f0e6d0;--text2:#b8a880;--muted:#8a7a60;--gradient:linear-gradient(135deg,#f77f00,#ff9f30)}}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a1a;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}
-.header{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:rgba(0,0,0,.5);backdrop-filter:blur(12px);border-bottom:1px solid #1e293b;position:sticky;top:0;z-index:10}
-.header h1{font-size:1.1rem;font-weight:600;flex:1}
-.back-btn{display:flex;align-items:center;gap:.35rem;color:#94a3b8;text-decoration:none;font-size:.85rem;padding:.35rem .75rem;border-radius:8px;transition:all .2s}
-.back-btn:hover{background:rgba(255,255,255,.06);color:#e2e8f0}
-.main{flex:1;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem}
-.scanner-container{width:100%;max-width:360px;aspect-ratio:1;background:#12121f;border-radius:20px;overflow:hidden;position:relative;border:2px solid #1e293b}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+.header{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.header h1{font-size:17px;font-weight:600;flex:1;color:var(--text)}
+.back-btn{display:flex;align-items:center;gap:6px;color:var(--text2);text-decoration:none;font-size:14px;padding:10px 12px;border-radius:8px;transition:all .2s;min-height:44px;-webkit-tap-highlight-color:transparent}
+.back-btn:active{background:rgba(255,255,255,.06);color:var(--text)}
+.main{flex:1;display:flex;flex-direction:column;align-items:center;padding:24px 16px}
+.scanner-container{width:100%;max-width:360px;aspect-ratio:1;background:var(--card);border-radius:20px;overflow:hidden;position:relative;border:2px solid var(--border)}
 #scanner{width:100%;height:100%;object-fit:cover}
-.scanner-frame{position:absolute;inset:15%;border:2px solid #818cf8;border-radius:16px;pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,.5)}
-.scanner-frame::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#818cf8,transparent);animation:scan 2s ease-in-out infinite}
+.scanner-frame{position:absolute;inset:15%;border:2px solid var(--accent);border-radius:16px;pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,.5)}
+.scanner-frame::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:scan 2s ease-in-out infinite}
 @keyframes scan{0%,100%{top:0}50%{top:calc(100% - 3px)}}
-.scanner-hint{text-align:center;margin-top:1.5rem;color:#94a3b8;font-size:.9rem}
-.scanner-hint strong{color:#e2e8f0}
-.manual-input{width:100%;max-width:400px;margin-top:1.5rem}
-.manual-input label{display:block;font-size:.85rem;color:#94a3b8;margin-bottom:.5rem}
-.input-group{display:flex;gap:.5rem}
-.input-group input{flex:1;padding:.75rem 1rem;background:#12121f;border:1px solid #1e293b;border-radius:10px;color:#e2e8f0;font-size:1rem;outline:none;transition:border .2s}
-.input-group input:focus{border-color:#818cf8}
-.input-group button{padding:.75rem 1.25rem;background:#6366f1;color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;transition:opacity .2s}
-.input-group button:hover{opacity:.9}
-.result-card{display:none;width:100%;max-width:400px;margin-top:1.5rem;background:#12121f;border-radius:16px;padding:1.5rem;border:1px solid #1e293b;text-align:center}
-.result-card .icon{font-size:3rem;margin-bottom:.75rem}
-.result-card h3{font-size:1.1rem;margin-bottom:.25rem;color:#f1f5f9}
-.result-card p{color:#94a3b8;font-size:.85rem;margin-bottom:1rem;word-break:break-all}
-.result-card .btn{display:inline-block;padding:.65rem 1.5rem;background:#6366f1;color:#fff;border-radius:10px;text-decoration:none;font-weight:600;transition:opacity .2s}
-.result-card .btn:hover{opacity:.9}
-.error-msg{color:#f87171;font-size:.85rem;margin-top:.5rem;display:none}
-.camera-select{margin-top:1rem;display:flex;gap:.5rem;justify-content:center}
-.camera-btn{padding:.35rem .85rem;border-radius:8px;border:1px solid #1e293b;background:transparent;color:#94a3b8;font-size:.8rem;cursor:pointer;transition:all .2s}
-.camera-btn.active,.camera-btn:hover{background:rgba(99,102,241,.15);border-color:#818cf8;color:#e2e8f0}
-.flash-btn{position:absolute;top:1rem;right:1rem;z-index:5;width:40px;height:40px;border-radius:50%;border:1px solid #1e293b;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;transition:all .2s}
-.flash-btn:hover{background:rgba(99,102,241,.3);border-color:#818cf8}
+.scanner-hint{text-align:center;margin-top:20px;color:var(--text2);font-size:14px;line-height:1.6}
+.scanner-hint strong{color:var(--text)}
+.manual-input{width:100%;max-width:400px;margin-top:24px}
+.manual-input label{display:block;font-size:14px;color:var(--text2);margin-bottom:8px}
+.input-group{display:flex;gap:8px}
+.input-group input{flex:1;padding:14px 16px;min-height:48px;background:var(--card);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:16px;outline:none;transition:border .2s}
+.input-group input:focus{border-color:var(--accent)}
+.input-group button{padding:14px 24px;min-height:48px;background:var(--gradient);color:#fff;border:none;border-radius:10px;font-weight:600;font-size:15px;cursor:pointer;transition:all .2s;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.input-group button:active{transform:scale(.97)}
+.result-card{display:none;width:100%;max-width:400px;margin-top:24px;background:var(--card);border-radius:16px;padding:24px;border:1px solid var(--border);text-align:center}
+.result-card .icon{font-size:48px;margin-bottom:12px}
+.result-card h3{font-size:18px;margin-bottom:4px;color:var(--text)}
+.result-card p{color:var(--text2);font-size:14px;margin-bottom:16px;word-break:break-all;line-height:1.5}
+.result-card .btn{display:inline-block;padding:14px 32px;min-height:48px;background:var(--gradient);color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.result-card .btn:active{transform:scale(.97)}
+.error-msg{color:#f87171;font-size:14px;margin-top:8px;display:none}
+.camera-select{margin-top:16px;display:flex;gap:8px;justify-content:center}
+.camera-btn{padding:10px 16px;min-height:44px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--text2);font-size:14px;cursor:pointer;transition:all .2s;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.camera-btn.active,.camera-btn:active{background:var(--accent);border-color:var(--accent);color:#fff}
+.flash-btn{position:absolute;top:16px;right:16px;z-index:5;width:44px;height:44px;border-radius:50%;border:1px solid var(--border);background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;transition:all .2s;-webkit-tap-highlight-color:transparent}
+.flash-btn:active{background:rgba(247,127,0,.3);border-color:var(--accent)}
+@media(hover:none){
+.camera-btn:hover{background:transparent;border-color:var(--border);color:var(--text2)}
+.camera-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.back-btn:hover{background:transparent;color:var(--text2)}
+.input-group button:hover{opacity:1}
+.result-card .btn:hover{opacity:1}
+.flash-btn:hover{background:rgba(0,0,0,.6);border-color:var(--border)}
+}
+@media(max-width:480px){
+.header{padding:8px 12px}
+.header h1{font-size:15px}
+.main{padding:16px 12px}
+.scanner-container{border-radius:16px}
+.scanner-hint{font-size:13px}
+.manual-input label{font-size:13px}
+.input-group input{padding:12px 14px;font-size:15px}
+.result-card{padding:20px}
+.camera-btn{font-size:13px;padding:8px 14px}
+}
 </style>
 </head>
 <body>
@@ -61,7 +83,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     Pointez l'appareil vers un <strong>QR Code Flay</strong><br>
     pour voir le profil ou le produit
   </div>
-
   <div class="manual-input">
     <label>Ou entrez le lien manuellement</label>
     <div class="input-group">
@@ -70,7 +91,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <div class="error-msg" id="errorMsg">Lien invalide</div>
   </div>
-
   <div class="result-card" id="resultCard">
     <div class="icon" id="resultIcon">&#128197;</div>
     <h3 id="resultTitle">Profil trouve</h3>
@@ -78,7 +98,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <a href="#" id="resultBtn" class="btn">Voir le profil</a>
   </div>
 </div>
-
 <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 const video = document.getElementById('scanner');
@@ -87,7 +106,6 @@ const errorMsg = document.getElementById('errorMsg');
 let stream = null;
 let facingMode = 'environment';
 let scanning = true;
-
 async function startScanner(facing = 'environment') {
   scanning = true;
   if (stream) { stream.getTracks().forEach(t => t.stop()); }
@@ -100,11 +118,10 @@ async function startScanner(facing = 'environment') {
     scanFrame();
   } catch (e) {
     document.getElementById('scannerContainer').innerHTML =
-      '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:.9rem;text-align:center;padding:2rem">' +
+      '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:14px;text-align:center;padding:32px">' +
       'Camera non disponible.<br>Utilisez la saisie manuelle ci-dessous.</div>';
   }
 }
-
 function scanFrame() {
   if (!scanning) return;
   if (video.readyState === video.HAVE_ENOUGH_DATA) {
@@ -121,20 +138,16 @@ function scanFrame() {
   }
   requestAnimationFrame(scanFrame);
 }
-
 function handleScan(data) {
   if (!data) return;
   scanning = false;
   if (stream) { stream.getTracks().forEach(t => t.stop()); }
-
   const url = data.startsWith('http') ? data : 'https://' + data;
   const u = new URL(url);
   const path = u.pathname;
-
   let title = 'Profil Flay';
   let icon = '&#128100;';
   let link = url;
-
   if (path.includes('/u/') || path.includes('/p/') || path.startsWith('/showcase/')) {
     title = 'Carte de visite Flay';
     icon = '&#128100;';
@@ -147,10 +160,8 @@ function handleScan(data) {
   } else {
     title = 'Lien Flay';
   }
-
   showResult(title, icon, url, url);
 }
-
 function showResult(title, icon, displayUrl, linkUrl) {
   document.getElementById('resultIcon').innerHTML = icon;
   document.getElementById('resultTitle').textContent = title;
@@ -159,7 +170,6 @@ function showResult(title, icon, displayUrl, linkUrl) {
   resultCard.style.display = 'block';
   resultCard.scrollIntoView({ behavior: 'smooth' });
 }
-
 function openManual() {
   const input = document.getElementById('manualUrl').value.trim();
   if (!input) { errorMsg.style.display = 'block'; return; }
@@ -171,13 +181,11 @@ function openManual() {
     errorMsg.style.display = 'block';
   }
 }
-
 function switchCamera(mode) {
   facingMode = mode;
   document.querySelectorAll('.camera-btn').forEach(b => b.classList.toggle('active', b.textContent.includes(mode === 'environment' ? 'Arriere' : 'Avant')));
   startScanner(mode);
 }
-
 async function toggleFlash() {
   if (!stream) return;
   const track = stream.getVideoTracks()[0];
@@ -185,9 +193,7 @@ async function toggleFlash() {
     await track.applyConstraints({ advanced: [{ torch: !track.getSettings().torch }] });
   } catch(e) {}
 }
-
 startScanner();
-
 document.getElementById('manualUrl').addEventListener('keydown', e => { if(e.key === 'Enter') openManual(); });
 </script>
 </body>
