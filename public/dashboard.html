@@ -540,9 +540,9 @@
                         </a>
                         <span class="plan-badge plan-free" id="planBadge">
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                            Free
+                            <span id="planBadgeText">Free</span>
                         </span>
-                        <a href="/payment.html" class="btn btn-primary btn-sm">Upgrade Plan</a>
+                        <a href="/payment.html" class="btn btn-primary btn-sm" id="upgradeTopBtn">Upgrade Plan</a>
                     </div>
                 </div>
 
@@ -1110,6 +1110,18 @@
                         <button class="btn btn-primary" onclick="saveSettings()">Save Changes</button>
                     </div>
                 </div>
+                <div class="card" style="border-color:var(--border)">
+                    <div class="card-title" style="margin-bottom:20px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Mon Abonnement</div>
+                    <div id="subscriptionInfo" style="font-size:14px;color:var(--text2);margin-bottom:16px">Chargement...</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                        <a href="/payment.html" class="btn btn-primary" id="upgradeBtn">Changer de plan</a>
+                        <button class="btn btn-ghost" onclick="cancelSubscription()" id="cancelSubBtn" style="display:none">Resilier</button>
+                    </div>
+                    <div style="margin-top:16px">
+                        <div style="font-weight:600;font-size:14px;margin-bottom:8px">Historique des paiements</div>
+                        <div id="paymentHistory" style="font-size:13px;color:var(--muted)">Aucun paiement</div>
+                    </div>
+                </div>
                 <div class="card" style="border-color:rgba(248,113,113,.2)">
                     <div class="card-title" style="margin-bottom:16px;color:var(--danger)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Danger Zone</div>
                     <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Permanently delete your account and all associated data.</p>
@@ -1361,7 +1373,59 @@
             const cls = PLAN_COLORS[state.plan] || 'plan-free';
             const label = PLAN_LABELS[state.plan] || 'Free';
             badge.className = 'plan-badge ' + cls;
-            badge.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ' + esc(label);
+            document.getElementById('planBadgeText').textContent = label;
+        }
+
+        async function loadSubscriptionInfo() {
+            try {
+                const data = await api('/api/flay-pay/my-subscription');
+                if (!data) return;
+                state.plan = data.plan || 'free';
+                updatePlanBadge();
+                const upgradeBtn = document.getElementById('upgradeTopBtn');
+                if (upgradeBtn) {
+                    if (data.plan !== 'free' && data.isActive) {
+                        upgradeBtn.textContent = 'Gerer mon abonnement';
+                        upgradeBtn.href = '/payment.html?plan=' + data.plan;
+                    } else if (data.plan !== 'free' && !data.isActive) {
+                        upgradeBtn.textContent = 'Renouveler';
+                    } else {
+                        upgradeBtn.textContent = 'Upgrade Plan';
+                    }
+                }
+                const info = document.getElementById('subscriptionInfo');
+                if (info) {
+                    if (data.plan === 'free') {
+                        info.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span class="status-badge status-inactive">Gratuit</span><span style="color:var(--text2)">Vous utilisez le plan gratuit</span></div><p style="font-size:13px;color:var(--muted)">Passez a un plan payant pour debloquer toutes les fonctionnalites.</p>';
+                    } else if (data.isActive) {
+                        const daysLeft = data.daysLeft > 0 ? data.daysLeft + ' jours restants' : 'Expire aujourd\'hui';
+                        info.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span class="status-badge status-active">' + esc(data.planName) + '</span><span style="color:var(--text2)">' + daysLeft + '</span>' + (data.autoRenew ? '<span style="font-size:12px;color:var(--green)">Renouvellement auto.</span>' : '<span style="font-size:12px;color:var(--muted)">Sans renouvellement auto.</span>') + '</div><p style="font-size:13px;color:var(--muted)">Expire le ' + new Date(data.expiry).toLocaleDateString('fr-FR') + ' · ' + data.priceLabel + '</p>';
+                    } else {
+                        info.innerHTML = '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px"><span class="status-badge status-inactive">Expire</span><span style="color:var(--text2)">Votre abonnement est expire</span></div><p style="font-size:13px;color:var(--muted)">Renouvelez pour reactiver vos fonctionnalites.</p>';
+                    }
+                }
+                const payments = document.getElementById('paymentHistory');
+                if (payments && data.paymentHistory && data.paymentHistory.length > 0) {
+                    payments.innerHTML = data.paymentHistory.slice(0,6).map(p => '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text2)">' + new Date(p.confirmedAt || p.createdAt).toLocaleDateString('fr-FR') + '</span><span style="font-weight:600">' + (p.amount || 0).toLocaleString() + ' FCFA</span><span style="font-size:11px;color:var(--muted)">' + (p.plan || '') + '</span></div>').join('');
+                } else if (payments) {
+                    payments.textContent = 'Aucun paiement';
+                }
+                const cancelBtn = document.getElementById('cancelSubBtn');
+                if (cancelBtn) {
+                    cancelBtn.style.display = data.plan !== 'free' && data.autoRenew ? 'inline-flex' : 'none';
+                }
+            } catch {}
+        }
+
+        async function cancelSubscription() {
+            if (!confirm('Voulez-vous vraiment desactiver le renouvellement automatique ? Votre abonnement restera actif jusqu\'a la fin de la periode en cours.')) return;
+            try {
+                const data = await api('/api/flay-pay/cancel-subscription', { method: 'POST' });
+                if (data && data.success) {
+                    toast('Renouvellement automatique desactive');
+                    loadSubscriptionInfo();
+                }
+            } catch {}
         }
 
         /* ===========================
@@ -1936,6 +2000,7 @@
             document.getElementById('settingsPhone').value = user.phone || '';
             document.getElementById('settingsWebsite').value = user.website || '';
             document.getElementById('settingsBio').value = user.bio || '';
+            loadSubscriptionInfo();
         }
 
         async function saveSettings() {

@@ -25,8 +25,8 @@ module.exports = {
     CINETPAY_SECRET_KEY: process.env.CINETPAY_SECRET_KEY || '',
 
     // === WHATSAPP ===
-    WHATSAPP_NUMBER: process.env.WHATSAPP_NUMBER || '',
-    WHATSAPP_LINK: process.env.WHATSAPP_LINK || '',
+    WHATSAPP_NUMBER: process.env.WHATSAPP_NUMBER || '2250759731990',
+    WHATSAPP_LINK: process.env.WHATSAPP_LINK || 'https://wa.me/2250759731990',
 
     // === LLM LOCAL ===
     LLM_MODEL: process.env.LLM_MODEL || 'qwen2.5-0.5b',

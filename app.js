@@ -190,6 +190,7 @@ app.use('/api/design-studio', require('./routes/enhanced-design-studio'));
 app.use('/api/social', require('./routes/social'));
 app.use('/api/followers', require('./routes/followers'));
 app.use('/api/card', require('./routes/card'));
+app.use('/api/flay-pay', require('./routes/flay-pay'));
 
 // === I18N MIDDLEWARE ===
 const I18n = require('./i18n');
@@ -445,6 +446,94 @@ app.post('/api/studio/process-image', (req, res) => {
     if (!payload) return res.status(401).json({ error: 'Token invalide' });
     const metadata = designStudio.processImageMetadata(req.body.type, req.body.size, req.body.position, req.body.opacity, req.body.filters);
     res.json({ metadata });
+});
+
+// === CATALOG PRO ===
+app.get('/catalog/:slug', (req, res) => {
+    const profile = db.findBy('profiles', 'slug', req.params.slug);
+    if (!profile) return res.status(404).send('Profil non trouve');
+    const user = db.get('users', profile.userId);
+    if (!user) return res.status(404).send('Profil non trouve');
+    const products = ecommerce.getPublicProducts(user.id, 1, 50, {});
+    const categories = ecommerce.getActiveCategories(user.id);
+    const items = products.items || [];
+    const siteUrl = config.SITE_URL || '';
+    res.send(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Catalogue ${user.name} | Flay</title><meta name="theme-color" content="#f77f00"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><style>
+        :root{--bg:#0f0a05;--card:#1a1208;--card2:#241b0e;--border:#3a2812;--accent:#f77f00;--text:#f0e6d0;--text2:#b8a880;--muted:#8a7a60;--gradient:linear-gradient(135deg,#f77f00,#ff9f30)}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+        .header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+        .header-left{display:flex;align-items:center;gap:10px}
+        .header-left svg{width:28px;height:28px}
+        .header-left h1{font-size:16px;font-weight:700}
+        .header-left span{font-size:12px;color:var(--muted)}
+        .header-right{display:flex;gap:8px}
+        .btn-header{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;text-decoration:none;transition:all .2s}
+        .btn-header.primary{background:var(--gradient);color:#fff}
+        .btn-header.outline{border:1px solid var(--border);color:var(--text2)}
+        .btn-header.outline:hover{border-color:var(--accent);color:var(--accent)}
+        .hero{text-align:center;padding:40px 24px 32px;max-width:800px;margin:0 auto}
+        .hero h1{font-size:28px;font-weight:800;margin-bottom:6px}
+        .hero p{font-size:14px;color:var(--text2)}
+        .hero .count{display:inline-block;padding:4px 12px;border-radius:999px;background:rgba(247,127,0,.1);color:var(--accent);font-size:12px;font-weight:600;margin-top:12px}
+        .cat-scroll{display:flex;gap:8px;overflow-x:auto;padding:0 24px 16px;max-width:1200px;margin:0 auto;-webkit-overflow-scrolling:touch}
+        .cat-scroll::-webkit-scrollbar{height:4px}
+        .cat-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+        .cat-chip{flex-shrink:0;padding:8px 18px;border-radius:999px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text2);transition:all .2s;white-space:nowrap}
+        .cat-chip.active,.cat-chip:hover{border-color:var(--accent);color:var(--accent);background:rgba(247,127,0,.06)}
+        .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;padding:0 24px 60px;max-width:1200px;margin:0 auto}
+        .card{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;transition:all .25s;cursor:pointer;text-decoration:none;color:inherit;display:flex;flex-direction:column}
+        .card:hover{transform:translateY(-3px);border-color:rgba(247,127,0,.3);box-shadow:0 8px 32px rgba(0,0,0,.3)}
+        .card-img{width:100%;aspect-ratio:1;background:var(--card2);display:flex;align-items:center;justify-content:center;overflow:hidden}
+        .card-img img{width:100%;height:100%;object-fit:cover}
+        .card-img .placeholder{color:var(--muted);font-size:40px;opacity:.3}
+        .card-body{padding:16px;flex:1;display:flex;flex-direction:column}
+        .card-body h3{font-size:15px;font-weight:600;margin-bottom:4px;line-height:1.3}
+        .card-body .desc{font-size:12px;color:var(--text2);margin-bottom:8px;line-height:1.4;flex:1}
+        .card-body .price-row{display:flex;align-items:center;gap:8px}
+        .card-body .price{font-size:18px;font-weight:700;color:var(--accent)}
+        .card-body .compare{font-size:13px;color:var(--muted);text-decoration:line-through}
+        .card-body .badge-stock{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:600}
+        .badge-instock{background:rgba(34,197,94,.12);color:#22c55e}
+        .badge-low{background:rgba(247,127,0,.12);color:var(--accent)}
+        .badge-out{background:rgba(239,68,68,.12);color:#ef4444}
+        .footer{text-align:center;padding:24px;font-size:12px;color:var(--muted);border-top:1px solid var(--border)}
+        .footer a{color:var(--accent);text-decoration:none}
+        .empty{text-align:center;padding:60px 24px;color:var(--muted)}
+        .empty svg{width:48px;height:48px;margin-bottom:16px;opacity:.4}
+        @media(max-width:600px){.grid{grid-template-columns:repeat(2,1fr);gap:12px;padding:0 16px 40px}.hero h1{font-size:22px}.header{padding:12px 16px}.card-body{padding:12px}.card-body .price{font-size:16px}}
+        @media(max-width:400px){.grid{grid-template-columns:1fr;max-width:320px;margin:0 auto}}
+    </style></head><body>
+    <div class="header">
+        <div class="header-left">
+            <svg viewBox="0 0 48 48" fill="none"><rect width="48" height="48" rx="12" fill="url(#lg)"/><path d="M14 24h20M28 18l6 6-6 6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="lg" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#f77f00"/><stop offset="1" stop-color="#ff9f30"/></linearGradient></defs></svg>
+            <div><h1>${user.name}</h1><span>${user.bio || 'Catalogue professionnel'}</span></div>
+        </div>
+        <div class="header-right">
+            <a href="${siteUrl}/u/${profile.slug}" class="btn-header outline">Profil</a>
+            <a href="${siteUrl}/store/${user.id}" class="btn-header primary">Boutique</a>
+        </div>
+    </div>
+    <div class="hero"><h1>Notre catalogue</h1><p>Decouvrez tous nos produits et services</p><div class="count">${items.length} produit${items.length > 1 ? 's' : ''}</div></div>
+    ${categories.length > 0 ? '<div class="cat-scroll">' + categories.map(c => '<div class="cat-chip" onclick="filterCategory(\'' + c.slug + '\',this)">' + c.name + '</div>').join('') + '<div class="cat-chip active" onclick="filterCategory(\'all\',this)">Tous</div></div>' : ''}
+    <div class="grid" id="catalogGrid">
+        ${items.length === 0 ? '<div class="empty" style="grid-column:1/-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg><h3>Aucun produit</h3><p>Le catalogue est vide pour le moment</p></div>' : items.map(p => {
+            const img = p.thumbnail || (Array.isArray(p.images) ? p.images[0] : '') || '';
+            const stock = p.stock || p.quantity || 0;
+            const stockCls = stock === 0 ? 'badge-out' : stock <= 5 ? 'badge-low' : 'badge-instock';
+            const stockLabel = stock === 0 ? 'Rupture' : stock <= 5 ? 'Stock bas' : 'Disponible';
+            return '<a href="' + siteUrl + '/product/' + p.id + '" class="card">' +
+                '<div class="card-img">' + (img ? '<img src="' + img + '" alt="' + (p.name || '') + '" loading="lazy">' : '<span class="placeholder">📷</span>') + '</div>' +
+                '<div class="card-body"><h3>' + (p.name || 'Produit') + '</h3>' +
+                (p.shortDescription ? '<div class="desc">' + p.shortDescription.substring(0,100) + '</div>' : '') +
+                '<div class="price-row"><span class="price">' + (p.price || 0).toLocaleString() + ' FCFA</span>' +
+                (p.comparePrice > p.price ? '<span class="compare">' + p.comparePrice.toLocaleString() + ' FCFA</span>' : '') +
+                '</div><span class="badge-stock ' + stockCls + '" style="margin-top:8px">' + stockLabel + '</span></div></a>';
+        }).join('')}
+    </div>
+    <div class="footer"><p>Propulse par <a href="${siteUrl}">Flay</a> by <strong>DIGITALSTRATEGES</strong> &middot; Cote d'Ivoire 🇨🇮</p></div>
+    <script>function filterCategory(slug, el){document.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('active'));el.classList.add('active');document.querySelectorAll('#catalogGrid .card').forEach(card=>{card.style.display=(slug==='all'||card.dataset.cat===slug)?'':'none';});}</script>
+    </body></html>`);
 });
 
 // === SSE STREAM for notifications ===

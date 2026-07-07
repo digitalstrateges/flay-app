@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+    <title>Flay-Pay · Paiement securise | Flay</title>
+    <meta name="theme-color" content="#f77f00">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/svg+xml" href="/logo-animated.svg">
+    <style>
+        :root{--bg:#0f0a05;--card:#1a1208;--card2:#241b0e;--border:#3a2812;--accent:#f77f00;--accent2:#e07000;--text:#f0e6d0;--text2:#b8a880;--muted:#8a7a60;--green:#22c55e;--gradient:linear-gradient(135deg,#f77f00,#ff9f30);--radius:12px;--radius-lg:16px}
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+        .header{background:var(--card);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+        .header-logo{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:800;text-decoration:none;color:var(--text)}
+        .header-logo img,.header-logo svg{width:32px;height:32px;border-radius:8px}
+        .header-logo span{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .header-badge{padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;background:rgba(247,127,0,.12);color:var(--accent);border:1px solid rgba(247,127,0,.2)}
+        .container{max-width:960px;width:100%;margin:0 auto;padding:40px 24px 80px;flex:1}
+        .hero{text-align:center;margin-bottom:40px}
+        .hero h1{font-size:32px;font-weight:800;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+        .hero p{font-size:16px;color:var(--text2);max-width:500px;margin:0 auto}
+        .toggle-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-bottom:32px}
+        .toggle-wrap span{font-size:14px;color:var(--text2);font-weight:500;cursor:pointer;transition:color .2s}
+        .toggle-wrap span.active{color:var(--accent)}
+        .toggle-wrap .save-badge{padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;background:rgba(34,197,94,.12);color:var(--green);display:none}
+        .toggle-wrap .save-badge.show{display:inline-block}
+        .toggle{width:48px;height:26px;background:var(--border);border-radius:13px;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0}
+        .toggle.active{background:var(--accent)}
+        .toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .3s}
+        .toggle.active::after{transform:translateX(22px)}
+        .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+        .plan-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;cursor:pointer;transition:all .25s;position:relative}
+        .plan-card:hover{border-color:rgba(247,127,0,.3);transform:translateY(-2px)}
+        .plan-card.selected{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 8px 32px rgba(247,127,0,.12)}
+        .plan-card.popular{border-color:rgba(247,127,0,.3)}
+        .plan-popular-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);padding:3px 14px;border-radius:999px;font-size:11px;font-weight:700;background:var(--gradient);color:#fff;white-space:nowrap}
+        .plan-name{font-size:18px;font-weight:700;margin-bottom:4px}
+        .plan-price{font-size:36px;font-weight:800;color:var(--accent);margin-bottom:4px}
+        .plan-price span{font-size:14px;font-weight:400;color:var(--muted)}
+        .plan-period{font-size:13px;color:var(--muted);margin-bottom:16px}
+        .plan-features{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+        .plan-features li{font-size:13px;color:var(--text2);padding-left:20px;position:relative;line-height:1.4}
+        .plan-features li::before{content:'✓';position:absolute;left:0;color:var(--accent);font-weight:700}
+        .plan-doree .plan-name{color:#eab308}
+        .plan-doree .plan-price{color:#eab308}
+        .plan-doree .plan-features li::before{color:#eab308}
+        .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:32px}
+        .step{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;text-align:center}
+        .step-num{width:36px;height:36px;border-radius:50%;background:var(--gradient);color:#fff;font-weight:800;font-size:15px;display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+        .step h3{font-size:15px;font-weight:700;margin-bottom:4px}
+        .step p{font-size:13px;color:var(--muted);line-height:1.4}
+        .action-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;text-align:center;margin-bottom:24px}
+        .action-card h2{font-size:22px;margin-bottom:8px}
+        .action-card p{color:var(--text2);margin-bottom:24px;font-size:14px}
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:16px 32px;min-height:52px;border-radius:var(--radius);font-size:15px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .25s;text-decoration:none}
+        .btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 20px rgba(247,127,0,.3)}
+        .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(247,127,0,.4)}
+        .btn-primary:disabled{opacity:.5;cursor:not-allowed;transform:none}
+        .btn-outline{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+        .btn-outline:hover{background:rgba(247,127,0,.1)}
+        .btn-success{background:#22c55e;color:#fff;box-shadow:0 4px 20px rgba(34,197,94,.3)}
+        .btn-success:hover{transform:translateY(-2px);box-shadow:0 6px 28px rgba(34,197,94,.4)}
+        .btn-block{width:100%}
+        .btn-lg{padding:18px 40px;font-size:17px}
+        .amount-display{font-size:48px;font-weight:800;color:var(--accent);margin:16px 0 4px}
+        .amount-display span{font-size:18px;color:var(--muted)}
+        .payment-flow{display:none}
+        .payment-flow.active{display:block;animation:fadeUp .4s ease-out}
+        .verify-input{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+        .verify-input input{flex:1;min-width:200px;padding:14px 16px;background:var(--card2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:15px;font-family:inherit;min-height:52px}
+        .verify-input input:focus{outline:none;border-color:var(--accent)}
+        .status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:999px;font-size:13px;font-weight:600}
+        .status-pending{background:rgba(247,127,0,.12);color:var(--accent);border:1px solid rgba(247,127,0,.2)}
+        .status-active{background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.2)}
+        .status-inactive{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.2)}
+        .modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:100;padding:16px}
+        .modal-overlay.active{display:flex}
+        .modal{background:var(--card);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;max-width:480px;width:100%;text-align:center;animation:fadeUp .3s ease-out}
+        .modal h2{margin-bottom:8px;font-size:20px}
+        .modal p{color:var(--text2);font-size:14px;margin-bottom:20px}
+        .modal-actions{display:flex;gap:10px;justify-content:center}
+        .modal-actions .btn{min-height:44px;padding:12px 24px;font-size:14px}
+        .loader{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+        @media(max-width:768px){
+            .plans{grid-template-columns:1fr;max-width:400px;margin-left:auto;margin-right:auto}
+            .steps{grid-template-columns:1fr;max-width:400px;margin-left:auto;margin-right:auto}
+            .hero h1{font-size:24px}
+            .container{padding:24px 16px 60px}
+            .action-card{padding:24px 16px}
+            .amount-display{font-size:36px}
+        }
+        @media(max-width:480px){
+            .header{padding:12px 16px}
+            .plan-card{padding:20px}
+            .plan-price{font-size:30px}
+            .verify-input{flex-direction:column}
+            .verify-input input{min-width:auto}
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="/" class="header-logo">
+            <svg viewBox="0 0 48 48" fill="none" width="32" height="32"><rect width="48" height="48" rx="12" fill="url(#lg)"/><path d="M14 24h20M28 18l6 6-6 6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><defs><linearGradient id="lg" x1="0" y1="0" x2="48" y2="48"><stop stop-color="#f77f00"/><stop offset="1" stop-color="#ff9f30"/></linearGradient></defs></svg>
+            <span>Flay</span>
+        </a>
+        <span class="header-badge">Flay-Pay Secure</span>
+    </div>
+    <div class="container">
+        <div class="hero">
+            <h1>Passez au niveau superieur</h1>
+            <p>Debloquez toutes les fonctionnalites de Flay avec un abonnement. Paiement securise via Wave Business + verification WhatsApp.</p>
+        </div>
+
+        <div class="toggle-wrap">
+            <span id="monthlyLabel" class="active">Mensuel</span>
+            <div class="toggle" id="intervalToggle" onclick="toggleInterval()"></div>
+            <span id="annualLabel">Annuel</span>
+            <span class="save-badge" id="saveBadge">Economisez ~17%</span>
+        </div>
+
+        <div class="plans" id="plansContainer"></div>
+
+        <div class="steps">
+            <div class="step">
+                <div class="step-num">1</div>
+                <h3>Choisissez votre plan</h3>
+                <p>Selectionnez l'abonnement qui correspond a vos besoins</p>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <h3>Payez via Wave</h3>
+                <p>Vous serez redirige vers Wave pour effectuer le paiement</p>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <h3>Confirmation WhatsApp</h3>
+                <p>Envoyez l'ID de transaction sur WhatsApp, nous activons votre abonnement</p>
+            </div>
+        </div>
+
+        <div class="action-card" id="actionCard">
+            <h2>Pret a vous abonner ?</h2>
+            <p id="actionDesc">Selectionnez un plan ci-dessus pour commencer</p>
+            <div id="paymentFlow" class="payment-flow">
+                <div style="background:var(--card2);border-radius:var(--radius);padding:24px;margin-bottom:20px">
+                    <div style="font-size:14px;color:var(--text2);margin-bottom:4px">Montant a payer</div>
+                    <div class="amount-display" id="payAmount">0 <span>FCFA</span></div>
+                    <div style="font-size:14px;color:var(--text2)" id="payPlan"></div>
+                </div>
+                <button class="btn btn-primary btn-block btn-lg" id="payWaveBtn" onclick="payWithWave()">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.94s4.18 1.36 4.18 3.85c0 1.89-1.44 2.98-3.12 3.19z"/></svg>
+                    Payer via Wave
+                </button>
+                <div style="margin-top:16px;padding:16px;background:rgba(247,127,0,.06);border:1px solid rgba(247,127,0,.15);border-radius:var(--radius)">
+                    <div style="font-size:14px;font-weight:600;color:var(--accent);margin-bottom:8px">Apres le paiement Wave :</div>
+                    <p style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.5">
+                        1. Copiez l'<strong>ID de transaction</strong> Wave que vous avez recu par SMS<br>
+                        2. Collez-le ci-dessous et cliquez sur "Verifier"
+                    </p>
+                    <div class="verify-input">
+                        <input type="text" id="waveTxnId" placeholder="ID de transaction Wave (ex: WAVE-XXXXX)">
+                        <button class="btn btn-success" onclick="verifyPayment()" id="verifyBtn">
+                            Verifier via WhatsApp
+                        </button>
+                    </div>
+                    <div id="verifyStatus" style="font-size:13px;margin-top:8px"></div>
+                </div>
+            </div>
+            <div id="noPlanMsg" style="padding:8px 0">
+                <p style="color:var(--muted);font-size:14px">Cliquez sur une carte pour voir les details</p>
+            </div>
+        </div>
+
+        <div style="text-align:center">
+            <div style="display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;color:var(--muted)">
+                Paiement securise via <strong style="color:var(--text2)">Wave Business</strong> · Transaction cryptee · Par <strong style="color:var(--accent)">DIGITALSTRATEGES</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <h2 id="modalTitle">Succes</h2>
+            <p id="modalMsg">Votre demande a ete prise en compte.</p>
+            <div class="modal-actions">
+                <button class="btn btn-primary" id="modalBtn" onclick="closeModal()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PLANS = [];
+        let selectedPlan = null;
+        let isAnnual = false;
+        let currentPayment = null;
+        const TOKEN = localStorage.getItem('flay_token');
+
+        async function init() {
+            try {
+                const res = await fetch('/api/flay-pay/info');
+                const data = await res.json();
+                if (data.plans) PLANS.push(...data.plans);
+            } catch {}
+            if (PLANS.length === 0) {
+                const cfg = { pro: { name: 'Pro', price: 5000, priceLabel: '5 000 FCFA/mois', priceAnnual: 50000, priceAnnualLabel: '50 000 FCFA/an', features: ['Reservations illimitees', 'Analytics detailles', 'Chat temps reel', 'Site vitrine pro', 'Boutique (50 articles)', 'Flay Store', 'Support email 48h'] }, premium: { name: 'Premium', price: 15000, priceLabel: '15 000 FCFA/mois', priceAnnual: 150000, priceAnnualLabel: '150 000 FCFA/an', features: ['Tout du Pro +', 'Agent IA integre', 'Domaine personnalise', 'Multi-langues', 'CRM complet', 'Boutique (300 articles)', 'Support prioritaire 24/7'] }, doree: { name: 'Doree', price: 30000, priceLabel: '30 000 FCFA/mois', priceAnnual: 300000, priceAnnualLabel: '300 000 FCFA/an', features: ['Tout du Premium +', 'Boutique (1000 articles)', 'Multi-utilisateurs (5)', 'White label', 'Marketplace', 'Support tel 24/7', 'Formation incluse'] } };
+                Object.entries(cfg).forEach(([k, v]) => PLANS.push({ id: k, ...v }));
+            }
+            renderPlans();
+            const params = new URLSearchParams(location.search);
+            if (params.get('plan') && params.get('status') === 'wave-return') {
+                showModal('Paiement Wave initie', 'Si vous avez effectue le paiement, copiez votre ID de transaction Wave et utilisez le formulaire ci-dessous pour finaliser l\'activation.');
+            }
+        }
+
+        function renderPlans() {
+            const container = document.getElementById('plansContainer');
+            container.innerHTML = PLANS.map((p, i) => {
+                const isPopular = p.id === 'pro';
+                const isDoree = p.id === 'doree';
+                const price = isAnnual ? (p.priceAnnual || p.price * 12) : p.price;
+                const period = isAnnual ? '/an' : '/mois';
+                const label = isAnnual ? (p.priceAnnualLabel || price.toLocaleString() + ' FCFA/an') : p.priceLabel;
+                const savePct = p.priceAnnual ? Math.round(100 - (p.priceAnnual / (p.price * 12)) * 100) : 0;
+                return `<div class="plan-card ${isPopular ? 'popular' : ''} ${isDoree ? 'plan-doree' : ''} ${selectedPlan === p.id ? 'selected' : ''}" onclick="selectPlan('${p.id}')">
+                    ${isPopular ? '<div class="plan-popular-badge">Populaire</div>' : ''}
+                    <div class="plan-name">${p.name}</div>
+                    <div class="plan-price">${price.toLocaleString()} <span>FCFA</span></div>
+                    <div class="plan-period">${label}</div>
+                    ${savePct > 0 && isAnnual ? '<div style="font-size:12px;color:#22c55e;font-weight:600;margin-bottom:12px">Economisez ${savePct}%</div>' : ''}
+                    <ul class="plan-features">${p.features.slice(0,6).map(f => '<li>' + f + '</li>').join('')}</ul>
+                    ${p.features.length > 6 ? '<div style="font-size:11px;color:var(--muted);text-align:center;margin-top:4px">+' + (p.features.length - 6) + ' fonctionnalites</div>' : ''}
+                </div>`;
+            }).join('');
+        }
+
+        function selectPlan(planId) {
+            selectedPlan = planId;
+            renderPlans();
+            const plan = PLANS.find(p => p.id === planId);
+            if (!plan) return;
+            const price = isAnnual ? (plan.priceAnnual || plan.price * 12) : plan.price;
+            document.getElementById('payAmount').innerHTML = price.toLocaleString() + ' <span>FCFA</span>';
+            document.getElementById('payPlan').textContent = plan.name + (isAnnual ? ' (annuel)' : ' (mensuel)');
+            document.getElementById('actionDesc').textContent = 'Vous allez souscrire au plan ' + plan.name;
+            document.getElementById('noPlanMsg').style.display = 'none';
+            document.getElementById('paymentFlow').classList.add('active');
+            document.getElementById('payWaveBtn').disabled = !TOKEN;
+            document.getElementById('payWaveBtn').textContent = TOKEN ? 'Payer via Wave' : 'Connectez-vous pour payer';
+            document.getElementById('waveTxnId').value = '';
+            document.getElementById('verifyStatus').textContent = '';
+        }
+
+        function toggleInterval() {
+            isAnnual = !isAnnual;
+            document.getElementById('intervalToggle').classList.toggle('active', isAnnual);
+            document.getElementById('monthlyLabel').classList.toggle('active', !isAnnual);
+            document.getElementById('annualLabel').classList.toggle('active', isAnnual);
+            const pro = PLANS.find(p => p.id === 'pro');
+            const save = pro ? Math.round(100 - ((pro.priceAnnual || pro.price * 12) / (pro.price * 12)) * 100) : 17;
+            document.getElementById('saveBadge').classList.toggle('show', isAnnual);
+            document.getElementById('saveBadge').textContent = 'Economisez ~' + save + '%';
+            renderPlans();
+            if (selectedPlan) selectPlan(selectedPlan);
+        }
+
+        async function payWithWave() {
+            if (!TOKEN) { window.location.href = '/login.html?redirect=/payment.html?plan=' + selectedPlan; return; }
+            const plan = PLANS.find(p => p.id === selectedPlan);
+            if (!plan) return;
+            const price = isAnnual ? (plan.priceAnnual || plan.price * 12) : plan.price;
+            document.getElementById('payWaveBtn').disabled = true;
+            document.getElementById('payWaveBtn').innerHTML = '<div class="loader" style="width:20px;height:20px;border-width:2px;margin:0"></div> Preparation...';
+            try {
+                const res = await fetch('/api/flay-pay/subscribe', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+                    body: JSON.stringify({ plan: selectedPlan, interval: isAnnual ? 'annual' : 'monthly' })
+                });
+                const data = await res.json();
+                if (data.payment) {
+                    currentPayment = data.payment;
+                    if (data.waveLink) {
+                        window.open(data.waveLink, '_blank');
+                        showModal('Redirection Wave', 'Une nouvelle fenetre Wave s\'est ouverte. Effectuez votre paiement, puis revenez ici pour coller votre ID de transaction Wave.');
+                    }
+                    if (data.whatsappLink) {
+                        document.getElementById('verifyBtn').dataset.whatsapp = data.whatsappLink;
+                    }
+                    document.getElementById('verifyStatus').innerHTML = '<span style="color:var(--green)">Paiement initie. Apres paiement Wave, entrez l\'ID ci-dessous.</span>';
+                } else {
+                    showModal('Erreur', data.error || 'Erreur lors de l\'initiation du paiement');
+                }
+            } catch (err) {
+                showModal('Erreur', 'Erreur reseau. Veuillez reessayer.');
+            }
+            document.getElementById('payWaveBtn').disabled = false;
+            document.getElementById('payWaveBtn').innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.86.45 2.79 1.86 2.85 3.39H14.3c-.05-1.11-.64-1.87-2.22-1.87-1.5 0-2.4.68-2.4 1.64 0 .84.65 1.39 2.67 1.94s4.18 1.36 4.18 3.85c0 1.89-1.44 2.98-3.12 3.19z"/></svg> Payer via Wave';
+        }
+
+        async function verifyPayment() {
+            const txnId = document.getElementById('waveTxnId').value.trim();
+            if (!txnId) { document.getElementById('verifyStatus').innerHTML = '<span style="color:#ef4444">Veuillez entrer l\'ID de transaction Wave</span>'; return; }
+            if (!currentPayment) { document.getElementById('verifyStatus').innerHTML = '<span style="color:#ef4444">Aucun paiement en cours. Veuillez d\'abord cliquer sur "Payer via Wave".</span>'; return; }
+
+            document.getElementById('verifyBtn').disabled = true;
+            document.getElementById('verifyBtn').textContent = 'Verification...';
+            try {
+                const res = await fetch('/api/flay-pay/verify', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + TOKEN },
+                    body: JSON.stringify({ paymentId: currentPayment.id, waveTransactionId: txnId })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    document.getElementById('verifyStatus').innerHTML = '<span style="color:var(--green)">Verification envoyee avec succes ! Un administrateur va traiter votre demande sous 24h. Vous recevrez une confirmation WhatsApp.</span>';
+                    const waLink = document.getElementById('verifyBtn').dataset.whatsapp;
+                    if (waLink) {
+                        showModal('Verification envoyee',
+                            'Votre ID Wave a ete enregistre. Cliquez sur "Envoyer sur WhatsApp" pour nous informer, nous activerons votre abonnement rapidement.',
+                            '<a href="' + waLink.replace('[INSEREZ VOTRE ID]', txnId) + '" target="_blank" class="btn btn-success">Envoyer sur WhatsApp</a>' +
+                            '<button class="btn btn-outline" onclick="closeModal()">Fermer</button>');
+                    } else {
+                        showModal('Verification envoyee',
+                            'Un administrateur va verifier votre paiement et activer votre abonnement sous 24h.');
+                    }
+                    document.getElementById('waveTxnId').disabled = true;
+                } else {
+                    document.getElementById('verifyStatus').innerHTML = '<span style="color:#ef4444">' + (data.error || 'Erreur') + '</span>';
+                }
+            } catch (err) {
+                document.getElementById('verifyStatus').innerHTML = '<span style="color:#ef4444">Erreur reseau. Veuillez reessayer.</span>';
+            }
+            document.getElementById('verifyBtn').disabled = false;
+            document.getElementById('verifyBtn').textContent = 'Verifier via WhatsApp';
+        }
+
+        function showModal(title, msg, customActions) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMsg').textContent = msg;
+            const actions = document.querySelector('.modal-actions');
+            if (customActions) {
+                actions.innerHTML = customActions;
+            } else {
+                actions.innerHTML = '<button class="btn btn-primary" onclick="closeModal()">OK</button>';
+            }
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        init();
+    </script>
+</body>
+</html>
