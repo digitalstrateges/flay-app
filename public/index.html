@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flay Super App v1.02 - Plateforme Business & Agence Digitale | CI</title>
+    <meta name="description" content="Carte de visite QR, mini-catalogue, e-commerce, CRM, reservations, paiements Wave/OM/MTN. Par DIGITALSTRATEGES - Developpement fullstack, automatisation agentique, marketing digital, SEO.">
+    <meta name="theme-color" content="#f77f00">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Flay">
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.svg">
+    <link rel="icon" type="image/svg+xml" href="/logo-animated.svg">
+    <link rel="manifest" href="/manifest.json">
+    <script src="/pwa.js"></script>
+    <style>
+        :root{--bg:#0f0a05;--bg2:#1a150a;--bg3:#2a2010;--text:#f0e6d0;--text2:#b8a880;--accent:#f77f00;--accent2:#ff9f30;--card:#2a2010;--border:#4a3820;--gold:#fbbf24;--gradient:linear-gradient(135deg,#f77f00,#ff9f30);--green:#22c55e;--red:#ef4444}
+        .light{--bg:#faf6f0;--bg2:#fff0e0;--bg3:#ffe8d0;--text:#1a150a;--text2:#6b5c45;--accent:#e07000;--accent2:#f77f00;--card:#ffffff;--border:#e0d5c5;--gold:#d97706;--gradient:linear-gradient(135deg,#e07000,#f77f00);--green:#059669;--red:#dc2626}
+        @media(prefers-color-scheme:light){:root{--bg:#faf6f0;--bg2:#fff0e0;--bg3:#ffe8d0;--text:#1a150a;--text2:#6b5c45;--accent:#e07000;--accent2:#f77f00;--card:#ffffff;--border:#e0d5c5;--gold:#d97706;--gradient:linear-gradient(135deg,#e07000,#f77f00);--green:#059669;--red:#dc2626}.light{--bg:#0f0a05;--bg2:#1a150a;--bg3:#2a2010;--text:#f0e6d0;--text2:#b8a880;--accent:#f77f00;--accent2:#ff9f30;--card:#2a2010;--border:#4a3820;--gold:#fbbf24;--gradient:linear-gradient(135deg,#f77f00,#ff9f30);--green:#22c55e;--red:#ef4444}}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6}
+        .container{max-width:1200px;margin:0 auto;padding:0 24px}
+
+        /* === NAV === */
+        nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;transition:all .3s}
+        nav.scrolled{background:rgba(15,10,5,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+        .light nav.scrolled{background:rgba(250,246,240,.95)}
+        .nav-inner{display:flex;align-items:center;justify-content:space-between}
+        .nav-brand{font-size:24px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .nav-links{display:flex;gap:32px;align-items:center}
+        .nav-links a{color:var(--text2);text-decoration:none;font-size:14px;font-weight:500;transition:color .2s}
+        .nav-links a:hover{color:var(--text)}
+        .nav-cta{padding:10px 20px;background:var(--gradient);color:#fff !important;border-radius:10px;font-weight:600 !important;transition:transform .2s,box-shadow .2s !important}
+        .nav-cta:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(247,127,0,.4)}
+        .nav-mobile{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:8px}
+        @media(max-width:768px){.nav-links{display:none}.nav-mobile{display:block}.nav-links.open{display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(10,10,26,.98);border-bottom:1px solid var(--border);padding:24px;gap:16px}}
+
+        /* === HERO === */
+        .hero{min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;position:relative}
+        .hero::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(247,127,0,.1) 0%,transparent 70%);pointer-events:none}
+        .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+        .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(247,127,0,.1);border:1px solid rgba(247,127,0,.2);border-radius:20px;font-size:13px;color:var(--accent);margin-bottom:24px}
+        .hero-badge .dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s infinite}
+        .hero h1{font-size:clamp(36px,5vw,56px);font-weight:900;line-height:1.1;margin-bottom:20px}
+        .hero h1 .grad{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .hero p{font-size:18px;color:var(--text2);max-width:520px;margin-bottom:32px;line-height:1.7}
+        .hero-actions{display:flex;gap:16px;flex-wrap:wrap}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:all .25s;font-family:inherit}
+        .btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 24px rgba(247,127,0,.35)}
+        .btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(247,127,0,.45)}
+        .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+        .btn-outline:hover{border-color:var(--accent);transform:translateY(-3px)}
+        .hero-visual{position:relative}
+        .hero-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;position:relative;overflow:hidden}
+        .hero-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--gradient)}
+        .hero-card-name{font-size:24px;font-weight:800;margin-bottom:4px}
+        .hero-card-role{color:var(--accent);font-size:14px;margin-bottom:20px}
+        .hero-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+        .stat-box{background:var(--bg);border-radius:10px;padding:12px;text-align:center}
+        .stat-num{font-size:20px;font-weight:800;color:var(--accent)}
+        .stat-label{font-size:11px;color:var(--text2);margin-top:2px}
+        .hero-card-actions{display:flex;gap:8px}
+        .hero-card-actions .mini-btn{flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:13px;font-weight:500;text-align:center;text-decoration:none;transition:all .2s}
+        .hero-card-actions .mini-btn:hover{border-color:var(--accent);color:var(--accent)}
+        .hero-float{position:absolute;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:13px;display:flex;align-items:center;gap:8px;animation:float 3s ease-in-out infinite}
+        .hero-float.tl{top:-20px;left:-30px}
+        .hero-float.br{bottom:-15px;right:-25px;animation-delay:1.5s}
+        .hero-float .icon{font-size:18px}
+
+        @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+        /* === STATS BAR === */
+        .stats-bar{padding:48px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+        .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+        .stat-item .num{font-size:32px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .stat-item .label{color:var(--text2);font-size:14px;margin-top:4px}
+
+        /* === SECTIONS === */
+        section{padding:100px 0}
+        .section-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(247,127,0,.1);border:1px solid rgba(247,127,0,.15);border-radius:20px;font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+        .section-title{font-size:clamp(28px,4vw,42px);font-weight:900;margin-bottom:16px;line-height:1.2}
+        .section-title .grad{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .section-sub{color:var(--text2);font-size:17px;max-width:600px;line-height:1.7}
+        .section-sub.center{margin:0 auto 48px}
+        .section-header{text-align:center;margin-bottom:64px}
+        .section-header .section-sub{margin:0 auto}
+
+        /* === FEATURES === */
+        .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+        .feature-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px;transition:all .3s}
+        .feature-card:hover{border-color:rgba(247,127,0,.3);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.25)}
+        .feature-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px}
+        .feature-icon.purple{background:rgba(247,127,0,.12)}
+        .feature-icon.green{background:rgba(52,211,153,.12)}
+        .feature-icon.gold{background:rgba(251,191,36,.12)}
+        .feature-icon.red{background:rgba(248,113,113,.12)}
+        .feature-icon.blue{background:rgba(96,165,250,.12)}
+        .feature-card h3{font-size:17px;font-weight:700;margin-bottom:8px}
+        .feature-card p{color:var(--text2);font-size:14px;line-height:1.6}
+        @media(max-width:768px){.features-grid{grid-template-columns:1fr}}
+
+        /* === HOW IT WORKS === */
+        .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:40px;position:relative}
+        .steps::before{content:'';position:absolute;top:40px;left:16%;right:16%;height:2px;background:linear-gradient(90deg,var(--border),var(--accent),var(--border))}
+        .step{text-align:center;position:relative}
+        .step-num{width:56px;height:56px;border-radius:50%;background:var(--bg);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:20px;font-weight:800;color:var(--accent);position:relative;z-index:1}
+        .step h3{font-size:18px;font-weight:700;margin-bottom:8px}
+        .step p{color:var(--text2);font-size:14px;max-width:280px;margin:0 auto}
+        @media(max-width:768px){.steps{grid-template-columns:1fr;gap:32px}.steps::before{display:none}}
+
+        /* === SHOWCASE === */
+        .showcase{background:var(--bg2)}
+        .showcase-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+        .showcase-features{list-style:none;display:flex;flex-direction:column;gap:16px}
+        .showcase-features li{display:flex;align-items:flex-start;gap:12px;padding:16px;background:var(--card);border:1px solid var(--border);border-radius:12px;transition:all .2s}
+        .showcase-features li:hover{border-color:rgba(247,127,0,.3)}
+        .showcase-features .check{width:28px;height:28px;border-radius:8px;background:rgba(52,211,153,.12);display:flex;align-items:center;justify-content:center;color:var(--green);font-size:14px;flex-shrink:0}
+        .showcase-features .text strong{display:block;font-size:15px;margin-bottom:2px}
+        .showcase-features .text span{color:var(--text2);font-size:13px}
+        @media(max-width:768px){.showcase-grid{grid-template-columns:1fr}}
+
+        /* === PRICING === */
+        .pricing{background:var(--bg2)}
+        .pricing-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+        .price-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px 24px;position:relative;transition:all .3s;display:flex;flex-direction:column}
+        .price-card:hover{transform:translateY(-4px)}
+        .price-card.popular{border-color:var(--accent);box-shadow:0 0 40px rgba(247,127,0,.15)}
+        .price-card.gold{border-color:var(--gold);box-shadow:0 0 40px rgba(251,191,36,.1)}
+        .popular-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 16px;background:var(--gradient);color:#fff;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+        .gold-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);padding:4px 16px;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0a0a1a;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+        .price-card .plan-name{font-size:20px;font-weight:700;margin-bottom:4px}
+        .price-card .plan-desc{color:var(--text2);font-size:13px;margin-bottom:16px}
+        .price-card .plan-price{font-size:32px;font-weight:900;margin-bottom:4px}
+        .price-card .plan-period{color:var(--text2);font-size:13px;margin-bottom:24px}
+        .price-card .plan-features{list-style:none;margin-bottom:24px;flex:1}
+        .price-card .plan-features li{padding:8px 0;color:var(--text2);font-size:13px;display:flex;align-items:flex-start;gap:8px;border-bottom:1px solid var(--border)}
+        .price-card .plan-features li:last-child{border:none}
+        .price-card .plan-features li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+        .price-card .plan-features li.disabled{opacity:.4}
+        .price-card .plan-features li.disabled::before{content:'✕';color:var(--red)}
+        .price-card .btn{width:100%;justify-content:center}
+        @media(max-width:900px){.pricing-grid{grid-template-columns:1fr 1fr}}
+        @media(max-width:500px){.pricing-grid{grid-template-columns:1fr}}
+
+        /* === TESTIMONIALS === */
+        .testimonials-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+        .testimonial{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:28px}
+        .testimonial .stars{color:var(--gold);font-size:14px;margin-bottom:12px}
+        .testimonial .quote{color:var(--text2);font-size:14px;line-height:1.7;margin-bottom:16px;font-style:italic}
+        .testimonial .author{display:flex;align-items:center;gap:12px}
+        .testimonial .avatar{width:40px;height:40px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#fff}
+        .testimonial .author-info strong{display:block;font-size:14px}
+        .testimonial .author-info span{color:var(--text2);font-size:12px}
+        @media(max-width:768px){.testimonials-grid{grid-template-columns:1fr}}
+
+        /* === WAVE === */
+        .wave-section{background:linear-gradient(135deg,rgba(247,127,0,.08),rgba(255,159,48,.08))}
+        .wave-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+        .wave-features{display:flex;flex-direction:column;gap:12px}
+        .wave-feat{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;font-size:14px}
+        .wave-feat .ico{font-size:18px}
+        @media(max-width:768px){.wave-grid{grid-template-columns:1fr}}
+
+        /* === CTA === */
+        .cta-section{text-align:center;padding:120px 0}
+        .cta-box{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:64px 48px;position:relative;overflow:hidden}
+        .cta-box::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--gradient)}
+        .cta-box h2{font-size:clamp(28px,4vw,40px);font-weight:900;margin-bottom:16px}
+        .cta-box p{color:var(--text2);font-size:17px;margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto}
+
+        /* === FOOTER === */
+        footer{border-top:1px solid var(--border);padding:60px 0 32px}
+        .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:40px}
+        .footer-brand{font-size:28px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px}
+        .footer-desc{color:var(--text2);font-size:14px;line-height:1.7;max-width:280px}
+        .footer-col h4{font-size:14px;font-weight:700;margin-bottom:16px}
+        .footer-col a{display:block;color:var(--text2);text-decoration:none;font-size:14px;padding:4px 0;transition:color .2s}
+        .footer-col a:hover{color:var(--accent)}
+        .footer-bottom{text-align:center;padding-top:24px;border-top:1px solid var(--border);color:var(--text2);font-size:13px}
+        .footer-bottom a{color:var(--accent);text-decoration:none}
+        @media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr}}
+
+        /* === ANIMATIONS === */
+        .fade-in{opacity:0;transform:translateY(24px);transition:all .6s ease}
+        .fade-in.visible{opacity:1;transform:translateY(0)}
+        .fade-in-delay-1{transition-delay:.1s}
+        .fade-in-delay-2{transition-delay:.2s}
+        .fade-in-delay-3{transition-delay:.3s}
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+    <div class="container nav-inner">
+        <a href="/" class="nav-brand">Flay</a>
+        <div class="nav-links" id="navLinks">
+            <a href="#features">Fonctionnalites</a>
+            <a href="#how">Comment ca marche</a>
+            <a href="#pricing">Tarifs</a>
+            <a href="/digitalstrateges">Agence</a>
+            <a href="/login.html">Connexion</a>
+            <a href="javascript:void(0)" onclick="toggleTheme()" style="font-size:18px;line-height:1;padding:4px 8px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center" id="themeToggle" title="Mode clair/sombre">&#127769;</a>
+            <a href="/register.html" class="nav-cta">Commencer gratuit</a>
+        </div>
+        <button class="nav-mobile" onclick="document.getElementById('navLinks').classList.toggle('open')">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-grid">
+            <div class="fade-in">
+                <div class="hero-badge"><span class="dot" style="background:#22c55e"></span> <span style="background:rgba(247,127,0,.15);color:#f77f00;padding:2px 8px;border-radius:4px;font-size:11px;margin-right:6px">v1.02</span> Agence DIGITALSTRATEGES &bull; Abidjan, CI</div>
+                <h1>La plateforme <span class="grad">business</span> par DIGITALSTRATEGES</h1>
+                <p>Carte de visite <strong style="color:var(--accent)">QR</strong>, mini-catalogue, e-commerce, reservations (affaires, entretien, visites), CRM et paiements Wave/OM/MTN. Propulse par une agence marketing digitale <strong style="color:var(--accent)">ivoirienne</strong>.</p>
+                <div class="hero-actions">
+                    <a href="/register.html" class="btn btn-primary">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                        Creer mon profil
+                    </a>
+                    <a href="#features" class="btn btn-outline">Decouvrir</a>
+                </div>
+            </div>
+            <div class="hero-visual fade-in fade-in-delay-2">
+                <div class="hero-card">
+                    <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px">
+                        <div style="width:56px;height:56px;border-radius:12px;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:#fff;flex-shrink:0">AK</div>
+                        <div>
+                            <div class="hero-card-name">Aya Koné</div>
+                            <div class="hero-card-role" style="margin-bottom:0">Photographe &#8226; Abidjan</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+                        <span style="padding:4px 10px;background:rgba(247,127,0,.12);border-radius:6px;font-size:11px;color:var(--accent)">&#128247; Mariage</span>
+                        <span style="padding:4px 10px;background:rgba(247,127,0,.12);border-radius:6px;font-size:11px;color:var(--accent)">&#128247; Portrait</span>
+                        <span style="padding:4px 10px;background:rgba(247,127,0,.12);border-radius:6px;font-size:11px;color:var(--accent)">&#128247; Evenement</span>
+                    </div>
+                    <div class="hero-card-stats">
+                        <div class="stat-box"><div class="stat-num">2.4K</div><div class="stat-label">Vues</div></div>
+                        <div class="stat-box"><div class="stat-num">187</div><div class="stat-label">Contacts</div></div>
+                        <div class="stat-box"><div class="stat-num">43</div><div class="stat-label">Resa</div></div>
+                    </div>
+                    <div class="hero-card-actions">
+                        <a class="mini-btn" href="#">&#128100; Carte</a>
+                        <a class="mini-btn" href="#">&#128197; Reserver</a>
+                        <a class="mini-btn" href="#">&#128722; Catalogue</a>
+                    </div>
+                </div>
+                <div class="hero-float tl"><span class="icon">&#128274;</span> QR + vCard: <strong>flay.app/u/aya</strong></div>
+                <div class="hero-float br"><span class="icon">&#128722;</span> Mini-catalogue: <strong style="color:var(--accent)">6 produits</strong></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item fade-in"><div class="num">15 000+</div><div class="label">Professionnels</div></div>
+            <div class="stat-item fade-in fade-in-delay-1"><div class="num">50 000+</div><div class="label">Visiteurs/mois</div></div>
+            <div class="stat-item fade-in fade-in-delay-2"><div class="num">2M+</div><div class="label">FCFA payes</div></div>
+            <div class="stat-item fade-in fade-in-delay-3"><div class="num">99.9%</div><div class="label">Uptime</div></div>
+        </div>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<section id="features">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Fonctionnalites</div>
+            <h2 class="section-title">Tout ce dont vous avez <span class="grad">besoin</span></h2>
+            <p class="section-sub">Une solution complete pour gerer votre activite professionnelle en ligne</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card fade-in" style="border-color:rgba(251,191,36,.3);position:relative">
+                <div style="position:absolute;top:-8px;right:12px;background:#fbbf24;color:#0a0a1a;padding:2px 10px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase">Nouveau</div>
+                <div class="feature-icon gold">&#128100;</div>
+                <h3>Carte de visite + QR</h3>
+                <p>Carte pro numerique avec QR code, vCard, mini-catalogue, reservation en 1 clic. Imprimable et partageable.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon purple">🤖</div>
+                <h3>Agent IA Locale</h3>
+                <p>Generation auto de bio, services, marketing. Vision d'image et chat intelligent.</p>
+            </div>
+            <div class="feature-card fade-in fade-in-delay-1">
+                <div class="feature-icon green">📊</div>
+                <h3>Comptabilite & Reçus</h3>
+                <p>Factures pro, reçus PDF, suivi des revenus et depenses. Export CSV/JSON.</p>
+            </div>
+            <div class="feature-card fade-in fade-in-delay-2">
+                <div class="feature-icon gold">📦</div>
+                <h3>E-Commerce</h3>
+                <p>Boutique en ligne, panier, commandes, coupons, avis clients et suivi livraison.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon blue">📅</div>
+                <h3>Reservations</h3>
+                <p>Clients reservent vos services en ligne. Confirmations automatiques et stats.</p>
+            </div>
+            <div class="feature-card fade-in fade-in-delay-1">
+                <div class="feature-icon red">💳</div>
+                <h3>Wave + CinetPay</h3>
+                <p>Paiements Wave, Orange Money, Moov, MTN, MTN. QR Code et webhooks auto.</p>
+            </div>
+            <div class="feature-card fade-in fade-in-delay-2">
+                <div class="feature-icon purple">💬</div>
+                <h3>Chat Temps Reel</h3>
+                <p>Discutez avec vos visiteurs en direct via SSE. Notifications instantanees.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon green">🎨</div>
+                <h3>40+ Themes</h3>
+                <p>Themes drapeaux, saisons, jour/nuit. Design Studio drag-and-drop complet.</p>
+            </div>
+            <div class="feature-card fade-in fade-in-delay-1">
+                <div class="feature-icon gold">🌍</div>
+                <h3>Africa World</h3>
+                <p>26 pays, 13 langues, 16 devises. Langues locales CI : Dioula, Bete, Baoule.</p>
+            </div>
+            <div class="feature-card fade-in fade-in-delay-2">
+                <div class="feature-icon blue">📈</div>
+                <h3>Analytics Avances</h3>
+                <p>Heatmaps, referrers, appareils, GA4, Meta Pixel, Hotjar. Objectifs de conversion.</p>
+            </div>
+            <div class="feature-card fade-in">
+                <div class="feature-icon red">🔔</div>
+                <h3>Push Notifications</h3>
+                <p>Notifications push VAPID, email (SendGrid), SMS (Africa's Talking, Twilio).</p>
+            </div>
+            <div class="feature-card fade-in fade-in-delay-1">
+                <div class="feature-icon purple">👥</div>
+                <h3>CRM & Equipes</h3>
+                <p>Contacts, pipeline de ventes, multi-utilisateurs (jusqua 5). Roles et stats.</p>
+            </div>
+            <div class="feature-card fade-in fade-in-delay-2">
+                <div class="feature-icon green">🔗</div>
+                <h3>Social & SEO</h3>
+                <p>Partage reseaux, UTM builder, QR codes, Open Graph, JSON-LD, sitemap XML.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="background:var(--bg2)">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Simple et rapide</div>
+            <h2 class="section-title">En <span class="grad">3 etapes</span></h2>
+            <p class="section-sub">Commencez en 2 minutes, sans competence technique</p>
+        </div>
+        <div class="steps">
+            <div class="step fade-in">
+                <div class="step-num">1</div>
+                <h3>Creez votre profil</h3>
+                <p>Ajoutez vos services, tarifs, photos et coordonnees. L'IA genere votre bio automatiquement.</p>
+            </div>
+            <div class="step fade-in fade-in-delay-1">
+                <div class="step-num">2</div>
+                <h3>Partagez votre lien</h3>
+                <p>Recevez votre lien unique flay.app/votre-nom. Partagez-le sur WhatsApp, QR code, reseaux.</p>
+            </div>
+            <div class="step fade-in fade-in-delay-2">
+                <div class="step-num">3</div>
+                <h3>Recevez des clients</h3>
+                <p>Reservations, paiements, messages - tout arrive sur votre profil. Suivez vos stats en temps reel.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SHOWCASE / WHY FLAY -->
+<section class="showcase" id="why">
+    <div class="container">
+        <div class="showcase-grid">
+            <div class="fade-in">
+                <div class="section-tag">Pourquoi Flay</div>
+                <h2 class="section-title">Concu pour les <span class="grad">professionnels CI</span></h2>
+                <p class="section-sub" style="margin-bottom:24px">Pas un simple site web. Une plateforme complete adaptee au marche ivoirien et ouest-africain.</p>
+                <ul class="showcase-features">
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>Wave + CinetPay</strong><span>Paiements Wave, OM, Moov, MTN, CB. Webhooks auto.</span></div>
+                    </li>
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>40+ Themes Pro</strong><span>Flags, saisons, jour/nuit. Design Studio drag-and-drop.</span></div>
+                    </li>
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>26 pays africains</strong><span>13 langues, 16 devises. Langues locales CI integrees.</span></div>
+                    </li>
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>IA Locale avancee</strong><span>Bio, services, marketing, vision d'image, chat IA.</span></div>
+                    </li>
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>Analytics pro</strong><span>Heatmaps, GA4, Meta Pixel, Hotjar, objectifs conversion.</span></div>
+                    </li>
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>Export & API</strong><span>CSV, JSON, PDF. Webhooks, API clé, intégrations tierces.</span></div>
+                    </li>
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>PWA installable</strong><span>Vos clients installent votre app depuis le navigateur.</span></div>
+                    </li>
+                    <li>
+                        <div class="check">✓</div>
+                        <div class="text"><strong>Zero dependance</strong><span>Pas besoin de developpeur. Tout est gere depuis votre telephone.</span></div>
+                    </li>
+                </ul>
+            </div>
+            <div class="fade-in fade-in-delay-2">
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px">
+                    <div style="font-size:13px;color:var(--text2);margin-bottom:16px">Dashboard en direct</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px">
+                        <div style="background:var(--bg);border-radius:10px;padding:16px"><div style="font-size:11px;color:var(--text2)">Vues aujourd'hui</div><div style="font-size:24px;font-weight:800;color:var(--accent)">127</div></div>
+                        <div style="background:var(--bg);border-radius:10px;padding:16px"><div style="font-size:11px;color:var(--text2)">Nouveaux contacts</div><div style="font-size:24px;font-weight:800;color:var(--green)">12</div></div>
+                        <div style="background:var(--bg);border-radius:10px;padding:16px"><div style="font-size:11px;color:var(--text2)">Reservations</div><div style="font-size:24px;font-weight:800;color:var(--gold)">5</div></div>
+                        <div style="background:var(--bg);border-radius:10px;padding:16px"><div style="font-size:11px;color:var(--text2)">Revenus</div><div style="font-size:24px;font-weight:800;color:var(--green)">45K</div></div>
+                    </div>
+                    <div style="height:60px;background:var(--bg);border-radius:10px;display:flex;align-items:end;padding:8px;gap:4px">
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:30%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:50%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:40%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:70%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:60%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:85%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:75%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:90%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:95%"></div>
+                        <div style="flex:1;background:var(--accent);border-radius:4px 4px 0 0;height:100%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Tarifs</div>
+            <h2 class="section-title">Des prix <span class="grad">transparents</span></h2>
+            <p class="section-sub">Choisissez le plan qui correspond a vos besoins. Changez a tout moment.</p>
+        </div>
+        <div class="pricing-grid">
+            <div class="price-card fade-in">
+                <div class="plan-name">Gratuit</div>
+                <div class="plan-desc">Pour decouvrir</div>
+                <div class="plan-price">0 <span style="font-size:14px;font-weight:400;color:var(--text2)">FCFA/mois</span></div>
+                <div class="plan-period">Pour toujours</div>
+                <ul class="plan-features">
+                    <li>Carte de visite digitale</li>
+                    <li>Lien unique flay.app/nom</li>
+                    <li>5 services maximum</li>
+                    <li>15 themes (Dark, Light, jour/nuit)</li>
+                    <li>Stats de base + QR Code</li>
+                    <li>Reservations (10/mois)</li>
+                    <li>Boutique basique (20 produits)</li>
+                    <li>Stock de base</li>
+                </ul>
+                <a href="/register.html" class="btn btn-outline" style="justify-content:center">Commencer</a>
+            </div>
+            <div class="price-card popular fade-in fade-in-delay-1">
+                <div class="popular-badge">Populaire</div>
+                <div class="plan-name">Pro</div>
+                <div class="plan-desc">Professionnels actifs</div>
+                <div class="plan-price" style="color:var(--accent)">5 000 <span style="font-size:14px;font-weight:400;color:var(--text2)">FCFA/mois</span></div>
+                <div class="plan-period">50 000 FCFA/an (2 mois offerts)</div>
+                <ul class="plan-features">
+                    <li>Tout du plan Gratuit</li>
+                    <li>Reservations illimitees</li>
+                    <li>30 themes (tous modes + drapeaux)</li>
+                    <li>Chat temps reel + SMS</li>
+                    <li>Analytics detailles + graphiques</li>
+                    <li>Site vitrine professionnel</li>
+                    <li>Boutique en ligne (50 articles)</li>
+                    <li>Galerie photos (20 images)</li>
+                    <li>Paiements Wave</li>
+                    <li>Facturation + Export CSV</li>
+                    <li>Badge Verifie Pro</li>
+                    <li>Acces Flay Store</li>
+                </ul>
+                <a href="/payment.html?plan=pro" class="btn btn-primary" style="justify-content:center">Choisir Pro</a>
+            </div>
+            <div class="price-card fade-in fade-in-delay-2">
+                <div class="plan-name">Premium</div>
+                <div class="plan-desc">Expansion digitale</div>
+                <div class="plan-price" style="color:var(--accent2)">15 000 <span style="font-size:14px;font-weight:400;color:var(--text2)">FCFA/mois</span></div>
+                <div class="plan-period">150 000 FCFA/an (2 mois offerts)</div>
+                <ul class="plan-features">
+                    <li>Tout du plan Pro</li>
+                    <li>Agent IA Locale integre</li>
+                    <li>40+ themes (tous + saisonniers)</li>
+                    <li>CRM complet illimite</li>
+                    <li>Boutique en ligne (300 articles)</li>
+                    <li>Gestion des stocks avancee</li>
+                    <li>Domaine personnalise</li>
+                    <li>Multi-langues (FR/EN/AR/PT)</li>
+                    <li>API + Webhooks</li>
+                    <li>Analytics avances + GA4 + Meta Pixel</li>
+                    <li>Export PDF + programme fidelite</li>
+                    <li>Galerie (100 images) + CV/Portfolio</li>
+                    <li>Support prioritaire 24/7</li>
+                </ul>
+                <a href="/payment.html?plan=premium" class="btn btn-outline" style="justify-content:center">Choisir Premium</a>
+            </div>
+            <div class="price-card gold fade-in fade-in-delay-3">
+                <div class="gold-badge">Doree</div>
+                <div class="plan-name">Doree</div>
+                <div class="plan-desc">Business complet</div>
+                <div class="plan-price" style="color:var(--gold)">30 000 <span style="font-size:14px;font-weight:400;color:var(--text2)">FCFA/mois</span></div>
+                <div class="plan-period">300 000 FCFA/an (2 mois offerts)</div>
+                <ul class="plan-features">
+                    <li>Tout du plan Premium</li>
+                    <li>Boutique ILLIMITEE (1000 articles)</li>
+                    <li>Multi-utilisateurs (5 comptes)</li>
+                    <li>White label + domaine personnalise</li>
+                    <li>Notifications push + email auto</li>
+                    <li>Marketplace multi-vendeurs</li>
+                    <li>Programme fidelite + coupons illimites</li>
+                    <li>Suivi livraison + avis clients</li>
+                    <li>Multi-devises (XOF/EUR/USD/GHS/NGN)</li>
+                    <li>API avancee + Webhooks custom</li>
+                    <li>Galerie ILLIMITEE + Video embed</li>
+                    <li>Formation incluse + Support telephone 24/7</li>
+                    <li>Flay Store: achats d'espace a la carte</li>
+                </ul>
+                <a href="/payment.html?plan=doree" class="btn btn-outline" style="justify-content:center;border-color:var(--gold);color:var(--gold)">Choisir Doree</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section style="background:var(--bg2)">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-tag">Temoignages</div>
+            <h2 class="section-title">Ils nous font <span class="grad">confiance</span></h2>
+        </div>
+        <div class="testimonials-grid">
+            <div class="testimonial fade-in">
+                <div class="stars">★★★★★</div>
+                <div class="quote">"J'ai cree ma page en 5 minutes. Maintenant mes clients reservent et paient en ligne. Je gagne 30% de plus chaque mois."</div>
+                <div class="author"><div class="avatar">SK</div><div class="author-info"><strong>Sarah K.</strong><span>Coiffeuse, Abidjan</span></div></div>
+            </div>
+            <div class="testimonial fade-in fade-in-delay-1">
+                <div class="stars">★★★★★</div>
+                <div class="quote">"Le meilleur outil pour les commerciaux en CI. Mon CRM est toujours a jour, mes factures sont generees automatiquement."</div>
+                <div class="author"><div class="avatar">MK</div><div class="author-info"><strong>Moussa K.</strong><span>Commercial, Yamoussoukro</span></div></div>
+            </div>
+            <div class="testimonial fade-in fade-in-delay-2">
+                <div class="stars">★★★★★</div>
+                <div class="quote">"Ma boutique en ligne fonctionne comme un vrai site e-commerce. Les paiements Wave sont instantanes. Merci Flay !"</div>
+                <div class="author"><div class="avatar">FA</div><div class="author-info"><strong>Fatou A.</strong><span>Accessoiriste, Bouake</span></div></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- WAVE SECTION -->
+<section class="wave-section">
+    <div class="container">
+        <div class="wave-grid">
+            <div class="fade-in">
+                <div class="section-tag">Paiements</div>
+                <h2 class="section-title">Recevez vos paiements <span class="grad">en toute confiance</span></h2>
+                <p class="section-sub" style="margin-bottom:24px">Wave, Orange Money, Moov, MTN, Carte Bancaire. Vos clients paient en un clic, les fonds arrivent instantanement.</p>
+                <div class="wave-features">
+                    <div class="wave-feat"><span class="ico">⚡</span> Paiement instantane</div>
+                    <div class="wave-feat"><span class="ico">🔒</span> Webhooks auto + signature securisee</div>
+                    <div class="wave-feat"><span class="ico">📱</span> QR Code de paiement</div>
+                    <div class="wave-feat"><span class="ico">🌍</span> Wave, OM, Moov, MTN, CB (CinetPay)</div>
+                    <div class="wave-feat"><span class="ico">📊</span> Suivi des transactions + facturation auto</div>
+                    <div class="wave-feat"><span class="ico">💱</span> Multi-devises (XOF, EUR, USD, GHS, NGN)</div>
+                </div>
+            </div>
+            <div class="fade-in fade-in-delay-2" style="text-align:center">
+                <div style="background:var(--card);border:1px solid var(--border);border-radius:20px;padding:48px;max-width:400px;margin:0 auto">
+                    <div style="font-size:48px;margin-bottom:16px">💰</div>
+                    <div style="font-size:18px;font-weight:700;margin-bottom:8px">DIGITALSTRATEGE BUSINESS</div>
+                    <div style="color:var(--text2);font-size:14px;margin-bottom:24px">Wave Merchant officiel Flay</div>
+                    <a href="https://pay.wave.com/m/M_uv5jVAEPkSWs/c/ci/" target="_blank" class="btn btn-primary" style="width:100%;justify-content:center">Tester le lien Wave</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-box fade-in">
+            <h2>Pret a lancer votre <span class="grad">presence digitale</span> ?</h2>
+            <p>Rejoignez 15 000+ professionnels en Cote d'Ivoire. Commencez gratuitement, sans carte bancaire. Wave, OM, MTN integres.</p>
+            <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+                <a href="/register.html" class="btn btn-primary">
+                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+                    Creer mon profil gratuit
+                </a>
+                <a href="https://wa.me/2250759731990" target="_blank" class="btn btn-outline">
+                    💬 Nous contacter
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div>
+                <div class="footer-brand">Flay</div>
+                <p class="footer-desc">La plateforme tout-en-un pour les professionnels en Cote d'Ivoire. Carte de visite digitale, e-commerce, CRM, reservations et paiements multi-operateurs.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Produit</h4>
+                <a href="#features">Fonctionnalites</a>
+                <a href="#pricing">Tarifs</a>
+                <a href="/vendors">Marketplace</a>
+                <a href="/dashboard">Dashboard</a>
+                <a href="/admin">Admin</a>
+            </div>
+            <div class="footer-col">
+                <h4>Ressources</h4>
+                <a href="/login.html">Connexion</a>
+                <a href="/register.html">S'inscrire</a>
+                <a href="/analytics.html">Analytics</a>
+                <a href="https://wa.me/2250759731990" target="_blank">Support WhatsApp</a>
+            </div>
+            <div class="footer-col">
+                <h4>Legal</h4>
+                <a href="#">Confidentialite</a>
+                <a href="#">Conditions</a>
+                <a href="#">Mentions legales</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 Flay Super App v1.02. Fait avec &#10084; par <a href="https://digitalstrateges.ci">DIGITALSTRATEGES</a> &bull; +225 07 59 73 19 90
+        </div>
+    </div>
+</footer>
+
+<script>
+// Theme toggle
+function toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light');
+    localStorage.setItem('flay_theme', isLight ? 'light' : 'dark');
+    document.getElementById('themeToggle').textContent = isLight ? '\u{1F319}' : '\u{1F319}';
+}
+(function() {
+    const saved = localStorage.getItem('flay_theme');
+    if (saved === 'light' || (saved !== 'dark' && window.matchMedia('(prefers-color-scheme:light)').matches)) {
+        document.documentElement.classList.add('light');
+    }
+})();
+
+// Nav scroll effect
+window.addEventListener('scroll',()=>{
+    document.getElementById('nav').classList.toggle('scrolled',window.scrollY>50)
+});
+
+// Intersection observer for animations
+const obs=new IntersectionObserver(entries=>{
+    entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target)}})
+},{threshold:0.1});
+document.querySelectorAll('.fade-in').forEach(el=>obs.observe(el));
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+        e.preventDefault();
+        const t=document.querySelector(a.getAttribute('href'));
+        if(t)t.scrollIntoView({behavior:'smooth',block:'start'})
+    })
+});
+</script>
+
+</body>
+</html>

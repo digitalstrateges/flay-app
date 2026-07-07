@@ -1,0 +1,53 @@
+{
+  "name": "flay-app",
+  "version": "1.01",
+  "description": "Flay Super App - Plateforme tout-en-un : showcase, e-commerce, CRM, reservations, IA, marketplace | DIGITALSTRATEGES",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "docker:build": "docker build -t flay-super-app .",
+    "docker:run": "docker run -p 4000:4000 -v flay-data:/app/data flay-super-app",
+    "docker:compose": "docker compose up -d",
+    "health": "curl -s http://localhost:4000/api/health | python3 -m json.tool",
+    "backup": "node -e \"require('./src/database/backup')\"",
+    "super:status": "curl -s http://localhost:4000/super-api/v1/status | python3 -m json.tool"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DIGITALSTRATEGES/flay-app.git"
+  },
+  "keywords": [
+    "super-app",
+    "carte-de-visite-digitale",
+    "site-vitrine",
+    "e-commerce",
+    "professionnel",
+    "cote-divoire",
+    "wave",
+    "crm",
+    "reservation",
+    "market-intelligence",
+    "africa",
+    "multi-langues",
+    "pwa"
+  ],
+  "author": "DIGITALSTRATEGES <contact@digitalstrateges.com>",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/DIGITALSTRATEGES/flay-app/issues"
+  },
+  "homepage": "https://github.com/DIGITALSTRATEGES/flay-app#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "sql.js": "^1.11.0",
+    "better-sqlite3": "^11.0.0",
+    "web-push": "^3.6.7",
+    "nodemailer": "^6.9.16"
+  }
+}

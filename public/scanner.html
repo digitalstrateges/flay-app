@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>Scanner QR | Flay</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0a0a1a">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a1a;color:#e2e8f0;min-height:100vh;display:flex;flex-direction:column}
+.header{display:flex;align-items:center;gap:.75rem;padding:.75rem 1rem;background:rgba(0,0,0,.5);backdrop-filter:blur(12px);border-bottom:1px solid #1e293b;position:sticky;top:0;z-index:10}
+.header h1{font-size:1.1rem;font-weight:600;flex:1}
+.back-btn{display:flex;align-items:center;gap:.35rem;color:#94a3b8;text-decoration:none;font-size:.85rem;padding:.35rem .75rem;border-radius:8px;transition:all .2s}
+.back-btn:hover{background:rgba(255,255,255,.06);color:#e2e8f0}
+.main{flex:1;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem}
+.scanner-container{width:100%;max-width:360px;aspect-ratio:1;background:#12121f;border-radius:20px;overflow:hidden;position:relative;border:2px solid #1e293b}
+#scanner{width:100%;height:100%;object-fit:cover}
+.scanner-frame{position:absolute;inset:15%;border:2px solid #818cf8;border-radius:16px;pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,.5)}
+.scanner-frame::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#818cf8,transparent);animation:scan 2s ease-in-out infinite}
+@keyframes scan{0%,100%{top:0}50%{top:calc(100% - 3px)}}
+.scanner-hint{text-align:center;margin-top:1.5rem;color:#94a3b8;font-size:.9rem}
+.scanner-hint strong{color:#e2e8f0}
+.manual-input{width:100%;max-width:400px;margin-top:1.5rem}
+.manual-input label{display:block;font-size:.85rem;color:#94a3b8;margin-bottom:.5rem}
+.input-group{display:flex;gap:.5rem}
+.input-group input{flex:1;padding:.75rem 1rem;background:#12121f;border:1px solid #1e293b;border-radius:10px;color:#e2e8f0;font-size:1rem;outline:none;transition:border .2s}
+.input-group input:focus{border-color:#818cf8}
+.input-group button{padding:.75rem 1.25rem;background:#6366f1;color:#fff;border:none;border-radius:10px;font-weight:600;cursor:pointer;transition:opacity .2s}
+.input-group button:hover{opacity:.9}
+.result-card{display:none;width:100%;max-width:400px;margin-top:1.5rem;background:#12121f;border-radius:16px;padding:1.5rem;border:1px solid #1e293b;text-align:center}
+.result-card .icon{font-size:3rem;margin-bottom:.75rem}
+.result-card h3{font-size:1.1rem;margin-bottom:.25rem;color:#f1f5f9}
+.result-card p{color:#94a3b8;font-size:.85rem;margin-bottom:1rem;word-break:break-all}
+.result-card .btn{display:inline-block;padding:.65rem 1.5rem;background:#6366f1;color:#fff;border-radius:10px;text-decoration:none;font-weight:600;transition:opacity .2s}
+.result-card .btn:hover{opacity:.9}
+.error-msg{color:#f87171;font-size:.85rem;margin-top:.5rem;display:none}
+.camera-select{margin-top:1rem;display:flex;gap:.5rem;justify-content:center}
+.camera-btn{padding:.35rem .85rem;border-radius:8px;border:1px solid #1e293b;background:transparent;color:#94a3b8;font-size:.8rem;cursor:pointer;transition:all .2s}
+.camera-btn.active,.camera-btn:hover{background:rgba(99,102,241,.15);border-color:#818cf8;color:#e2e8f0}
+.flash-btn{position:absolute;top:1rem;right:1rem;z-index:5;width:40px;height:40px;border-radius:50%;border:1px solid #1e293b;background:rgba(0,0,0,.6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;transition:all .2s}
+.flash-btn:hover{background:rgba(99,102,241,.3);border-color:#818cf8}
+</style>
+</head>
+<body>
+<div class="header">
+  <a href="/" class="back-btn">&#8592; Retour</a>
+  <h1>Scanner QR Code</h1>
+</div>
+<div class="main">
+  <div class="scanner-container" id="scannerContainer">
+    <video id="scanner" autoplay playsinline muted></video>
+    <div class="scanner-frame"></div>
+    <button class="flash-btn" id="flashBtn" onclick="toggleFlash()">&#9889;</button>
+  </div>
+  <div class="camera-select">
+    <button class="camera-btn active" onclick="switchCamera('environment')">Arriere</button>
+    <button class="camera-btn" onclick="switchCamera('user')">Avant</button>
+  </div>
+  <div class="scanner-hint">
+    Pointez l'appareil vers un <strong>QR Code Flay</strong><br>
+    pour voir le profil ou le produit
+  </div>
+
+  <div class="manual-input">
+    <label>Ou entrez le lien manuellement</label>
+    <div class="input-group">
+      <input type="url" id="manualUrl" placeholder="https://flay.app/u/...">
+      <button onclick="openManual()">OK</button>
+    </div>
+    <div class="error-msg" id="errorMsg">Lien invalide</div>
+  </div>
+
+  <div class="result-card" id="resultCard">
+    <div class="icon" id="resultIcon">&#128197;</div>
+    <h3 id="resultTitle">Profil trouve</h3>
+    <p id="resultUrl">flay.app/u/...</p>
+    <a href="#" id="resultBtn" class="btn">Voir le profil</a>
+  </div>
+</div>
+
+<script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+const video = document.getElementById('scanner');
+const resultCard = document.getElementById('resultCard');
+const errorMsg = document.getElementById('errorMsg');
+let stream = null;
+let facingMode = 'environment';
+let scanning = true;
+
+async function startScanner(facing = 'environment') {
+  scanning = true;
+  if (stream) { stream.getTracks().forEach(t => t.stop()); }
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: facing, width: { ideal: 640 }, height: { ideal: 480 } }
+    });
+    video.srcObject = stream;
+    video.play();
+    scanFrame();
+  } catch (e) {
+    document.getElementById('scannerContainer').innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#64748b;font-size:.9rem;text-align:center;padding:2rem">' +
+      'Camera non disponible.<br>Utilisez la saisie manuelle ci-dessous.</div>';
+  }
+}
+
+function scanFrame() {
+  if (!scanning) return;
+  if (video.readyState === video.HAVE_ENOUGH_DATA) {
+    const canvas = document.createElement('canvas');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageData = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height);
+    const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+    if (code) {
+      handleScan(code.data);
+      return;
+    }
+  }
+  requestAnimationFrame(scanFrame);
+}
+
+function handleScan(data) {
+  if (!data) return;
+  scanning = false;
+  if (stream) { stream.getTracks().forEach(t => t.stop()); }
+
+  const url = data.startsWith('http') ? data : 'https://' + data;
+  const u = new URL(url);
+  const path = u.pathname;
+
+  let title = 'Profil Flay';
+  let icon = '&#128100;';
+  let link = url;
+
+  if (path.includes('/u/') || path.includes('/p/') || path.startsWith('/showcase/')) {
+    title = 'Carte de visite Flay';
+    icon = '&#128100;';
+  } else if (path.includes('/product/') || path.includes('/store/')) {
+    title = 'Produit / Boutique';
+    icon = '&#128722;';
+  } else if (path.includes('/track/')) {
+    title = 'Suivi de colis';
+    icon = '&#128230;';
+  } else {
+    title = 'Lien Flay';
+  }
+
+  showResult(title, icon, url, url);
+}
+
+function showResult(title, icon, displayUrl, linkUrl) {
+  document.getElementById('resultIcon').innerHTML = icon;
+  document.getElementById('resultTitle').textContent = title;
+  document.getElementById('resultUrl').textContent = displayUrl;
+  document.getElementById('resultBtn').href = linkUrl;
+  resultCard.style.display = 'block';
+  resultCard.scrollIntoView({ behavior: 'smooth' });
+}
+
+function openManual() {
+  const input = document.getElementById('manualUrl').value.trim();
+  if (!input) { errorMsg.style.display = 'block'; return; }
+  errorMsg.style.display = 'none';
+  try {
+    const url = input.startsWith('http') ? new URL(input) : new URL('https://' + input);
+    handleScan(url.href);
+  } catch(e) {
+    errorMsg.style.display = 'block';
+  }
+}
+
+function switchCamera(mode) {
+  facingMode = mode;
+  document.querySelectorAll('.camera-btn').forEach(b => b.classList.toggle('active', b.textContent.includes(mode === 'environment' ? 'Arriere' : 'Avant')));
+  startScanner(mode);
+}
+
+async function toggleFlash() {
+  if (!stream) return;
+  const track = stream.getVideoTracks()[0];
+  try {
+    await track.applyConstraints({ advanced: [{ torch: !track.getSettings().torch }] });
+  } catch(e) {}
+}
+
+startScanner();
+
+document.getElementById('manualUrl').addEventListener('keydown', e => { if(e.key === 'Enter') openManual(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>DIGITALSTRATEGES — Agence Marketing Digital & Dev Fullstack | Abidjan</title>
+    <meta name="description" content="DIGITALSTRATEGES : agence ivoirienne de marketing digital, developpement fullstack, automatisation agentique des workflows et SEO. Basée à Abidjan, Côte d'Ivoire.">
+    <meta name="theme-color" content="#f77f00">
+    <style>
+        :root{--bg:#0f0a05;--bg2:#1a150a;--bg3:#2a2010;--text:#f0e6d0;--text2:#b8a880;--accent:#f77f00;--accent2:#ff9f30;--card:#2a2010;--border:#4a3820;--gold:#fbbf24;--gradient:linear-gradient(135deg,#f77f00,#ff9f30);--green:#22c55e;--red:#ef4444;--ci-green:#00853f}
+        .light{--bg:#faf6f0;--bg2:#fff0e0;--bg3:#ffe8d0;--text:#1a150a;--text2:#6b5c45;--accent:#e07000;--accent2:#f77f00;--card:#ffffff;--border:#e0d5c5;--gold:#d97706;--gradient:linear-gradient(135deg,#e07000,#f77f00);--green:#059669;--red:#dc2626;--ci-green:#006635}
+        *{margin:0;padding:0;box-sizing:border-box}
+        html{scroll-behavior:smooth}
+        body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;line-height:1.6}
+        .container{max-width:1200px;margin:0 auto;padding:0 24px}
+        a{color:var(--accent);text-decoration:none;transition:color .2s}
+        a:hover{color:var(--accent2)}
+
+        /* NAV */
+        nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 0;transition:all .3s}
+        nav.scrolled{background:rgba(15,10,5,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+        .light nav.scrolled{background:rgba(250,246,240,.95)}
+        .nav-inner{display:flex;align-items:center;justify-content:space-between}
+        .nav-brand{font-size:24px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .nav-links{display:flex;gap:24px;align-items:center}
+        .nav-links a{color:var(--text2);font-size:14px;font-weight:500}
+        .nav-links a:hover{color:var(--text)}
+        .nav-cta{padding:10px 20px;background:var(--gradient);color:#fff!important;border-radius:10px;font-weight:600!important;transition:transform .2s}
+        .nav-cta:hover{transform:translateY(-2px)}
+        .nav-mobile{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:8px}
+
+        /* HERO */
+        .hero{min-height:100vh;display:flex;align-items:center;padding:120px 0 80px;position:relative;overflow:hidden}
+        .hero::before{content:'';position:absolute;top:-20%;left:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(247,127,0,.08) 0%,transparent 70%);pointer-events:none}
+        .hero::after{content:'';position:absolute;bottom:-20%;right:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(0,133,63,.06) 0%,transparent 70%);pointer-events:none}
+        .hero-content{max-width:800px;position:relative;z-index:1}
+        .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;background:rgba(247,127,0,.1);border:1px solid rgba(247,127,0,.2);border-radius:20px;font-size:13px;color:var(--accent);margin-bottom:24px}
+        .dot-ci{width:8px;height:8px;border-radius:50%;background:var(--ci-green);display:inline-block;margin-right:4px}
+        .dot-ci.orange{background:var(--accent)}
+        .hero h1{font-size:clamp(40px,6vw,68px);font-weight:900;line-height:1.1;margin-bottom:20px}
+        .hero h1 .grad{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .hero h1 .green{color:var(--ci-green)}
+        .hero p{font-size:18px;color:var(--text2);max-width:600px;margin-bottom:32px;line-height:1.7}
+        .hero-actions{display:flex;gap:16px;flex-wrap:wrap}
+        .btn{display:inline-flex;align-items:center;gap:8px;padding:14px 28px;border-radius:12px;font-size:15px;font-weight:600;text-decoration:none;border:none;cursor:pointer;transition:all .25s;font-family:inherit}
+        .btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 24px rgba(247,127,0,.35)}
+        .btn-primary:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(247,127,0,.45)}
+        .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border)}
+        .btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+        .btn-green{background:var(--ci-green);color:#fff;box-shadow:0 4px 24px rgba(0,133,63,.35)}
+        .btn-green:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,133,63,.45)}
+        .hero-stripes{display:flex;height:6px;margin-top:48px;border-radius:3px;overflow:hidden;max-width:400px}
+        .hero-stripes div{flex:1}
+        .hero-stripes .s-orange{background:var(--accent)}
+        .hero-stripes .s-white{background:var(--text);opacity:.8}
+        .light .hero-stripes .s-white{background:#fff}
+        .hero-stripes .s-green{background:var(--ci-green)}
+
+        /* SECTIONS */
+        section{padding:100px 0}
+        .section-header{text-align:center;margin-bottom:48px}
+        .section-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(247,127,0,.1);border:1px solid rgba(247,127,0,.15);border-radius:20px;font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:1px;margin-bottom:16px}
+        .section-title{font-size:clamp(28px,4vw,42px);font-weight:900;margin-bottom:16px;line-height:1.2;text-align:center}
+        .section-title .grad{background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .section-sub{color:var(--text2);font-size:16px;max-width:600px;line-height:1.7;text-align:center;margin:0 auto 48px}
+
+        /* ABOUT */
+        .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+        .about-visual{position:relative}
+        .about-flag{display:flex;height:80px;border-radius:8px;overflow:hidden;margin-bottom:20px}
+        .about-flag div{flex:1}
+        .about-flag .o{background:var(--accent)}
+        .about-flag .w{background:#fff}
+        .about-flag .g{background:var(--ci-green)}
+        .about-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+        .about-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;text-align:center}
+        .about-stat .num{font-size:28px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .about-stat .label{font-size:12px;color:var(--text2);margin-top:4px}
+        .about-text h2{font-size:32px;font-weight:900;margin-bottom:16px}
+        .about-text p{color:var(--text2);margin-bottom:16px;line-height:1.7}
+
+        /* SERVICES */
+        .services-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+        .service-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;transition:all .3s;position:relative;overflow:hidden}
+        .service-card:hover{border-color:rgba(247,127,0,.3);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.25)}
+        .service-card .icon{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px}
+        .service-card .icon.orange{background:rgba(247,127,0,.12)}
+        .service-card .icon.green{background:rgba(0,133,63,.12)}
+        .service-card .icon.white{background:rgba(240,230,208,.08)}
+        .service-card h3{font-size:18px;font-weight:700;margin-bottom:8px}
+        .service-card p{color:var(--text2);font-size:14px;line-height:1.6}
+        .service-card .features{list-style:none;margin-top:12px}
+        .service-card .features li{font-size:13px;color:var(--text2);padding:4px 0;display:flex;align-items:center;gap:8px}
+        .service-card .features li::before{content:'\2713';color:var(--accent);font-weight:700}
+
+        /* PROCESS */
+        .process-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px}
+        .process-step{text-align:center;padding:32px 20px;background:var(--card);border:1px solid var(--border);border-radius:16px;position:relative}
+        .process-step .num{width:40px;height:40px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:14px;font-weight:800;color:#fff}
+        .process-step h4{font-size:15px;font-weight:700;margin-bottom:8px}
+        .process-step p{font-size:13px;color:var(--text2);line-height:1.5}
+
+        /* PORTFOLIO */
+        .portfolio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+        .portfolio-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:28px;text-align:center;transition:all .3s}
+        .portfolio-card:hover{border-color:rgba(247,127,0,.3);transform:translateY(-3px)}
+        .portfolio-card .emoji{font-size:36px;margin-bottom:12px}
+        .portfolio-card h4{font-size:16px;font-weight:700;margin-bottom:6px}
+        .portfolio-card p{font-size:13px;color:var(--text2)}
+
+        /* NUMBERS */
+        .numbers{background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+        .numbers-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;padding:60px 0;text-align:center}
+        .num-item .n{font-size:36px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+        .num-item .l{color:var(--text2);font-size:14px;margin-top:4px}
+
+        /* CTA */
+        .cta{text-align:center;padding:100px 0}
+        .cta h2{font-size:clamp(28px,4vw,42px);font-weight:900;margin-bottom:16px}
+        .cta p{color:var(--text2);font-size:16px;max-width:500px;margin:0 auto 32px;line-height:1.7}
+        .cta-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+
+        /* FOOTER */
+        footer{border-top:1px solid var(--border);padding:60px 0 32px}
+        .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:40px;margin-bottom:40px}
+        .footer-brand{font-size:28px;font-weight:900;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:12px}
+        .footer-desc{color:var(--text2);font-size:14px;line-height:1.7;max-width:280px}
+        .footer-col h4{font-size:14px;font-weight:700;margin-bottom:16px}
+        .footer-col a{display:block;color:var(--text2);text-decoration:none;font-size:14px;padding:4px 0;transition:color .2s}
+        .footer-col a:hover{color:var(--accent)}
+        .footer-bottom{text-align:center;padding-top:24px;border-top:1px solid var(--border);color:var(--text2);font-size:13px}
+
+        /* FADE */
+        .fade-in{opacity:0;transform:translateY(30px);transition:opacity .8s ease,transform .8s ease}
+        .fade-in.visible{opacity:1;transform:translateY(0)}
+
+        /* RESPONSIVE */
+        @media(max-width:768px){
+            .nav-links{display:none}.nav-mobile{display:block}.nav-links.open{display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(15,10,5,.98);border-bottom:1px solid var(--border);padding:24px;gap:16px}
+            .light .nav-links.open{background:rgba(250,246,240,.98)}
+            .about-grid,.services-grid,.portfolio-grid{grid-template-columns:1fr}
+            .process-grid{grid-template-columns:repeat(2,1fr)}
+            .numbers-grid{grid-template-columns:repeat(2,1fr)}
+            .footer-grid{grid-template-columns:1fr}
+        }
+        @media(max-width:480px){
+            .process-grid{grid-template-columns:1fr}
+        }
+    </style>
+</head>
+<body>
+
+<nav id="nav">
+    <div class="container nav-inner">
+        <a href="/" class="nav-brand">DIGITALSTRATEGES</a>
+        <div class="nav-links" id="navLinks">
+            <a href="#about">Agence</a>
+            <a href="#services">Services</a>
+            <a href="#process">Processus</a>
+            <a href="/">Flay</a>
+            <a href="javascript:void(0)" onclick="toggleTheme()" style="font-size:18px;line-height:1;padding:4px 8px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center" id="themeToggle" title="Mode clair/sombre">&#127769;</a>
+            <a href="/register.html" class="nav-cta">Creer mon profil Flay</a>
+        </div>
+        <button class="nav-mobile" onclick="document.getElementById('navLinks').classList.toggle('open')">
+            <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+        </button>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-content fade-in">
+            <div class="hero-badge"><span class="dot-ci"></span><span class="dot-ci orange"></span> Agence digitale ivoirienne <span style="margin:0 8px;opacity:.3">|</span> <span style="color:var(--ci-green);font-weight:700">Abidjan</span></div>
+            <h1>Votre <span class="grad">transformation</span> <span class="green">digitale</span></h1>
+            <p>Developpement fullstack, automatisation agentique des workflows, marketing digital et SEO. DIGITALSTRATEGES construit, automatise et propulse votre presence en ligne.</p>
+            <div class="hero-actions">
+                <a href="#services" class="btn btn-primary">Nos services</a>
+                <a href="/register.html" class="btn btn-outline">Lancer votre projet</a>
+                <a href="https://wa.me/2250759731990" class="btn btn-green" target="_blank">WhatsApp</a>
+            </div>
+            <div class="hero-stripes"><div class="s-orange"></div><div class="s-white"></div><div class="s-green"></div></div>
+        </div>
+    </div>
+</section>
+
+<!-- CHIFFRES -->
+<section class="numbers">
+    <div class="container">
+        <div class="numbers-grid">
+            <div class="num-item fade-in"><div class="n">150+</div><div class="l">Projets realises</div></div>
+            <div class="num-item fade-in fade-in-delay-1"><div class="n">50+</div><div class="l">Clients satisfaits</div></div>
+            <div class="num-item fade-in fade-in-delay-2"><div class="n">7</div><div class="l">Pays couverts</div></div>
+            <div class="num-item fade-in fade-in-delay-3"><div class="n">99%</div><div class="l">Disponibilite</div></div>
+        </div>
+    </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+    <div class="container">
+        <div class="about-grid">
+            <div class="about-visual fade-in">
+                <div class="about-flag"><div class="o"></div><div class="w"></div><div class="g"></div></div>
+                <div class="about-stats">
+                    <div class="about-stat"><div class="num">2019</div><div class="label">Creation</div></div>
+                    <div class="about-stat"><div class="num">12</div><div class="label">Experts</div></div>
+                    <div class="about-stat"><div class="num">4</div><div class="label">Poles</div></div>
+                </div>
+            </div>
+            <div class="about-text fade-in fade-in-delay-1">
+                <div class="section-tag">Qui sommes-nous</div>
+                <h2>L'agence qui <span class="grad">construit</span> le web ivoirien depuis 2019</h2>
+                <p>DIGITALSTRATEGES est une agence marketing digitale basee a Abidjan, Cote d'Ivoire. Nous accompagnons les entreprises dans leur transformation numerique : de la conception de plateformes fullstack a l'automatisation intelligente des processus, en passant par le marketing digital et le referencement SEO.</p>
+                <p>Notre equipe de 12 experts combine competence technique et connaissance du marche africain pour deliver des solutions sur-mesure, performantes et adaptees aux realites locales.</p>
+                <a href="/register.html" class="btn btn-primary">Demarrer avec Flay</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+    <div class="container">
+        <div class="section-header fade-in">
+            <div class="section-tag">Notre expertise</div>
+            <h2 class="section-title">Des solutions <span class="grad">completes</span></h2>
+            <p class="section-sub">De la strategie a l'execution, nous couvrons tous les aspects de votre presence digitale</p>
+        </div>
+        <div class="services-grid">
+            <div class="service-card fade-in">
+                <div class="icon orange">&#128187;</div>
+                <h3>Developpement Fullstack</h3>
+                <p>Applications web et mobiles sur-mesure, API REST, bases de donnees, architectures cloud. React, Node.js, Python, PostgreSQL, Docker.</p>
+                <ul class="features">
+                    <li>Sites vitrine & e-commerce</li>
+                    <li>Applications SaaS</li>
+                    <li>API & microservices</li>
+                    <li>DevOps & deploiement continu</li>
+                    <li>PWA & applications mobiles</li>
+                </ul>
+            </div>
+            <div class="service-card fade-in fade-in-delay-1">
+                <div class="icon green">&#129302;</div>
+                <h3>Automatisation Agentique</h3>
+                <p>Workflows intelligents pilotes par IA. Automatisation des taches repetitives, chatbots, agents conversationnels, LLM locaux et cloud.</p>
+                <ul class="features">
+                    <li>Chatbots & assistants IA</li>
+                    <li>Automatisation de processus</li>
+                    <li>LLM locaux (Qwen, Llama)</li>
+                    <li>Vision par ordinateur</li>
+                    <li>Integration CRM & ERP</li>
+                </ul>
+            </div>
+            <div class="service-card fade-in fade-in-delay-2">
+                <div class="icon white">&#128200;</div>
+                <h3>Marketing Digital</h3>
+                <p>Strategies de croissance, publicite payante, social media, content marketing, email automation. ROI mesure et optimise.</p>
+                <ul class="features">
+                    <li>Google Ads & Meta Ads</li>
+                    <li>Social media management</li>
+                    <li>Email & marketing automation</li>
+                    <li>Content strategy & copywriting</li>
+                    <li>Analytics & reporting</li>
+                </ul>
+            </div>
+            <div class="service-card fade-in fade-in-delay-3">
+                <div class="icon orange">&#128269;</div>
+                <h3>SEO & Referencement</h3>
+                <p>Optimisation technique et editoriale. SEO on-page, off-page, local SEO, audit, netlinking. Visibilite maximale sur Google.</p>
+                <ul class="features">
+                    <li>Audit SEO technique</li>
+                    <li>Optimisation on-page</li>
+                    <li>SEO local (Google My Business)</li>
+                    <li>Netlinking & PR digitale</li>
+                    <li>Suivi & reporting positions</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PROCESS -->
+<section id="process">
+    <div class="container">
+        <div class="section-header fade-in">
+            <div class="section-tag">Methodologie</div>
+            <h2 class="section-title">Notre <span class="grad">processus</span></h2>
+            <p class="section-sub">Une approche éprouvée pour transformer vos idees en solutions concretes</p>
+        </div>
+        <div class="process-grid">
+            <div class="process-step fade-in">
+                <div class="num">1</div>
+                <h4>Audit & Strategie</h4>
+                <p>Analyse de vos besoins, de votre marche et de vos objectifs. Plan d'action personnalise.</p>
+            </div>
+            <div class="process-step fade-in fade-in-delay-1">
+                <div class="num">2</div>
+                <h4>Conception & Design</h4>
+                <p>Maquettes, prototypes, architecture technique. Validation avant developpement.</p>
+            </div>
+            <div class="process-step fade-in fade-in-delay-2">
+                <div class="num">3</div>
+                <h4>Developpement & Tests</h4>
+                <p>Construction agile, tests automatises, revues de code. Qualite et performance.</p>
+            </div>
+            <div class="process-step fade-in fade-in-delay-3">
+                <div class="num">4</div>
+                <h4>Deploiement & Suivi</h4>
+                <p>Mise en production, monitoring, maintenance. Accompagnement continu.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section>
+    <div class="container">
+        <div class="section-header fade-in">
+            <div class="section-tag">Nos realisations</div>
+            <h2 class="section-title">Des projets qui <span class="grad">parlent</span></h2>
+            <p class="section-sub">Quelques-unes de nos creations pour des clients en Cote d'Ivoire et dans la sous-region</p>
+        </div>
+        <div class="portfolio-grid">
+            <div class="portfolio-card fade-in">
+                <div class="emoji">&#127760;</div>
+                <h4>Flay Super App</h4>
+                <p>Plateforme tout-en-un pour professionnels CI : carte QR, e-commerce, CRM, reservations, IA locale. 15 000+ utilisateurs.</p>
+            </div>
+            <div class="portfolio-card fade-in fade-in-delay-1">
+                <div class="emoji">&#128722;</div>
+                <h4>Marketplace Artisanale</h4>
+                <p>Place de marche pour artisans ivoiriens avec paiements Wave/OM/MTN, geo-localisation, messagerie integree.</p>
+            </div>
+            <div class="portfolio-card fade-in fade-in-delay-2">
+                <div class="emoji">&#9878;&#65039;</div>
+                <h4>LegalTech CI</h4>
+                <p>Plateforme de gestion de cabinets d'avocats : dossier client, facturation, signature electronique, agenda partage.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta">
+    <div class="container">
+        <div class="fade-in">
+            <h2>Pret a construire <span class="grad">votre projet</span> ?</h2>
+            <p>De l'idee a la realisation, nous sommes la pour vous accompagner. Commencez gratuitement avec Flay ou contactez-nous directement.</p>
+            <div class="cta-btns">
+                <a href="/register.html" class="btn btn-primary">Creer mon profil Flay</a>
+                <a href="https://wa.me/2250759731990" class="btn btn-green" target="_blank">&#128172; Nous ecrire sur WhatsApp</a>
+                <a href="/" class="btn btn-outline">Decouvrir Flay</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="container">
+        <div class="footer-grid">
+            <div>
+                <div class="footer-brand">DIGITALSTRATEGES</div>
+                <p class="footer-desc">Agence marketing digitale & developpement fullstack basee a Abidjan, Cote d'Ivoire. Experts en automatisation agentique, marketing digital et SEO.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Services</h4>
+                <a href="#services">Developpement Fullstack</a>
+                <a href="#services">Automatisation Agentique</a>
+                <a href="#services">Marketing Digital</a>
+                <a href="#services">SEO & Referencement</a>
+            </div>
+            <div class="footer-col">
+                <h4>Contact</h4>
+                <a href="https://wa.me/2250759731990">WhatsApp: +225 07 59 73 19 90</a>
+                <a href="mailto:contact@digitalstrateges.ci">contact@digitalstrateges.ci</a>
+                <a href="/">Flay Super App</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 DIGITALSTRATEGES. Fait avec &#10084; en Cote d'Ivoire &bull; <a href="/">Flay v1.02</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+function toggleTheme() {
+    const isLight = document.documentElement.classList.toggle('light');
+    localStorage.setItem('flay_theme', isLight ? 'light' : 'dark');
+    document.getElementById('themeToggle').textContent = isLight ? '\u{1F319}' : '\u{1F319}';
+}
+(function() {
+    const saved = localStorage.getItem('flay_theme');
+    if (saved === 'light' || (!saved && window.matchMedia('(prefers-color-scheme:light)').matches)) {
+        document.documentElement.classList.add('light');
+    }
+    document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 50);
+})();
+
+window.addEventListener('scroll', () => {
+    document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 50);
+});
+
+const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        e.preventDefault();
+        const t = document.querySelector(a.getAttribute('href'));
+        if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+</script>
+</body>
+</html>

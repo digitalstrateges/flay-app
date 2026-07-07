@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard
+Disallow: /editor
+Disallow: /studio
+Disallow: /settings
+Disallow: /admin
+Disallow: /crm
+Disallow: /analytics
+Disallow: /visitors
+Disallow: /reservations
+Disallow: /payment
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://flay.app/sitemap.xml
+
+# Flay - Plateforme de cartes de visite digitales
+# Contact: https://flay.app
