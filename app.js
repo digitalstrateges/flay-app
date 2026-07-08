@@ -164,6 +164,15 @@ app.use(express.static(path.join(__dirname, 'public'), {
 
 // === API ROUTES ===
 app.use('/api', require('./routes/system'));
+
+app.post('/api/contact', (req, res) => {
+    const { name, email, subject, message } = req.body;
+    if (!name || !email || !message) return res.status(400).json({ error: 'Champs obligatoires manquants' });
+    const entry = `${new Date().toISOString()} | ${name} | ${email} | ${subject || '-'} | ${message.replace(/\n/g, '\\n')}\n`;
+    require('fs').appendFile(path.join(__dirname, 'contacts.log'), entry, () => {});
+    res.json({ success: true });
+});
+
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/profile', require('./routes/profile'));
 app.use('/api/payments', require('./routes/payment'));
@@ -591,13 +600,19 @@ function broadcastToAll(event) {
 // === CUSTOM ERROR PAGES ===
 app.use((req, res) => {
     if (req.accepts('html') && !req.path.startsWith('/api/')) {
-        res.status(404).send(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="manifest" href="/manifest.json"><title>Page non trouvee | Flay</title><style>
-        *{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a1a;color:#e2e8f0;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
-        .card{background:#12121f;border-radius:16px;padding:3rem;text-align:center;max-width:480px;width:100%;border:1px solid #1e293b}
-        .code{font-size:5rem;font-weight:800;background:linear-gradient(135deg,#818cf8,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
-        h1{font-size:1.25rem;margin:1rem 0 .5rem;color:#f1f5f9}p{color:#64748b;margin-bottom:1.5rem;font-size:.9rem}
-        .btn{display:inline-block;padding:.75rem 2rem;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:500}
-        .btn:hover{opacity:.9}</style></head><body><div class="card"><div class="code">404</div><h1>Page non trouvee</h1><p>La page que vous cherchez n\\'existe pas ou a ete deplacee.</p><a href="/" class="btn">Retour a l\\'accueil</a></div></body></html>`);
+        res.status(404).send(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5,user-scalable=yes"><link rel="manifest" href="/manifest.json"><title>Page non trouvee | Flay</title><meta name="theme-color" content="#818cf8"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Flay"><style>
+        *{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a1a;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:1.5rem}
+        .card{background:#12121f;border-radius:20px;padding:2.5rem 2rem;text-align:center;max-width:440px;width:100%;border:1px solid #1e293b;animation:fadeIn .5s ease}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .code{font-size:6rem;font-weight:900;background:linear-gradient(135deg,#818cf8,#a855f7,#f472b6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;letter-spacing:-4px}
+        h1{font-size:1.3rem;margin:.75rem 0 .5rem;color:#f1f5f9;font-weight:700}
+        p{color:#64748b;margin-bottom:1.75rem;font-size:.9rem;line-height:1.6}
+        .links{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+        .btn{display:inline-flex;align-items:center;gap:.4rem;padding:.7rem 1.5rem;background:linear-gradient(135deg,#818cf8,#a855f7);color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:.85rem;transition:transform .2s}
+        .btn:hover{transform:translateY(-2px)}
+        .btn-outline{background:transparent;border:1px solid #1e293b;color:#94a3b8}
+        .btn-outline:hover{background:rgba(255,255,255,.05);color:#e2e8f0}
+        @media(max-width:480px){.code{font-size:4.5rem}.card{padding:2rem 1.25rem}.btn{font-size:.8rem;padding:.6rem 1.2rem}}</style></head><body><div class="card"><div class="code">404</div><h1>Page introuvable</h1><p>Cette page n'existe pas, a ete deplacee ou est temporairement indisponible.</p><div class="links"><a href="/" class="btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>Accueil</a><a href="/login" class="btn btn-outline">Connexion</a><a href="https://wa.me/2250759731990" class="btn btn-outline" target="_blank">Contact</a></div></div></body></html>`);
     } else {
         res.status(404).json({ error: 'Not found' });
     }

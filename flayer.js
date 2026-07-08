@@ -241,12 +241,37 @@ function generate(profile, user, options = {}) {
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=5,user-scalable=yes">
   <title>${esc(user.name)}${profile.title ? ' - ' + esc(profile.title) : ''} | Flay</title>
   <meta name="description" content="${esc((profile.bio || '').substring(0, 160))}">
+  <link rel="canonical" href="${flayerUrl}">
+  <meta property="og:type" content="profile">
+  <meta property="og:url" content="${flayerUrl}">
   <meta property="og:title" content="${esc(user.name)}">
   <meta property="og:description" content="${esc((profile.bio || '').substring(0, 200))}">
   ${profile.avatar ? `<meta property="og:image" content="${profile.avatar}">` : ''}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${esc(user.name)}">
+  <meta name="twitter:description" content="${esc((profile.bio || '').substring(0, 200))}">
+  ${profile.avatar ? `<meta name="twitter:image" content="${profile.avatar}">` : ''}
   <meta name="theme-color" content="${colors.match(/--accent:\s*([^;]+)/)?.[1] || '#818cf8'}">
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="/favicon.svg">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    "name": "${esc(user.name)}",
+    "url": "${flayerUrl}",
+    ${profile.avatar ? `"image": "${profile.avatar}",` : ''}
+    ${profile.title ? `"jobTitle": "${esc(profile.title)}",` : ''}
+    ${profile.location ? `"address": { "@type": "PostalAddress", "addressLocality": "${esc(profile.location)}" },` : ''}
+    ${phone ? `"telephone": "${esc(phone)}",` : ''}
+    "description": "${esc((profile.bio || '').substring(0, 300))}"
+    ${socials.whatsapp || socials.instagram || socials.facebook || socials.linkedin || socials.twitter || socials.tiktok || socials.youtube ? `,
+    "sameAs": [${[
+      socials.whatsapp, socials.instagram, socials.facebook,
+      socials.linkedin, socials.twitter, socials.tiktok, socials.youtube
+    ].filter(Boolean).map(u => `"${esc(u)}"`).join(',')}]` : ''}
+  }
+  </script>
   <style>${CSS}${colors}</style>
 </head>
 <body>
@@ -375,7 +400,6 @@ ${productsHtml ? `
   <div class="about-stats">
     <div class="about-stat"><div class="about-stat-val">${services.length}</div><div class="about-stat-lbl">Services</div></div>
     <div class="about-stat"><div class="about-stat-val">${storeProducts.length}</div><div class="about-stat-lbl">Produits</div></div>
-    <div class="about-stat"><div class="about-stat-val">${profile.plan || 'free'}</div><div class="about-stat-lbl">Plan</div></div>
   </div>
 </section>
 
