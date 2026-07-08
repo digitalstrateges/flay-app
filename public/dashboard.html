@@ -629,6 +629,19 @@
                         <button class="btn btn-primary btn-sm" onclick="copyProfileLink()">Copy</button>
                     </div>
                 </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg> MRR & Valorisation</div>
+                        <a href="/leaderboard.html" target="_blank" class="btn btn-ghost btn-sm">Classement</a>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:4px">
+                        <div style="background:var(--bg);border-radius:var(--radius);padding:16px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">MRR Estime</div><div style="font-size:22px;font-weight:800;color:var(--accent)" id="mrrValue">-</div></div>
+                        <div style="background:var(--bg);border-radius:var(--radius);padding:16px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Revenu Total</div><div style="font-size:22px;font-weight:800;color:var(--green)" id="totalRevValue">-</div></div>
+                        <div style="background:var(--bg);border-radius:var(--radius);padding:16px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Valorisation (3x MRR)</div><div style="font-size:22px;font-weight:800;color:var(--gold)" id="valuationValue">-</div></div>
+                        <div style="background:var(--bg);border-radius:var(--radius);padding:16px"><div style="font-size:12px;color:var(--muted);margin-bottom:4px">Produits</div><div style="font-size:22px;font-weight:800;color:var(--text)" id="prodCountValue">-</div></div>
+                    </div>
+                </div>
             </div>
 
             <!-- ==================== ANALYTICS PAGE ==================== -->
@@ -1498,6 +1511,20 @@
             if (s.chart || s.revenueChart || s.dailyRevenue) {
                 renderChart(s.chart || s.revenueChart || s.dailyRevenue || []);
             }
+
+            // MRR & Valuation
+            loadMRR();
+        }
+
+        async function loadMRR() {
+            try {
+                const data = await api('/api/leaderboard/' + user.id);
+                if (!data) return;
+                document.getElementById('mrrValue').textContent = formatMoney(data.mrr || 0);
+                document.getElementById('totalRevValue').textContent = formatMoney(data.totalRevenue || 0);
+                document.getElementById('valuationValue').textContent = formatMoney((data.mrr || 0) * 3);
+                document.getElementById('prodCountValue').textContent = (data.productsCount || 0)  + ' articles';
+            } catch {}
         }
 
         function renderChart(data) {

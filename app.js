@@ -190,6 +190,7 @@ app.use('/api/design-studio', require('./routes/enhanced-design-studio'));
 app.use('/api/social', require('./routes/social'));
 app.use('/api/followers', require('./routes/followers'));
 app.use('/api/card', require('./routes/card'));
+app.use('/api/leaderboard', require('./routes/leaderboard'));
 app.use('/api/flay-pay', require('./routes/flay-pay'));
 
 // === I18N MIDDLEWARE ===
