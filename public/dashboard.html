@@ -1210,10 +1210,10 @@
            CONFIG & STATE
         =========================== */
         const PLAN_FEATURES = {
-            free:     { products: 5, invoices: 10, receipts: 10, coupons: 2, reservations: 20, contacts: 20, stock: true, ai: false, analytics: 'basic' },
-            pro:      { products: 50, invoices: 100, receipts: 100, coupons: 20, reservations: 200, contacts: 200, stock: true, ai: true, analytics: 'advanced' },
-            premium:  { products: Infinity, invoices: Infinity, receipts: Infinity, coupons: Infinity, reservations: Infinity, contacts: Infinity, stock: true, ai: true, analytics: 'full' },
-            doree:    { products: Infinity, invoices: Infinity, receipts: Infinity, coupons: Infinity, reservations: Infinity, contacts: Infinity, stock: true, ai: true, analytics: 'full' }
+            free:     { products: 20, invoices: 20, receipts: 10, coupons: 2, reservations: 20, contacts: 100, stock: true, ai: false, analytics: 'basic' },
+            pro:      { products: 50, invoices: 100, receipts: 100, coupons: 20, reservations: 200, contacts: 500, stock: true, ai: true, analytics: 'advanced' },
+            premium:  { products: 300, invoices: Infinity, receipts: Infinity, coupons: Infinity, reservations: Infinity, contacts: Infinity, stock: true, ai: true, analytics: 'full' },
+            doree:    { products: 1000, invoices: Infinity, receipts: Infinity, coupons: Infinity, reservations: Infinity, contacts: Infinity, stock: true, ai: true, analytics: 'full' }
         };
         const PLAN_COLORS = { free: 'plan-free', pro: 'plan-pro', premium: 'plan-premium', doree: 'plan-doree' };
         const PLAN_LABELS = { free: 'Free', pro: 'Pro', premium: 'Premium', doree: 'Doree' };
@@ -1540,7 +1540,7 @@
            PRODUCTS
         =========================== */
         async function loadProducts() {
-            const data = await api('/api/ecommerce/my-products');
+            const data = await api('/api/my-products');
             if (!data) { document.getElementById('productsTable').innerHTML = '<tr><td colspan="5" class="table-empty"><p>Failed to load products</p></td></tr>'; return; }
             state.products = data.products || data || [];
             document.getElementById('navProductsCount').textContent = state.products.length;
@@ -1607,7 +1607,8 @@
                     try {
                         const data = await api('/api/products/' + productId + '/images', {
                             method: 'POST',
-                            body: e.target.result
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ image: e.target.result })
                         });
                         resolve(data);
                     } catch (err) { reject(err); }

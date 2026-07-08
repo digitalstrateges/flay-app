@@ -34,12 +34,6 @@ router.get('/categories/:userId/public', (req, res) => {
     res.json({ categories: ecommerce.getActiveCategories(req.params.userId) });
 });
 
-// === MY PRODUCTS (dashboard) ===
-router.get('/my-products', authenticate, (req, res) => {
-    const result = ecommerce.getUserProducts(req.user.id, {});
-    res.json({ products: result.products || result || [] });
-});
-
 // === PRODUCTS ===
 router.get('/products/:userId', (req, res) => {
     const page = parseInt(req.query.page) || 1;
@@ -401,33 +395,29 @@ router.post('/products/:id/images', authenticate, (req, res) => {
         if (!product) return res.status(404).json({ error: 'Produit non trouve' });
         if (product.userId !== req.user.id) return res.status(403).json({ error: 'Non autorise' });
 
-        let rawBody = '';
-        req.setEncoding('utf8');
-        req.on('data', chunk => { rawBody += chunk; });
-        req.on('end', () => {
-            const matches = rawBody.match(/data:([^;]+);base64,(.+)/);
-            if (!matches) return res.status(400).json({ error: 'Donnees invalides' });
-            const mimeType = matches[1];
-            const base64 = matches[2];
-            const buffer = Buffer.from(base64, 'base64');
-            if (buffer.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'Image trop volumineuse (max 5 MB)' });
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            if (!allowedTypes.includes(mimeType)) return res.status(400).json({ error: 'Type non autorise (JPEG, PNG, GIF, WebP)' });
+        const imageData = req.body.image || '';
+        const matches = imageData.match(/data:([^;]+);base64,(.+)/);
+        if (!matches) return res.status(400).json({ error: 'Donnees image invalides' });
+        const mimeType = matches[1];
+        const base64 = matches[2];
+        const buffer = Buffer.from(base64, 'base64');
+        if (buffer.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'Image trop volumineuse (max 5 MB)' });
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(mimeType)) return res.status(400).json({ error: 'Type non autorise (JPEG, PNG, GIF, WebP)' });
 
-            const ext = mimeType.split('/')[1] || 'jpg';
-            const filename = `${req.user.id}_prod_${Date.now()}.${ext}`;
-            const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
-            if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-            fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+        const ext = mimeType.split('/')[1] || 'jpg';
+        const filename = `${req.user.id}_prod_${Date.now()}.${ext}`;
+        const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
+        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+        fs.writeFileSync(path.join(uploadsDir, filename), buffer);
 
-            const imageUrl = `/uploads/${filename}`;
-            const images = Array.isArray(product.images) ? [...product.images, imageUrl] : [imageUrl];
-            const update = { images };
-            if (!product.thumbnail) update.thumbnail = imageUrl;
-            db.update('products', product.id, update);
+        const imageUrl = `/uploads/${filename}`;
+        const images = Array.isArray(product.images) ? [...product.images, imageUrl] : [imageUrl];
+        const update = { images };
+        if (!product.thumbnail) update.thumbnail = imageUrl;
+        db.update('products', product.id, update);
 
-            res.json({ url: imageUrl, images, thumbnail: update.thumbnail || product.thumbnail });
-        });
+        res.json({ url: imageUrl, images, thumbnail: update.thumbnail || product.thumbnail });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -488,27 +478,23 @@ router.post('/categories/:id/image', authenticate, (req, res) => {
         if (!category) return res.status(404).json({ error: 'Categorie non trouvee' });
         if (category.userId !== req.user.id) return res.status(403).json({ error: 'Non autorise' });
 
-        let rawBody = '';
-        req.setEncoding('utf8');
-        req.on('data', chunk => { rawBody += chunk; });
-        req.on('end', () => {
-            const matches = rawBody.match(/data:([^;]+);base64,(.+)/);
-            if (!matches) return res.status(400).json({ error: 'Donnees invalides' });
-            const mimeType = matches[1];
-            const base64 = matches[2];
-            const buffer = Buffer.from(base64, 'base64');
-            if (buffer.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'Image trop volumineuse (max 5 MB)' });
+        const imageData = req.body.image || '';
+        const matches = imageData.match(/data:([^;]+);base64,(.+)/);
+        if (!matches) return res.status(400).json({ error: 'Donnees invalides' });
+        const mimeType = matches[1];
+        const base64 = matches[2];
+        const buffer = Buffer.from(base64, 'base64');
+        if (buffer.length > 5 * 1024 * 1024) return res.status(400).json({ error: 'Image trop volumineuse (max 5 MB)' });
 
-            const ext = mimeType.split('/')[1] || 'jpg';
-            const filename = `${req.user.id}_cat_${Date.now()}.${ext}`;
-            const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
-            if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-            fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+        const ext = mimeType.split('/')[1] || 'jpg';
+        const filename = `${req.user.id}_cat_${Date.now()}.${ext}`;
+        const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
+        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+        fs.writeFileSync(path.join(uploadsDir, filename), buffer);
 
-            const imageUrl = `/uploads/${filename}`;
-            db.update('categories', category.id, { image: imageUrl });
-            res.json({ url: imageUrl });
-        });
+        const imageUrl = `/uploads/${filename}`;
+        db.update('categories', category.id, { image: imageUrl });
+        res.json({ url: imageUrl });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
