@@ -45,10 +45,30 @@ app.use((req, res, next) => {
     next();
 });
 
+// Request ID middleware
+app.use((req, res, next) => {
+    req.id = crypto.randomUUID ? crypto.randomUUID().split('-')[0] : Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+    res.setHeader('X-Request-ID', req.id);
+    next();
+});
+
+// Standard API response helpers
+app.use((req, res, next) => {
+    res.apiSuccess = (data, status = 200) => res.status(status).json({ success: true, data });
+    res.apiError = (message, status = 400, code = 'REQUEST_ERROR') => res.status(status).json({ success: false, error: message, code });
+    res.apiPaginated = (data, total, page, limit) => res.json({ success: true, data, pagination: { total, page, limit, pages: Math.ceil(total / limit) } });
+    next();
+});
+
 // Request logging
 app.use((req, res, next) => {
     const start = Date.now();
-    res.on('finish', () => security.logRequest(req, res, start));
+    res.on('finish', () => {
+        const ms = Date.now() - start;
+        const level = res.statusCode >= 500 ? 'error' : res.statusCode >= 400 ? 'warn' : 'info';
+        const logger = require('./src/utils/logger');
+        logger[level](`[${req.id}] ${req.method} ${req.path} → ${res.statusCode} ${ms}ms`);
+    });
     next();
 });
 
@@ -619,17 +639,28 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-    console.error('[ERROR]', err.message);
+    const logger = require('./src/utils/logger');
+    const statusCode = err.statusCode || err.status || 500;
+    const code = err.code || (statusCode >= 500 ? 'SERVER_ERROR' : 'REQUEST_ERROR');
+    const message = statusCode >= 500 && process.env.NODE_ENV === 'production'
+        ? 'Erreur serveur. Reessayez plus tard.'
+        : (err.message || 'Erreur inconnue');
+
+    logger.error(`[${req.id}] ${code} ${req.method} ${req.path} → ${statusCode}: ${err.message}${err.stack ? '\n' + err.stack : ''}`);
+
     if (req.accepts('html') && !req.path.startsWith('/api/')) {
-        res.status(500).send(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="manifest" href="/manifest.json"><title>Erreur | Flay</title><style>
+        const isServerError = statusCode >= 500;
+        const bg = isServerError ? 'ef4444,f87171' : 'f59e0b,fbbf24';
+        const title = isServerError ? 'Erreur serveur' : 'Erreur';
+        const desc = isServerError ? 'Une erreur s\'est produite. Reessayez plus tard.' : message;
+        return res.status(statusCode).send(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><link rel="manifest" href="/manifest.json"><title>${title} | Flay</title><style>
         *{margin:0;padding:0;box-sizing:border-box}body{background:#0a0a1a;color:#e2e8f0;font-family:-apple-system,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
         .card{background:#12121f;border-radius:16px;padding:3rem;text-align:center;max-width:480px;width:100%;border:1px solid #1e293b}
-        .code{font-size:5rem;font-weight:800;background:linear-gradient(135deg,#ef4444,#f87171);-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+        .code{font-size:5rem;font-weight:800;background:linear-gradient(135deg,${bg});-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
         h1{font-size:1.25rem;margin:1rem 0 .5rem;color:#f1f5f9}p{color:#64748b;margin-bottom:1.5rem;font-size:.9rem}
-        .btn{display:inline-block;padding:.75rem 2rem;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:500}</style></head><body><div class="card"><div class="code">500</div><h1>Erreur serveur</h1><p>Une erreur s\\'est produite. Reessayez plus tard.</p><a href="/" class="btn">Retour a l\\'accueil</a></div></body></html>`);
-    } else {
-        res.status(err.status || 500).json({ error: err.status >= 500 ? 'Erreur serveur' : (err.message || 'Erreur serveur') });
+        .btn{display:inline-block;padding:.75rem 2rem;background:#6366f1;color:#fff;border-radius:8px;text-decoration:none;font-weight:500}</style></head><body><div class="card"><div class="code">${statusCode}</div><h1>${title}</h1><p>${desc}</p><a href="/" class="btn">Retour a l\'accueil</a></div></body></html>`);
     }
+    res.status(statusCode).json({ success: false, error: message, code, requestId: req.id });
 });
 
 function shutdown() {

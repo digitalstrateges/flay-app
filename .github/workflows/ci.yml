@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: node --check server.js app.js config.js security.js flayer.js
+      - run: node --check routes/*.js
+      - run: node --check src/**/*.js
+      - run: echo "Syntax check passed"
+
+  docker:
+    needs: lint
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t flay-app .
+      - run: echo "Docker build successful"

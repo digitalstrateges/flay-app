@@ -1,135 +1,145 @@
-# Flay Super App v1.01
+# Flay Super App
 
-**La première Super App africaine tout-en-un.**
+**La première Super App africaine tout-en-un** — carte de visite digitale, e-commerce, CRM, réservations, IA, marketplace, chat, analytics, facturation, push notifications et multi-langues.
 
-Plateforme unifiée : showcase, e-commerce, CRM, réservations, IA, marketplace, chat, analytics, facturation, push notifications, multi-langues.
+Par [DIGITALSTRATEGES](https://digitalstrateges.ci) — Côte d'Ivoire.
 
-**DIGITALSTRATEGES - Côte d'Ivoire**
+## Stack Technique
 
-## Architecture Super App
+| Couche | Technologie |
+|--------|-------------|
+| Runtime | Node.js 18+, Express 5 |
+| Base de données | SQLite (better-sqlite3 + sql.js) + JSON |
+| Auth | JWT (jti), PBKDF2, CSRF tokens |
+| Frontend | HTML/CSS/JS vanilla (SPA dashboard) |
+| Paiement | Wave CI + vérification WhatsApp |
+| IA | Moteur LLM local + Gemini API |
+| PWA | Service worker, offline, manifest |
+| Déploiement | Docker → Railway |
+
+## Architecture
 
 ```
 flay-app/
-├── server.js                    # Point d'entrée avec Super App API v1
-├── app.js                       # Application Express (backward compatible)
-├── config.js                    # Configuration principale
-├── src/                         # NOUVELLE ARCHITECTURE SUPER APP
-│   ├── config/index.js          # Configuration Super App v1
-│   ├── core/
-│   │   ├── event-bus.js         # Bus d'événements asynchrone
-│   │   ├── plugin-system.js     # Système de plugins modulaire
-│   │   ├── app-factory.js       # Factory pattern pour l'app
-│   │   └── error-handler.js     # Gestion d'erreurs centralisée
-│   ├── database/
-│   │   ├── migrator.js          # Système de migrations
-│   │   ├── backup.js            # Backup automatique (toutes les 6h)
-│   │   └── migrations/          # Migrations SQL
-│   ├── security/index.js        # Sécurité v2 (rate-limit, CORS, CSRF, XSS)
-│   ├── api/v1/gateway.js        # API Gateway v1
-│   └── utils/logger.js          # Logger structuré
-├── db/index.js                  # Base de données principale (SQLite/JSON)
-├── database.js                  # Base CRM (SQLite/JSON)
-├── routes/                      # Routes API (26 modules, 115+ endpoints)
-├── lib/                         # Librairies partagées
-├── models/                      # Modèles de données
-├── public/                      # Interface PWA complète
-│   ├── index.html               # Landing page moderne
-│   ├── dashboard.html           # Dashboard complet
-│   ├── sw.js                    # Service Worker (offline support)
-│   ├── manifest.json            # PWA manifest v1.01
-│   └── *.html                   # 6 pages fonctionnelles
-├── data/                        # Persistance (SQLite + JSON backup)
-└── deploy/                      # Déploiement
+├── app.js                  # Application Express
+├── server.js               # Point d'entrée
+├── config.js               # Configuration centralisée
+│
+├── routes/                 # Routes API (26 modules)
+│   ├── auth.js             # Authentification (register, login, OAuth)
+│   ├── profile.js          # Gestion des profils
+│   ├── ecommerce.js        # E-commerce (produits, catégories, commandes)
+│   ├── reservation.js      # Système de réservation
+│   ├── flay-pay.js         # Paiement Wave + WhatsApp
+│   ├── leaderboard.js      # Classement MRR public
+│   ├── analytics.js        # Analytics métier
+│   ├── crm.js, chat.js, ai.js, invoicing.js
+│   └── ...
+│
+├── public/                 # Pages statiques + PWA
+├── src/                    # Modules noyau
+│   ├── core/               # Event bus, plugin system
+│   ├── database/           # Migrations, backup
+│   ├── security/           # Rate limiting, CORS, CSRF
+│   ├── llm/                # Moteur IA local
+│   ├── utils/logger.js     # Logger structuré
+│   └── error-handler.js    # Gestion d'erreurs centralisée
+│
+├── db/index.js             # Couche d'accès aux données
+├── flayer.js               # Générateur de page publique
+├── models/                 # Modèles de données
+├── uploads/                # Images uploadées
+└── CLAUDE.md               # Contexte IA pour agents
 ```
 
-## Fonctionnalités Super App
-
-### 🎯 Showcase & Profil
-- Carte de visite digitale interactive
-- 40+ thèmes (Dark, Light, Drapeaux, Saisonniers)
-- QR Code dynamique
-- Liens réseaux sociaux
-- Géolocalisation
-
-### 🛒 E-commerce
-- Boutique en ligne complète
-- Panier d'achat
-- Paiements Wave, Orange Money, Moov, Carte bancaire
-- Gestion des stocks
-- Coupons et réductions
-- Suivi de livraison
-- Market Intelligence
-
-### 🤝 CRM
-- Gestion des contacts
-- Pipeline de vente
-- Scoring automatique
-- Programme de fidélité
-- Campagnes SMS/Email
-
-### 🤖 IA & Chat
-- Assistant Gemini intégré
-- Génération auto de contenu
-- Chat en temps réel (WebSocket/SSE)
-- Notifications push
-
-### 📊 Analytics
-- Tableau de bord temps réel
-- Trackeur de visiteurs
-- Heatmap géographique
-- Export PDF/CSV
-
-### 🌍 Multi-langues
-- Français, Anglais, Arabe, Portugais
-- Langues locales (Dioula, Baoulé, etc.)
-
-### 🔧 Technique
-- Super App API v1 (`/super-api/v1`)
-- Event Bus asynchrone
-- Système de plugins
-- Migrations de base de données
-- Backup automatique (toutes les 6h)
-- Rate limiting avancé
-- Anti-CSRF, XSS Protection
-- Arrêt gracieux (graceful shutdown)
-
-## Démarrage
+## Démarrage Rapide
 
 ```bash
-npm install
+git clone https://github.com/digitalstrateges/flay-app
+cd flay-app
 cp .env.example .env
 node server.js
+# → http://localhost:4000
 ```
 
-**URL:** http://localhost:4000
-**Super API:** http://localhost:4000/super-api/v1
-**Demo:** demo@flay.app / demo123
+## Scripts
 
-## Déploiement Railway
+| Commande | Description |
+|----------|-------------|
+| `node server.js` | Démarrer le serveur |
+| `node --watch server.js` | Mode développement (auto-reload) |
+| `npm run docker:build` | Build Docker |
+| `npm run docker:compose` | Docker Compose |
+| `curl localhost:4000/api/health` | Health check |
 
+## API
+
+Toutes les routes sous `/api/*`. Format réponse standardisé :
+```json
+{ "success": true, "data": { ... } }
+{ "success": false, "error": "message", "code": "ERROR_CODE" }
+```
+
+### Authentification
+- `POST /api/auth/register` — Création de compte
+- `POST /api/auth/login` — Connexion (retourne JWT)
+- `POST /api/auth/forgot` — Mot de passe oublié
+- `POST /api/auth/reset` — Réinitialisation mot de passe
+
+### Profil public
+- `GET /u/:slug` — Page profil publique (générée par flayer.js)
+- `GET /api/card/vcard/:slug` — Télécharger vCard
+- `GET /api/card/print/:slug` — Carte de visite imprimable
+
+### E-commerce
+- `GET/POST/PUT/DELETE /api/products` — CRUD produits
+- `GET/POST/PUT/DELETE /api/categories` — CRUD catégories
+- `GET /api/orders` — Commandes reçues
+- `POST /api/orders` — Passer commande
+
+### Paiement (Flay-Pay)
+- `POST /api/flay-pay/subscribe` — Souscrire à un plan
+- `POST /api/flay-pay/verify` — Vérifier paiement Wave
+- `POST /api/flay-pay/confirm` — (Admin) Confirmer abonnement
+- `GET /api/flay-pay/my-subscription` — État abonnement
+
+### Réservations
+- `GET /api/reservations` — Mes réservations
+- `POST /api/reservations` — Créer réservation
+- `GET /api/reservations/available/:slug` — Créneaux disponibles
+
+### Leaderboard
+- `GET /api/leaderboard` — Classement public
+- `GET /api/leaderboard/stats` — Statistiques globales
+
+## Déploiement (Railway)
+
+1. Connecter `github.com/digitalstrateges/flay-app` dans Railway
+2. Variables d'environnement requises (voir `.env.example`) :
+   - `JWT_SECRET`, `SITE_URL`, `WHATSAPP_NUMBER=2250759731990`
+3. Déploiement automatique sur push vers `main`
+
+Ou CLI :
 ```bash
-npm install -g @railway/cli
-railway login
-railway link
-railway up
+npm i -g @railway/cli && railway login && railway link && railway up
 ```
 
-## Docker
+## PWA
 
-```bash
-docker compose up -d
-```
+- Service worker avec cache des assets statiques
+- Page offline personnalisée (`/offline.html`)
+- Thème CI (orange/blanc/vert) avec mode clair/sombre
+- `@media(hover:none)` retour tactile pour mobile
 
-## Statistiques
+## Plans & Limites
 
-- **53** modules JavaScript
-- **26** routes API
-- **115+** endpoints
-- **40+** thèmes
-- **6** pages PWA
-- **24/7** support
+| Plan | Prix | Produits | Fonctionnalités |
+|------|------|----------|-----------------|
+| Free | Gratuit | 1 | Profil, QR code, réservations |
+| Starter | 20k FCFA/mois | 10 | + E-commerce, CRM, analytics |
+| Pro | 50k FCFA/mois | Illimité | + IA, marketplace, API |
+| Annuel | -10% | Selon plan | Tout le plan + 2 mois offerts |
 
 ---
 
-**DIGITALSTRATEGES** - +225 07 59 73 19 90
-Wave: DIGITALSTRATEGE BUSINESS
+**DIGITALSTRATEGES** — +225 07 59 73 19 90 — [WhatsApp](https://wa.me/2250759731990)
