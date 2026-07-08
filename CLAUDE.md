@@ -141,6 +141,18 @@ See `.env.example` for all required/optional vars:
 - `CORS_ORIGIN`, `LOG_LEVEL`, `ADMIN_IDS`
 - `UPLOAD_DIR`, `BACKUP_INTERVAL`, `RATE_LIMIT_WINDOW`, `RATE_LIMIT_MAX`
 
+## AGENTS.md — AI Instructions (loaded automatically)
+
+When working in this project, always:
+1. Read CLAUDE.md first for full context
+2. Check existing patterns before writing new code
+3. Run `node --check` on modified files before committing
+4. Never use fake/random data for charts or analytics
+5. Respect the CI orange (#f77f00) / white / green (#00853f) theme
+6. Add PWA meta tags to all new HTML pages
+7. Test mobile responsive at 480px, 600px, 768px breakpoints
+8. Keep error messages in French for the CI market
+
 ## Safety Guards
 - NEVER commit `.env` or `data/` files
 - NEVER use `eval()` or `new Function()`
