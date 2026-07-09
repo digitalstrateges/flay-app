@@ -1,4 +1,32 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["AGENTS.md", "CLAUDE.md"]
+  "instructions": ["AGENTS.md", "CLAUDE.md"],
+  "skills": {
+    "paths": [
+      "/root/.agents/skills",
+      "/root/.opencode/skills"
+    ]
+  },
+  "plugin": [
+    "opencode-supermemory",
+    "opencode-pty",
+    "opencode-firecrawl"
+  ],
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@anthropic/mcp-playwright"],
+      "enabled": true
+    },
+    "gh_grep": {
+      "type": "remote",
+      "url": "https://mcp.grep.app",
+      "enabled": true
+    }
+  }
 }

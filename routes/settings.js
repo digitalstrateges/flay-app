@@ -10,7 +10,16 @@ const notifications = require('../notifications');
 const emailSystem = require('../email-system');
 const smsSystem = require('../sms-system');
 const abTesting = require('../ab-testing');
+const path = require('path')
+const fs = require('fs')
+const config = require('../config')
 const router = express.Router();
+
+function getUploadsDir() {
+  const dir = config.UPLOAD_DIR.startsWith('/') ? config.UPLOAD_DIR : path.join(__dirname, '..', config.UPLOAD_DIR)
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+  return dir
+}
 
 // --- 2FA ---
 router.post('/2fa/setup', authenticate, (req, res) => {
@@ -234,9 +243,8 @@ router.post('/upload', authenticate, (req, res) => {
             }
             const ext = mimeType.split('/')[1] || 'jpg';
             const filename = `${req.user.id}_${Date.now()}.${ext}`;
-            const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
-            if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-            fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+            const dir = getUploadsDir()
+            fs.writeFileSync(path.join(dir, filename), buffer);
             res.json({ url: `/uploads/${filename}`, filename, mimeType, size: buffer.length });
         });
     } catch (err) {

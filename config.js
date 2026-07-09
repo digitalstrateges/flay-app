@@ -56,6 +56,9 @@ module.exports = {
     VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY || '',
     VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY || '',
 
+    // === UPLOADS ===
+    UPLOAD_DIR: process.env.UPLOAD_DIR || 'public/uploads',
+
     // === ANALYTICS ===
     GA4_MEASUREMENT_ID: process.env.GA4_MEASUREMENT_ID || '',
     META_PIXEL_ID: process.env.META_PIXEL_ID || '',

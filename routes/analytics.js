@@ -6,18 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
-
-// Auth middleware
-function authenticate(req, res, next) {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    if (!token) return res.status(401).json({ error: 'Token required' });
-    const authUtils = require('../auth-utils');
-    const payload = authUtils.verifyToken(token);
-    if (!payload) return res.status(401).json({ error: 'Invalid token' });
-    req.userId = payload.userId;
-    req.user = payload;
-    next();
-}
+const { authenticate } = require('../lib/auth');
 
 // Get analytics for current user (dashboard root route)
 router.get('/', authenticate, (req, res) => {

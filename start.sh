@@ -7,7 +7,7 @@ cd "$DIR"
 
 echo ""
 echo "  =============================="
-echo "   FLAY SUPER APP v1.01"
+echo "   FLAY SUPER APP 1.02"
 echo "   by DIGITALSTRATEGES"
 echo "  =============================="
 echo ""

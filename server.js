@@ -1,6 +1,6 @@
 const { app, broadcast } = require('./app');
 const http = require('http');
-const config = require('./src/config');
+const config = require('./config');
 const eventBus = require('./src/core/event-bus');
 const demoSetup = require('./demo-setup');
 const crmDb = require('./database');

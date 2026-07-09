@@ -3,7 +3,7 @@ set -e
 
 echo ""
 echo "╔══════════════════════════════════════════════════╗"
-echo "║         FLAY SUPER APP v1.01 - DEPLOIEMENT                  ║"
+echo "║         FLAY SUPER APP 1.02 - DEPLOIEMENT                  ║"
 echo "║         DIGITALSTRATEGES Business                ║"
 echo "╚══════════════════════════════════════════════════╝"
 echo ""

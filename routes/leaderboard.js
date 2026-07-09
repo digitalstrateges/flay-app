@@ -38,7 +38,7 @@ router.get('/', (req, res) => {
                 totalRevenue: Math.max(totalRevenue, orderAmounts),
                 productsCount: products.length,
                 ordersCount: orders.filter(o => o.status === 'delivered' || o.status === 'confirmed').length,
-                momGrowth: momGrowth || Math.floor(Math.random() * 40) + 1,
+                momGrowth: momGrowth || 0,
                 planLabel: config.PLANS[u.plan]?.name || u.plan
             };
         })

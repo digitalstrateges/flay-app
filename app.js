@@ -238,10 +238,9 @@ app.get('/lang/:lang', (req, res) => {
 
 // === E-COMMERCE PUBLIC PAGES ===
 const ecommerce = require('./ecommerce');
-const ecommerceDB = require('./db');
 
 app.get('/store/:userId', (req, res) => {
-    const user = ecommerceDB.get('users', req.params.userId);
+    const user = db.get('users', req.params.userId);
     if (!user) return res.status(404).send('Boutique non trouvee');
     const page = parseInt(req.query.page) || 1;
     const filters = {};
@@ -249,7 +248,7 @@ app.get('/store/:userId', (req, res) => {
     const products = ecommerce.getPublicProducts(req.params.userId, page, 20, filters);
     const categories = ecommerce.getActiveCategories(req.params.userId);
     const storeInfo = { storeName: user.name, storeDescription: '' };
-    const profile = ecommerceDB.findBy('profiles', 'userId', req.params.userId);
+    const profile = db.findBy('profiles', 'userId', req.params.userId);
     if (profile) { storeInfo.storeDescription = profile.bio; storeInfo.profileSlug = profile.slug; }
     const html = ecommerce.generateStorePage(req.params.userId, products, categories, storeInfo);
     res.send(html);
@@ -258,11 +257,11 @@ app.get('/store/:userId', (req, res) => {
 app.get('/product/:id', (req, res) => {
     const product = ecommerce.getProduct(req.params.id);
     if (!product) return res.status(404).send('Produit non trouve');
-    const user = ecommerceDB.get('users', product.userId);
+    const user = db.get('users', product.userId);
     const storeInfo = { storeName: user?.name || 'Boutique' };
     const stats = typeof product.stats === 'string' ? JSON.parse(product.stats) : (product.stats || {});
     stats.views = (stats.views || 0) + 1;
-    ecommerceDB.update('products', product.id, { stats: JSON.stringify(stats) });
+    db.update('products', product.id, { stats: JSON.stringify(stats) });
     const html = ecommerce.generateProductPage(product, storeInfo);
     res.send(html);
 });
@@ -288,7 +287,7 @@ app.get('/track/:trackingNumber', (req, res) => {
         </style></head><body><div class="card"><h1>Colis non trouve</h1>
         <p>Verifiez votre numero de suivi et reessayez.</p><a href="/" class="btn">Retour a l'accueil</a></div></body></html>
     `);
-    const order = ecommerceDB.get('orders', parcel.orderId);
+    const order = db.get('orders', parcel.orderId);
     const statusLabels = { preparation: 'Preparation', shipped: 'Expedie', in_transit: 'En transit', delivered: 'Livree', cancelled: 'Annule' };
     const statusIcons = { preparation: '📦', shipped: '🚚', in_transit: '✈️', delivered: '✅', cancelled: '❌' };
     const history = typeof parcel.history === 'string' ? JSON.parse(parcel.history) : (parcel.history || []);

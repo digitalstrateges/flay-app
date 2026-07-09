@@ -100,7 +100,7 @@ router.post('/invoices', auth, (req, res) => {
 });
 
 router.get('/invoices/:id/html', auth, (req, res) => {
-    const invoices = accounting._load(`invoices_${req.userId}.json`);
+    const invoices = accounting.getUserInvoices(req.userId);
     const invoice = invoices.find(i => i.id === req.params.id);
     if (!invoice) return res.status(404).json({ error: 'Facture non trouvee' });
     const user = db.get('users', req.userId);

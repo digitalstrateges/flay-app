@@ -26,6 +26,10 @@ class Accounting {
         fs.writeFileSync(path.join(this.dataDir, file), JSON.stringify(data, null, 2));
     }
 
+    getUserInvoices(userId) {
+        return this._load(`invoices_${userId}.json`)
+    }
+
     _genId(prefix = 'REC') {
         return `${prefix}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
     }

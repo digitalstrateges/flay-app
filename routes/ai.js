@@ -6,7 +6,14 @@ const https = require('https');
 const httpLib = require('http');
 const fs = require('fs');
 const path = require('path');
+const config = require('../config')
 const router = express.Router();
+
+function getUploadsDir() {
+  const dir = config.UPLOAD_DIR.startsWith('/') ? config.UPLOAD_DIR : path.join(__dirname, '..', config.UPLOAD_DIR)
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+  return dir
+}
 
 router.get('/status', authenticate, (req, res) => {
   res.json({ llm: llm.getStats(), enabled: true });
@@ -134,7 +141,7 @@ router.post('/generate-image', authenticate, async (req, res) => {
     const fullPrompt = encodeURIComponent(prompt + (styleMap[style] || ''));
     const url = `https://image.pollinations.ai/prompt/${fullPrompt}?width=${width}&height=${height}&seed=${Date.now()}&nologo=true`;
     const filename = `ai_${req.user.id}_${Date.now()}.jpg`;
-    const filepath = path.join(__dirname, '..', 'public', 'uploads', filename);
+    const filepath = path.join(getUploadsDir(), filename);
     const file = fs.createWriteStream(filepath);
     const protocol = url.startsWith('https') ? https : httpLib;
     await new Promise((resolve, reject) => {

@@ -1,10 +1,19 @@
 const express = require('express');
+const path = require('path')
+const fs = require('fs')
 const { authenticate } = require('../lib/auth');
 const ecommerce = require('../ecommerce');
 const market = require('../market-intelligence');
 const marketplace = require('../marketplace');
 const db = require('../db');
+const config = require('../config')
 const router = express.Router();
+
+function getUploadsDir() {
+  const dir = config.UPLOAD_DIR.startsWith('/') ? config.UPLOAD_DIR : path.join(__dirname, '..', config.UPLOAD_DIR)
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true })
+  return dir
+}
 
 // === CATEGORIES ===
 router.post('/categories', authenticate, (req, res) => {
@@ -407,9 +416,8 @@ router.post('/products/:id/images', authenticate, (req, res) => {
 
         const ext = mimeType.split('/')[1] || 'jpg';
         const filename = `${req.user.id}_prod_${Date.now()}.${ext}`;
-        const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
-        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-        fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+        const dir = getUploadsDir()
+        fs.writeFileSync(path.join(dir, filename), buffer);
 
         const imageUrl = `/uploads/${filename}`;
         const images = Array.isArray(product.images) ? [...product.images, imageUrl] : [imageUrl];
@@ -440,11 +448,10 @@ router.delete('/products/:id/images/:index', authenticate, (req, res) => {
             update.thumbnail = images[0] || '';
         }
 
-        // Delete file from disk
-        const fs = require('fs');
-        const path = require('path');
-        const filePath = path.join(__dirname, '..', 'public', removed);
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        if (removed && removed.startsWith('/uploads/')) {
+          const filePath = path.join(__dirname, '..', 'public', removed)
+          if (fs.existsSync(filePath)) fs.unlinkSync(filePath)
+        }
 
         db.update('products', product.id, update);
         res.json({ images: update.images, thumbnail: update.thumbnail });
@@ -472,8 +479,6 @@ router.put('/products/:id/thumbnail', authenticate, (req, res) => {
 // === CATEGORY IMAGE UPLOAD ===
 router.post('/categories/:id/image', authenticate, (req, res) => {
     try {
-        const fs = require('fs');
-        const path = require('path');
         const category = db.get('categories', req.params.id);
         if (!category) return res.status(404).json({ error: 'Categorie non trouvee' });
         if (category.userId !== req.user.id) return res.status(403).json({ error: 'Non autorise' });
@@ -488,9 +493,8 @@ router.post('/categories/:id/image', authenticate, (req, res) => {
 
         const ext = mimeType.split('/')[1] || 'jpg';
         const filename = `${req.user.id}_cat_${Date.now()}.${ext}`;
-        const uploadsDir = path.join(__dirname, '..', 'public', 'uploads');
-        if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
-        fs.writeFileSync(path.join(uploadsDir, filename), buffer);
+        const dir = getUploadsDir()
+        fs.writeFileSync(path.join(dir, filename), buffer);
 
         const imageUrl = `/uploads/${filename}`;
         db.update('categories', category.id, { image: imageUrl });
